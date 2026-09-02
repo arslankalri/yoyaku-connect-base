@@ -738,8 +738,23 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
+const fallbackI18n: I18nValue = {
+  language: "ja",
+  setLanguage: () => {},
+  t: (key, vars) => {
+    let value = dictionaries.ja[key] ?? dictionaries.en[key] ?? key;
+    if (vars) {
+      for (const [k, v] of Object.entries(vars)) {
+        value = value.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+      }
+    }
+    return value;
+  },
+};
+
 export function useI18n() {
-  const ctx = useContext(I18nContext);
-  if (!ctx) throw new Error("useI18n must be used within LanguageProvider");
-  return ctx;
+  // Fall back to the default dictionary instead of throwing, so a missing
+  // provider (or a duplicated module during dev reloads) never blanks the app.
+  return useContext(I18nContext) ?? fallbackI18n;
 }
+
