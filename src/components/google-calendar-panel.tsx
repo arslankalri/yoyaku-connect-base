@@ -166,7 +166,7 @@ export function GoogleCalendarPanel({ businessId }: { businessId: string }) {
             {t("gcal.selectLabel")}
           </Label>
           <Select
-            value={data.selected_calendar_id ?? undefined}
+            {...(data.selected_calendar_id ? { value: data.selected_calendar_id } : {})}
             onValueChange={(value) => selectMutation.mutate(value)}
           >
             <SelectTrigger id="gcal-select" className="mt-2 bg-background/70">
