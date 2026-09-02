@@ -10,7 +10,7 @@ import {
 
 export type Language = "ja" | "en";
 
-const STORAGE_KEY = "yoyaku-ai.language";
+const STORAGE_KEY = "nagi-ai.language";
 
 type Dict = Record<string, string>;
 
