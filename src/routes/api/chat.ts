@@ -22,10 +22,7 @@ import {
 } from "@/lib/nagi-data.server";
 import {
   checkAvailability,
-  createEvent,
-  deleteEvent,
   listEvents,
-  updateEvent,
   zonedToUtc,
 } from "@/server/googleCalendar.server";
 
