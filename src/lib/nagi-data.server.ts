@@ -51,7 +51,7 @@ function hhmm(value: string | null | undefined) {
 export async function getBusinessForUser(supabase: AuthedClient) {
   const { data, error } = await supabase
     .from("businesses")
-    .select("id, name, phone, postal_code, address, website, timezone")
+    .select("id, name, phone, postal_code, address, website, timezone, google_calendar_id")
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();

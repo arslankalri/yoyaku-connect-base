@@ -20,6 +20,14 @@ import {
   type AuthedClient,
   type NagiConfig,
 } from "@/lib/nagi-data.server";
+import {
+  checkAvailability,
+  createEvent,
+  deleteEvent,
+  listEvents,
+  updateEvent,
+  zonedToUtc,
+} from "@/server/googleCalendar.server";
 
 
 function dateContext(timezone: string) {
@@ -60,8 +68,20 @@ function dateContext(timezone: string) {
   ].join("\n");
 }
 
-function buildTools(supabase: AuthedClient, businessId: string) {
+type CalendarCtx = {
+  connectionAPIKey: string;
+  calendarId: string;
+  timezone: string;
+};
+
+function buildTools(
+  supabase: AuthedClient,
+  businessId: string,
+  calendar: CalendarCtx | null,
+) {
+  const calendarTools = calendar ? buildCalendarTools(supabase, businessId, calendar) : {};
   return {
+    ...calendarTools,
     get_business_info: tool({
       description:
         "Get the business name, phone number, address, website and timezone. Use for location, contact or general questions.",
@@ -110,6 +130,120 @@ function buildTools(supabase: AuthedClient, businessId: string) {
   };
 }
 
+function buildCalendarTools(
+  supabase: AuthedClient,
+  businessId: string,
+  calendar: CalendarCtx,
+) {
+  const { connectionAPIKey, calendarId, timezone } = calendar;
+  const dateSchema = z.string().describe("Date in YYYY-MM-DD (business timezone)");
+  const timeSchema = z.string().describe("Time in 24h HH:MM (business timezone)");
+
+  return {
+    check_calendar_availability: tool({
+      description:
+        "Check open appointment start times on a date, using the business opening hours and the owner's Google Calendar. Always call before proposing or booking a time.",
+      inputSchema: z.object({
+        date: dateSchema,
+        duration_minutes: z
+          .number()
+          .describe("Appointment length in minutes (use the service duration)"),
+      }),
+      execute: async ({ date, duration_minutes }) =>
+        checkAvailability(
+          supabase,
+          businessId,
+          connectionAPIKey,
+          calendarId,
+          timezone,
+          date,
+          duration_minutes,
+        ),
+    }),
+    list_calendar_events: tool({
+      description:
+        "Read existing calendar events between two dates (inclusive start, exclusive end) to see what is already scheduled.",
+      inputSchema: z.object({ from_date: dateSchema, to_date: dateSchema }),
+      execute: async ({ from_date, to_date }) =>
+        listEvents(
+          connectionAPIKey,
+          calendarId,
+          zonedToUtc(from_date, "00:00", timezone).toISOString(),
+          zonedToUtc(to_date, "23:59", timezone).toISOString(),
+        ),
+    }),
+    create_calendar_appointment: tool({
+      description:
+        "Create a real appointment in the owner's Google Calendar. Only call after the time was confirmed as available and the customer confirmed the details.",
+      inputSchema: z.object({
+        date: dateSchema,
+        time: timeSchema,
+        duration_minutes: z.number(),
+        service: z.string(),
+        customer_name: z.string(),
+        customer_phone: z.string(),
+        staff: z.string().optional(),
+        notes: z.string().optional(),
+      }),
+      execute: async (input) => {
+        const start = zonedToUtc(input.date, input.time, timezone);
+        const end = new Date(start.getTime() + Math.max(5, input.duration_minutes) * 60_000);
+        const created = await createEvent(connectionAPIKey, calendarId, {
+          summary: `${input.service} — ${input.customer_name}`,
+          description: [
+            `Service: ${input.service}`,
+            `Customer: ${input.customer_name}`,
+            `Phone: ${input.customer_phone}`,
+            input.staff ? `Staff: ${input.staff}` : null,
+            input.notes ? `Notes: ${input.notes}` : null,
+            "Booked by NAGI AI receptionist.",
+          ]
+            .filter(Boolean)
+            .join("\n"),
+          startIso: start.toISOString(),
+          endIso: end.toISOString(),
+          timeZone: timezone,
+        });
+        return {
+          created: true,
+          event_id: created.id,
+          date: input.date,
+          time: input.time,
+          duration_minutes: input.duration_minutes,
+        };
+      },
+    }),
+    update_calendar_appointment: tool({
+      description:
+        "Move or update an existing calendar appointment. Find the event id first with list_calendar_events.",
+      inputSchema: z.object({
+        event_id: z.string(),
+        date: dateSchema,
+        time: timeSchema,
+        duration_minutes: z.number(),
+        notes: z.string().optional(),
+      }),
+      execute: async (input) => {
+        const start = zonedToUtc(input.date, input.time, timezone);
+        const end = new Date(start.getTime() + Math.max(5, input.duration_minutes) * 60_000);
+        await updateEvent(connectionAPIKey, calendarId, input.event_id, {
+          startIso: start.toISOString(),
+          endIso: end.toISOString(),
+          timeZone: timezone,
+          ...(input.notes ? { description: input.notes } : {}),
+        });
+        return { updated: true, date: input.date, time: input.time };
+      },
+    }),
+    cancel_calendar_appointment: tool({
+      description:
+        "Cancel (delete) an existing calendar appointment. Find the event id first with list_calendar_events.",
+      inputSchema: z.object({ event_id: z.string() }),
+      execute: async ({ event_id }) => deleteEvent(connectionAPIKey, calendarId, event_id),
+    }),
+  };
+}
+
 function toneLine(tone: string) {
   switch (tone) {
     case "friendly":
@@ -152,7 +286,12 @@ function handoffRules(config: NagiConfig) {
 
 
 
-function systemPrompt(businessName: string, timezone: string, config: NagiConfig) {
+function systemPrompt(
+  businessName: string,
+  timezone: string,
+  config: NagiConfig,
+  calendarConnected: boolean,
+) {
   const custom = config.custom_instructions.trim();
   return `You are NAGI (ナギ), the AI receptionist of "${businessName}". You are answering a customer in a text chat that simulates a phone call.
 
@@ -190,10 +329,15 @@ ${handoffRules(config)}
   Japanese: 「スタッフへの確認が必要です。担当者よりご連絡いたします。」 English: "A staff member needs to assist with this. Our team will follow up with you."
 - NEVER say you have transferred, connected or put the customer through to a person — no transfer system exists yet.
 
-APPOINTMENTS (simulation only)
-- You CANNOT create, change or cancel real appointments and must never claim one was made, changed or cancelled.
+APPOINTMENTS
+${calendarConnected ? `- The owner's Google Calendar IS connected, so you can make REAL bookings when the matching capability is ENABLED.
+- Before proposing or confirming any time, call check_calendar_availability for that date with the service duration (from get_service_details). Never offer a time that is not in available_slots, and never book outside opening hours.
+- Collect the details conversationally, one question at a time: service, date, time, staff preference (if staff exist), customer name, phone number. If a time is vague (e.g. "afternoon"), offer 2-3 available slots.
+- Only after the customer confirms, call create_calendar_appointment. Then put the token [[BOOKING_CONFIRMED]] on the FIRST line and confirm the date, time and service briefly.
+- To change an appointment, use list_calendar_events to find it, then update_calendar_appointment (only to an available slot). To cancel, use cancel_calendar_appointment. Quote the configured policy from get_policies first.
+- Never claim a booking, change or cancellation succeeded unless the corresponding tool returned success.` : `- No calendar is connected, so you CANNOT create, change or cancel real appointments and must never claim one was made, changed or cancelled.
 - If accepting appointment requests is ENABLED: collect the missing details conversationally, one question at a time: service, date, time, staff preference (if staff exist), customer name, phone number. If a time is vague (e.g. "afternoon"), ask for a specific time. Once you have service + date + time + name + phone, do NOT confirm a booking — output on the FIRST line exactly the token [[BOOKING_SIM]] and then a short polite message explaining this is a test and staff will confirm.
-- For change or cancellation requests (when enabled), gather details, quote the configured policy, and explain that staff will confirm; never state it is done.`;
+- For change or cancellation requests (when enabled), gather details, quote the configured policy, and explain that staff will confirm; never state it is done.`}`;
 }
 
 
@@ -229,15 +373,33 @@ export const Route = createFileRoute("/api/chat")({
         const config = await getNagiConfig(supabase, business.id);
         if (!config.is_enabled) return new Response("NAGI is currently turned off", { status: 403 });
 
+        // Real calendar access requires both a stored connection key and a chosen calendar.
+        let calendar: CalendarCtx | null = null;
+        const timezone = business.timezone || "Asia/Tokyo";
+        if (business.google_calendar_id) {
+          const { getConnectionKeyForUser } = await import("@/server/appUserConnections.server");
+          const connectionAPIKey = await getConnectionKeyForUser(
+            userData.user.id,
+            "google_calendar",
+          );
+          if (connectionAPIKey) {
+            calendar = {
+              connectionAPIKey,
+              calendarId: business.google_calendar_id,
+              timezone,
+            };
+          }
+        }
+
         const gateway = createLovableAiGatewayProvider(key);
 
         try {
           const result = streamText({
             model: gateway("google/gemini-3.7-flash"),
-            system: systemPrompt(business.name, business.timezone || "Asia/Tokyo", config),
+            system: systemPrompt(business.name, timezone, config, calendar !== null),
 
             messages: await convertToModelMessages(body.messages as UIMessage[]),
-            tools: buildTools(supabase, business.id),
+            tools: buildTools(supabase, business.id, calendar),
             stopWhen: stepCountIs(12),
           });
           return result.toUIMessageStreamResponse({
