@@ -199,3 +199,113 @@
   text-transform: uppercase;
   color: var(--color-muted-foreground);
 }
+
+/* ── AI theme layer ─────────────────────────────────────────────────────────
+   Deep navy / indigo / violet / cyan accents, soft gradients, glow borders and
+   glass surfaces. All decorative motion is disabled under reduced-motion.     */
+
+@theme inline {
+  --color-ai-indigo: var(--ai-indigo);
+  --color-ai-violet: var(--ai-violet);
+  --color-ai-cyan: var(--ai-cyan);
+  --color-ai-navy: var(--ai-navy);
+}
+
+:root {
+  --ai-navy: oklch(0.28 0.06 262);
+  --ai-indigo: oklch(0.52 0.16 268);
+  --ai-violet: oklch(0.56 0.17 300);
+  --ai-cyan: oklch(0.72 0.12 210);
+
+  --gradient-ai: linear-gradient(120deg, var(--ai-navy), var(--ai-indigo) 45%, var(--ai-violet) 78%, var(--ai-cyan));
+  --gradient-ai-soft: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--ai-indigo) 14%, transparent),
+    color-mix(in oklab, var(--ai-cyan) 10%, transparent)
+  );
+  --glow-ai: 0 0 0 1px color-mix(in oklab, var(--ai-indigo) 22%, transparent),
+    0 18px 50px -22px color-mix(in oklab, var(--ai-indigo) 45%, transparent);
+}
+
+.dark {
+  --ai-navy: oklch(0.24 0.05 262);
+  --ai-indigo: oklch(0.66 0.14 268);
+  --ai-violet: oklch(0.68 0.15 300);
+  --ai-cyan: oklch(0.8 0.11 210);
+}
+
+@utility glass-panel {
+  position: relative;
+  border-radius: var(--radius-2xl);
+  border: 1px solid color-mix(in oklab, var(--color-border) 80%, var(--ai-indigo) 20%);
+  background:
+    var(--gradient-ai-soft),
+    color-mix(in oklab, var(--color-card) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(1.05);
+  box-shadow: var(--shadow-card);
+}
+
+@utility glow-border {
+  box-shadow: var(--glow-ai);
+}
+
+@utility ai-gradient-text {
+  background: var(--gradient-ai);
+  background-clip: text;
+  color: transparent;
+}
+
+@utility ai-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--ai-indigo) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--ai-indigo) 9%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+@keyframes ai-float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -26px, 0) scale(1.06); }
+}
+
+@keyframes ai-pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.55; }
+  70% { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes ai-sheen {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes ai-wave {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+
+@utility animate-ai-float {
+  animation: ai-float 16s ease-in-out infinite;
+}
+
+@utility animate-ai-ring {
+  animation: ai-pulse-ring 2.6s ease-out infinite;
+}
+
+@utility animate-ai-sheen {
+  background-size: 200% 100%;
+  animation: ai-sheen 7s linear infinite;
+}
+
+@utility animate-ai-wave {
+  animation: ai-wave 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

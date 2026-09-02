@@ -17,6 +17,7 @@ import {
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
+import { AIBackground, OnlineDot } from "@/components/ai-background";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -48,12 +49,18 @@ function BrandMark() {
   const { t } = useI18n();
   return (
     <div className="flex items-center gap-2.5">
-      <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
+      <span
+        className="glow-border grid size-9 place-items-center rounded-xl text-sm font-semibold text-primary-foreground"
+        style={{ backgroundImage: "var(--gradient-ai)" }}
+      >
         凪
       </span>
       <span className="flex flex-col leading-tight">
         <span className="text-sm font-semibold tracking-tight">{t("brand.name")}</span>
-        <span className="text-[11px] text-muted-foreground">AI受付 / AI Reception</span>
+        <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <OnlineDot />
+          AI受付 / AI Reception
+        </span>
       </span>
     </div>
   );
@@ -81,11 +88,12 @@ function NavSection({
             key={item.to}
             to={item.to}
             onClick={onNavigate}
+            aria-current={active ? "page" : undefined}
             className={cn(
-              "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+              "group relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               active
-                ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
+                ? "border border-ai-indigo/25 bg-ai-indigo/10 font-medium text-foreground shadow-[0_0_20px_-8px_var(--ai-indigo)]"
+                : "border border-transparent text-muted-foreground hover:border-ai-indigo/15 hover:bg-sidebar-accent/60 hover:text-foreground",
             )}
           >
             <item.icon className="size-4 shrink-0" />
@@ -157,8 +165,9 @@ export function AppShell({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+    <div className="relative min-h-screen">
+      <AIBackground />
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar/70 backdrop-blur-xl lg:flex">
         <div className="flex h-16 items-center border-b border-sidebar-border px-5">
           <BrandMark />
         </div>
@@ -176,14 +185,14 @@ export function AppShell({
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur md:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/70 bg-background/70 px-4 backdrop-blur-xl md:px-6">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon" className="lg:hidden" aria-label={t("nav.menu")}>
                 <Menu className="size-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 bg-sidebar p-0">
+            <SheetContent side="left" className="w-72 bg-sidebar/95 p-0 backdrop-blur-xl">
               <SheetTitle className="flex h-16 items-center border-b border-sidebar-border px-5">
                 <BrandMark />
               </SheetTitle>

@@ -83,7 +83,7 @@ function Landing() {
         <section className="border-t border-border bg-secondary/40">
           <div className="mx-auto grid max-w-6xl gap-5 px-4 py-16 md:grid-cols-3 md:px-6">
             {features.map((f) => (
-              <div key={f.title} className="panel p-6">
+              <div key={f.title} className="glass-panel p-6">
                 <div className="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground">
                   <f.icon className="size-5" />
                 </div>

@@ -74,7 +74,7 @@ function BusinessHoursForm({ businessId }: { businessId: string }) {
   }
 
   return (
-    <div className="panel p-6">
+    <div className="glass-panel p-6">
       <h2 className="text-base font-semibold">{t("hours.title")}</h2>
       <p className="mt-1 text-sm text-muted-foreground">{t("hours.desc")}</p>
 
@@ -155,7 +155,7 @@ function SettingsPage() {
         </TabsList>
 
         <TabsContent value="business">
-          <div className="panel max-w-2xl p-6">
+          <div className="glass-panel max-w-2xl p-6">
             <BusinessForm business={businessQuery.data} submitLabel={t("common.save")} />
           </div>
         </TabsContent>
@@ -165,7 +165,7 @@ function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="account">
-          <div className="panel max-w-2xl space-y-4 p-6">
+          <div className="glass-panel max-w-2xl space-y-4 p-6">
             <div>
               <h2 className="text-base font-semibold">{t("settings.language")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{t("settings.languageDesc")}</p>

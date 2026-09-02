@@ -30,7 +30,7 @@ function Onboarding() {
       ) : isError ? (
         <ErrorPanel onRetry={() => refetch()} />
       ) : (
-        <div className="panel max-w-2xl p-6">
+        <div className="glass-panel max-w-2xl p-6">
           <BusinessForm
             business={business}
             submitLabel={t("onboarding.submit")}

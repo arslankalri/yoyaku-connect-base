@@ -211,7 +211,7 @@ function StaffPage() {
           }
         />
       ) : (
-        <div className="panel overflow-hidden">
+        <div className="glass-panel overflow-hidden">
           <ul className="divide-y divide-border">
             {staff.map((member) => {
               const workingDays = member.staff_working_hours

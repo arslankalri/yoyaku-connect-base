@@ -62,7 +62,7 @@ function ForgotPassword() {
         </div>
       </header>
       <main className="flex flex-1 items-start justify-center px-4 pb-16 pt-6 md:items-center md:pt-0">
-        <div className="panel w-full max-w-md p-7">
+        <div className="glass-panel w-full max-w-md p-7">
           <h1 className="text-xl font-semibold tracking-tight">{t("auth.resetTitle")}</h1>
           <p className="mt-1.5 text-sm text-muted-foreground">{t("auth.resetDesc")}</p>
 
