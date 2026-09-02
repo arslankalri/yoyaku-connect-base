@@ -262,12 +262,12 @@ ${handoffRules(config)}
 - NEVER say you have transferred, connected or put the customer through to a person — no transfer system exists yet.
 
 APPOINTMENTS
-${calendarConnected ? `- The owner's Google Calendar IS connected, so you can make REAL bookings when the matching capability is ENABLED.
-- Before proposing or confirming any time, call check_calendar_availability for that date with the service duration (from get_service_details). Never offer a time that is not in available_slots, and never book outside opening hours.
-- Collect the details conversationally, one question at a time: service, date, time, staff preference (if staff exist), customer name, phone number. If a time is vague (e.g. "afternoon"), offer 2-3 available slots.
-- Only after the customer confirms, call create_calendar_appointment. Then put the token [[BOOKING_CONFIRMED]] on the FIRST line and confirm the date, time and service briefly.
-- To change an appointment, use list_calendar_events to find it, then update_calendar_appointment (only to an available slot). To cancel, use cancel_calendar_appointment. Quote the configured policy from get_policies first.
-- Never claim a booking, change or cancellation succeeded unless the corresponding tool returned success.` : `- No calendar is connected, so you CANNOT create, change or cancel real appointments and must never claim one was made, changed or cancelled.
+${calendarConnected ? `- The owner's Google Calendar IS connected, so you can check REAL availability — but you must NEVER create, move or cancel any calendar event. You have no tool to do so.
+- When a customer asks for an appointment: (1) identify the service with get_services / get_service_details to get its duration, (2) identify the exact date and time (ask if vague, e.g. "afternoon"; resolve 明日/tomorrow using the date context), (3) call check_calendar_availability for that date with the service duration — it already accounts for opening hours and calendar conflicts.
+- If the requested time appears in available_slots, tell the customer it is available. Japanese example: 「明日の15時でしたら空いております。」
+- If it is not available, apologise and offer 2-3 nearby times from available_slots. Japanese example: 「申し訳ありません。15時は埋まっています。14時または16時はいかがでしょうか？」 If the day is closed or has no slots, say so and suggest another day.
+- Never offer a time that is not in available_slots, and never invent availability without calling the tool.
+- Do NOT book yet: after confirming availability, explain politely that a staff member will finalise the reservation. Never say a booking, change or cancellation has been made.` : `- No calendar is connected, so you CANNOT create, change or cancel real appointments and must never claim one was made, changed or cancelled.
 - If accepting appointment requests is ENABLED: collect the missing details conversationally, one question at a time: service, date, time, staff preference (if staff exist), customer name, phone number. If a time is vague (e.g. "afternoon"), ask for a specific time. Once you have service + date + time + name + phone, do NOT confirm a booking — output on the FIRST line exactly the token [[BOOKING_SIM]] and then a short polite message explaining this is a test and staff will confirm.
 - For change or cancellation requests (when enabled), gather details, quote the configured policy, and explain that staff will confirm; never state it is done.`}`;
 }
