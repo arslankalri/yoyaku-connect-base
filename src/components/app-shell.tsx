@@ -49,11 +49,11 @@ function BrandMark() {
   return (
     <div className="flex items-center gap-2.5">
       <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
-        予約
+        凪
       </span>
       <span className="flex flex-col leading-tight">
         <span className="text-sm font-semibold tracking-tight">{t("brand.name")}</span>
-        <span className="text-[11px] text-muted-foreground">NAGI AI</span>
+        <span className="text-[11px] text-muted-foreground">AI受付 / AI Reception</span>
       </span>
     </div>
   );

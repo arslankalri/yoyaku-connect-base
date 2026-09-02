@@ -105,7 +105,7 @@ function AuthPage() {
       <header className="flex h-16 items-center px-4 md:px-8">
         <Link to="/" className="flex items-center gap-2.5">
           <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
-            予約
+            凪
           </span>
           <span className="text-sm font-semibold">NAGI AI</span>
         </Link>

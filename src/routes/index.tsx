@@ -39,11 +39,11 @@ function Landing() {
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 md:px-6">
           <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
-            予約
+            凪
           </span>
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-semibold">NAGI AI</span>
-            <span className="text-[11px] text-muted-foreground">予約AI</span>
+            <span className="text-[11px] text-muted-foreground">AI受付 / Reception</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <LanguageToggle />
