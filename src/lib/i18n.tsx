@@ -683,7 +683,15 @@ type I18nValue = {
   t: (key: string, vars?: Record<string, string | number>) => string;
 };
 
-const I18nContext = createContext<I18nValue | null>(null);
+// Share one context instance across module copies (dev HMR can evaluate this
+// module twice, which would otherwise break the provider/consumer pairing).
+const contextRegistry = globalThis as typeof globalThis & {
+  __nagiI18nContext?: ReturnType<typeof createContext<I18nValue | null>>;
+};
+const I18nContext =
+  contextRegistry.__nagiI18nContext ??
+  (contextRegistry.__nagiI18nContext = createContext<I18nValue | null>(null));
+
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>("ja");
