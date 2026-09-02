@@ -62,6 +62,7 @@ export const Route = createFileRoute("/_authenticated/ai-receptionist")({
 
 const BOOKING_TOKEN = "[[BOOKING_SIM]]";
 const HANDOFF_TOKEN = "[[HANDOFF]]";
+const CONFIRMED_TOKEN = "[[BOOKING_CONFIRMED]]";
 
 const SCENARIOS = [
   { key: "recept.test.book", ja: "予約したい", en: "I want to make an appointment" },
@@ -299,13 +300,23 @@ function Page() {
               const isUser = message.role === "user";
               const booking = !isUser && raw.includes(BOOKING_TOKEN);
               const handoff = !isUser && raw.includes(HANDOFF_TOKEN);
-              const body = raw.replaceAll(BOOKING_TOKEN, "").replaceAll(HANDOFF_TOKEN, "").trim();
+              const confirmed = !isUser && raw.includes(CONFIRMED_TOKEN);
+              const body = raw
+                .replaceAll(BOOKING_TOKEN, "")
+                .replaceAll(HANDOFF_TOKEN, "")
+                .replaceAll(CONFIRMED_TOKEN, "")
+                .trim();
               return (
                 <div key={message.id} className="space-y-2">
                   {booking && (
                     <div className="mx-auto max-w-md space-y-1 rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-center text-[11px] text-warning-foreground">
                       <p>{t("recept.sim.processing")}</p>
                       <p className="font-medium">{t("recept.sim.result")}</p>
+                    </div>
+                  )}
+                  {confirmed && (
+                    <div className="mx-auto max-w-md rounded-xl border border-success/40 bg-success/10 px-3 py-2 text-center text-[11px] font-medium text-success">
+                      <p>{t("recept.calendar.booked")}</p>
                     </div>
                   )}
                   {handoff && (
