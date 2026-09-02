@@ -110,7 +110,9 @@ function Page() {
   );
 
   const contextRef = useRef(businessContext);
-  contextRef.current = businessContext;
+  useEffect(() => {
+    contextRef.current = businessContext;
+  }, [businessContext]);
 
   const transport = useMemo(
     () =>
