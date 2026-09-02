@@ -171,6 +171,47 @@ function buildCalendarTools(
           zonedToUtc(to_date, "23:59", timezone).toISOString(),
         ),
     }),
+    create_calendar_appointment: tool({
+      description:
+        "Create the appointment in the owner's Google Calendar. Only call after check_calendar_availability showed the slot is free AND the customer explicitly confirmed the booking.",
+      inputSchema: z.object({
+        date: dateSchema,
+        time: timeSchema,
+        duration_minutes: z.number(),
+        service: z.string(),
+        customer_name: z.string(),
+        customer_phone: z.string(),
+        staff: z.string().optional(),
+        notes: z.string().optional(),
+      }),
+      execute: async (input) => {
+        const start = zonedToUtc(input.date, input.time, timezone);
+        const end = new Date(start.getTime() + Math.max(5, input.duration_minutes) * 60_000);
+        const created = await createEvent(connectionAPIKey, calendarId, {
+          summary: `${input.service} — ${input.customer_name}`,
+          description: [
+            `Service: ${input.service}`,
+            `Customer: ${input.customer_name}`,
+            `Phone: ${input.customer_phone}`,
+            input.staff ? `Staff: ${input.staff}` : null,
+            input.notes ? `Notes: ${input.notes}` : null,
+            "Booked by NAGI AI receptionist.",
+          ]
+            .filter(Boolean)
+            .join("\n"),
+          startIso: start.toISOString(),
+          endIso: end.toISOString(),
+          timeZone: timezone,
+        });
+        return {
+          created: true,
+          event_id: created.id,
+          date: input.date,
+          time: input.time,
+          duration_minutes: input.duration_minutes,
+        };
+      },
+    }),
   };
 }
 
