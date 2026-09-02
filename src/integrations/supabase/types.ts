@@ -316,6 +316,95 @@ export type Database = {
           },
         ]
       }
+      nagi_settings: {
+        Row: {
+          business_id: string
+          can_accept_appointments: boolean
+          can_answer_faqs: boolean
+          can_cancel_appointments: boolean
+          can_change_appointments: boolean
+          can_explain_hours: boolean
+          can_explain_prices: boolean
+          can_explain_services: boolean
+          can_transfer_to_staff: boolean
+          cancellation_policy: string
+          created_at: string
+          custom_instructions: string
+          handoff_manual_enabled: boolean
+          handoff_on_complaint: boolean
+          handoff_on_request: boolean
+          handoff_on_unknown: boolean
+          handoff_outside_scope: boolean
+          id: string
+          is_enabled: boolean
+          late_arrival_policy: string
+          other_policies: string
+          reservation_policy: string
+          tone: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          can_accept_appointments?: boolean
+          can_answer_faqs?: boolean
+          can_cancel_appointments?: boolean
+          can_change_appointments?: boolean
+          can_explain_hours?: boolean
+          can_explain_prices?: boolean
+          can_explain_services?: boolean
+          can_transfer_to_staff?: boolean
+          cancellation_policy?: string
+          created_at?: string
+          custom_instructions?: string
+          handoff_manual_enabled?: boolean
+          handoff_on_complaint?: boolean
+          handoff_on_request?: boolean
+          handoff_on_unknown?: boolean
+          handoff_outside_scope?: boolean
+          id?: string
+          is_enabled?: boolean
+          late_arrival_policy?: string
+          other_policies?: string
+          reservation_policy?: string
+          tone?: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          can_accept_appointments?: boolean
+          can_answer_faqs?: boolean
+          can_cancel_appointments?: boolean
+          can_change_appointments?: boolean
+          can_explain_hours?: boolean
+          can_explain_prices?: boolean
+          can_explain_services?: boolean
+          can_transfer_to_staff?: boolean
+          cancellation_policy?: string
+          created_at?: string
+          custom_instructions?: string
+          handoff_manual_enabled?: boolean
+          handoff_on_complaint?: boolean
+          handoff_on_request?: boolean
+          handoff_on_unknown?: boolean
+          handoff_outside_scope?: boolean
+          id?: string
+          is_enabled?: boolean
+          late_arrival_policy?: string
+          other_policies?: string
+          reservation_policy?: string
+          tone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nagi_settings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

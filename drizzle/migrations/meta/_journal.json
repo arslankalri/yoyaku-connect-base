@@ -8,6 +8,13 @@
       "when": 1788344338265,
       "tag": "0000_yoyaku_ai_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788348052941,
+      "tag": "0001_create_nagi_settings",
+      "breakpoints": true
     }
   ]
 }
