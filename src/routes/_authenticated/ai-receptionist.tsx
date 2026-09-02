@@ -6,7 +6,9 @@ import {
   Clock3,
   Database,
   Eraser,
+  HelpCircle,
   Loader2,
+  ScrollText,
   RotateCcw,
   Scissors,
   Send,
@@ -19,10 +21,20 @@ import { toast } from "sonner";
 
 import { OnlineDot, Waveform } from "@/components/ai-background";
 import { AppShell } from "@/components/app-shell";
+import { FaqManager } from "@/components/faq-manager";
+import { NagiSettingsPanel } from "@/components/nagi-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { useBusiness, useBusinessHours, useServices, useStaff } from "@/lib/api";
+import {
+  useBusiness,
+  useBusinessHours,
+  useFaqs,
+  useNagiSettings,
+  useServices,
+  useStaff,
+} from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -49,6 +61,7 @@ export const Route = createFileRoute("/_authenticated/ai-receptionist")({
 });
 
 const BOOKING_TOKEN = "[[BOOKING_SIM]]";
+const HANDOFF_TOKEN = "[[HANDOFF]]";
 
 const SCENARIOS = [
   { key: "recept.test.book", ja: "予約したい", en: "I want to make an appointment" },
@@ -137,6 +150,10 @@ function Page() {
   const hoursQuery = useBusinessHours(business?.id);
   const servicesQuery = useServices(business?.id);
   const staffQuery = useStaff(business?.id);
+  const faqsQuery = useFaqs(business?.id);
+  const settingsQuery = useNagiSettings(business?.id);
+  const settings = settingsQuery.data;
+  const [tab, setTab] = useState("chat");
 
   const [sessionId, setSessionId] = useState(() => `nagi-${Date.now()}`);
   const [input, setInput] = useState("");
@@ -148,7 +165,18 @@ function Page() {
     businessQuery.isFetching ||
     hoursQuery.isFetching ||
     servicesQuery.isFetching ||
-    staffQuery.isFetching;
+    staffQuery.isFetching ||
+    faqsQuery.isFetching ||
+    settingsQuery.isFetching;
+
+  const activeFaqs = (faqsQuery.data ?? []).filter((f) => f.is_active).length;
+  const hasPolicies = !!settings && [
+    settings.cancellation_policy,
+    settings.late_arrival_policy,
+    settings.reservation_policy,
+    settings.other_policies,
+  ].some((value) => value.trim().length > 0);
+  const nagiOnline = settings?.is_enabled !== false;
 
   const openDays = (hoursQuery.data ?? []).filter((h) => h.is_open).length;
   const activeServices = (servicesQuery.data ?? []).filter((s) => s.is_active).length;
@@ -209,6 +237,13 @@ function Page() {
 
   return (
     <AppShell title={t("recept.title")} description={t("recept.desc")}>
+      <Tabs value={tab} onValueChange={setTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="chat">{t("nagi.tab.chat")}</TabsTrigger>
+          <TabsTrigger value="settings">{t("nagi.tab.settings")}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="chat">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
         <section className="glass-panel glow-border flex min-h-[62vh] flex-col overflow-hidden lg:min-h-[72vh]">
           <header className="relative flex flex-wrap items-center gap-3 border-b border-border/70 p-4">
@@ -220,10 +255,14 @@ function Page() {
             <NagiOrb active={busy} />
             <div className="relative min-w-0 leading-tight">
               <p className="truncate text-sm font-semibold">NAGI AI</p>
-              <p className="flex items-center gap-1.5 truncate text-xs text-success">
-                <OnlineDot />
-                {t("recept.status")}
-              </p>
+              {nagiOnline ? (
+                <p className="flex items-center gap-1.5 truncate text-xs text-success">
+                  <OnlineDot />
+                  {t("recept.status")}
+                </p>
+              ) : (
+                <p className="truncate text-xs text-muted-foreground">{t("nagi.offline")}</p>
+              )}
             </div>
             <div className="relative ml-auto flex items-center gap-3">
               <Waveform active={busy} />
@@ -233,6 +272,11 @@ function Page() {
             </div>
           </header>
 
+          {!nagiOnline && (
+            <p className="border-b border-warning/40 bg-warning/10 px-4 py-2 text-[11px] font-medium text-warning-foreground">
+              {t("nagi.offlineBanner")}
+            </p>
+          )}
           <p className="border-b border-border/70 bg-secondary/30 px-4 py-2 text-[11px] leading-relaxed text-muted-foreground">
             {t("recept.testModeNote")}
           </p>
@@ -254,13 +298,20 @@ function Page() {
               const raw = textOf(message);
               const isUser = message.role === "user";
               const booking = !isUser && raw.includes(BOOKING_TOKEN);
-              const body = raw.replaceAll(BOOKING_TOKEN, "").trim();
+              const handoff = !isUser && raw.includes(HANDOFF_TOKEN);
+              const body = raw.replaceAll(BOOKING_TOKEN, "").replaceAll(HANDOFF_TOKEN, "").trim();
               return (
                 <div key={message.id} className="space-y-2">
                   {booking && (
                     <div className="mx-auto max-w-md space-y-1 rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-center text-[11px] text-warning-foreground">
                       <p>{t("recept.sim.processing")}</p>
                       <p className="font-medium">{t("recept.sim.result")}</p>
+                    </div>
+                  )}
+                  {handoff && (
+                    <div className="mx-auto max-w-md rounded-xl border border-ai-indigo/35 bg-ai-indigo/10 px-3 py-2 text-center text-[11px] text-foreground">
+                      <p>{t("recept.sim.handoff")}</p>
+                      <p className="text-muted-foreground">{t("nagi.handoff.note")}</p>
                     </div>
                   )}
                   <div
@@ -413,6 +464,18 @@ function Page() {
                 }
                 ready={activeStaff > 0}
               />
+              <DataRow
+                icon={<HelpCircle className="size-3.5" />}
+                label={t("nagi.knowledge.faqs")}
+                value={activeFaqs > 0 ? String(activeFaqs) : "—"}
+                ready={activeFaqs > 0}
+              />
+              <DataRow
+                icon={<ScrollText className="size-3.5" />}
+                label={t("nagi.knowledge.policies")}
+                value={hasPolicies ? t("nagi.knowledge.configured") : t("nagi.knowledge.missing")}
+                ready={hasPolicies}
+              />
             </ul>
             <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
               {t("recept.data.note")}
@@ -482,6 +545,21 @@ function Page() {
           </div>
         </aside>
       </div>
+        </TabsContent>
+
+        <TabsContent value="settings">
+          {business ? (
+            <div className="space-y-4">
+              <NagiSettingsPanel businessId={business.id} onTest={() => setTab("chat")} />
+              <div className="glass-panel p-5">
+                <FaqManager businessId={business.id} />
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("recept.noBusiness")}</p>
+          )}
+        </TabsContent>
+      </Tabs>
     </AppShell>
   );
 }
