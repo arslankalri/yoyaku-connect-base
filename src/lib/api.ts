@@ -286,3 +286,158 @@ export function useDeleteStaff() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["staff"] }),
   });
 }
+
+/* ------------------------------------------------------------------ */
+/* NAGI Control Center: settings, policies and FAQs                    */
+/* ------------------------------------------------------------------ */
+
+export const NAGI_CAPABILITIES = [
+  "can_answer_faqs",
+  "can_explain_services",
+  "can_explain_prices",
+  "can_explain_hours",
+  "can_accept_appointments",
+  "can_change_appointments",
+  "can_cancel_appointments",
+  "can_transfer_to_staff",
+] as const;
+
+export const NAGI_HANDOFF_RULES = [
+  "handoff_on_request",
+  "handoff_on_unknown",
+  "handoff_on_complaint",
+  "handoff_outside_scope",
+  "handoff_manual_enabled",
+] as const;
+
+export type NagiTone = "professional" | "friendly" | "warm" | "concise";
+
+export type NagiSettings = {
+  id: string;
+  business_id: string;
+  is_enabled: boolean;
+  tone: NagiTone;
+  custom_instructions: string;
+  cancellation_policy: string;
+  late_arrival_policy: string;
+  reservation_policy: string;
+  other_policies: string;
+} & Record<(typeof NAGI_CAPABILITIES)[number], boolean> &
+  Record<(typeof NAGI_HANDOFF_RULES)[number], boolean>;
+
+const NAGI_COLUMNS = [
+  "id",
+  "business_id",
+  "is_enabled",
+  "tone",
+  "custom_instructions",
+  "cancellation_policy",
+  "late_arrival_policy",
+  "reservation_policy",
+  "other_policies",
+  ...NAGI_CAPABILITIES,
+  ...NAGI_HANDOFF_RULES,
+].join(", ");
+
+/** Read the business's NAGI configuration, creating the default row on first use. */
+export function useNagiSettings(businessId?: string) {
+  return useQuery({
+    queryKey: ["nagi_settings", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("nagi_settings")
+        .select(NAGI_COLUMNS)
+        .eq("business_id", businessId!)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) return data as unknown as NagiSettings;
+
+      const created = await supabase
+        .from("nagi_settings")
+        .insert({ business_id: businessId! })
+        .select(NAGI_COLUMNS)
+        .single();
+      if (created.error) throw created.error;
+      return created.data as unknown as NagiSettings;
+    },
+  });
+}
+
+export function useSaveNagiSettings(businessId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (patch: Partial<NagiSettings>) => {
+      if (!businessId) throw new Error("No business");
+      const { error } = await supabase
+        .from("nagi_settings")
+        .update(patch)
+        .eq("business_id", businessId);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["nagi_settings"] }),
+  });
+}
+
+export type Faq = {
+  id: string;
+  business_id: string;
+  question: string;
+  answer: string;
+  is_active: boolean;
+  sort_order: number;
+};
+
+export function useFaqs(businessId?: string) {
+  return useQuery({
+    queryKey: ["faqs", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("faqs")
+        .select("id, business_id, question, answer, is_active, sort_order")
+        .eq("business_id", businessId!)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as Faq[];
+    },
+  });
+}
+
+export type FaqInput = {
+  id?: string;
+  question: string;
+  answer: string;
+  is_active: boolean;
+  sort_order?: number;
+};
+
+export function useSaveFaq(businessId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: FaqInput) => {
+      if (!businessId) throw new Error("No business");
+      if (input.id) {
+        const { id, ...rest } = input;
+        const { error } = await supabase.from("faqs").update(rest).eq("id", id);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase.from("faqs").insert({ ...input, business_id: businessId });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["faqs"] }),
+  });
+}
+
+export function useDeleteFaq() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("faqs").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["faqs"] }),
+  });
+}
