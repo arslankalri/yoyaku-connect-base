@@ -29,7 +29,7 @@ type NavItem = { to: string; labelKey: string; icon: typeof LayoutDashboard; soo
 
 const mainNav: NavItem[] = [
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
-  { to: "/ai-receptionist", labelKey: "nav.receptionist", icon: PhoneIncoming, soon: true },
+  { to: "/ai-receptionist", labelKey: "nav.receptionist", icon: PhoneIncoming },
   { to: "/appointments", labelKey: "nav.appointments", icon: ClipboardList, soon: true },
   { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays, soon: true },
   { to: "/customers", labelKey: "nav.customers", icon: Users, soon: true },
