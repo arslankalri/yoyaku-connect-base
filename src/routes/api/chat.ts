@@ -172,77 +172,9 @@ function buildCalendarTools(
           zonedToUtc(to_date, "23:59", timezone).toISOString(),
         ),
     }),
-    create_calendar_appointment: tool({
-      description:
-        "Create a real appointment in the owner's Google Calendar. Only call after the time was confirmed as available and the customer confirmed the details.",
-      inputSchema: z.object({
-        date: dateSchema,
-        time: timeSchema,
-        duration_minutes: z.number(),
-        service: z.string(),
-        customer_name: z.string(),
-        customer_phone: z.string(),
-        staff: z.string().optional(),
-        notes: z.string().optional(),
-      }),
-      execute: async (input) => {
-        const start = zonedToUtc(input.date, input.time, timezone);
-        const end = new Date(start.getTime() + Math.max(5, input.duration_minutes) * 60_000);
-        const created = await createEvent(connectionAPIKey, calendarId, {
-          summary: `${input.service} — ${input.customer_name}`,
-          description: [
-            `Service: ${input.service}`,
-            `Customer: ${input.customer_name}`,
-            `Phone: ${input.customer_phone}`,
-            input.staff ? `Staff: ${input.staff}` : null,
-            input.notes ? `Notes: ${input.notes}` : null,
-            "Booked by NAGI AI receptionist.",
-          ]
-            .filter(Boolean)
-            .join("\n"),
-          startIso: start.toISOString(),
-          endIso: end.toISOString(),
-          timeZone: timezone,
-        });
-        return {
-          created: true,
-          event_id: created.id,
-          date: input.date,
-          time: input.time,
-          duration_minutes: input.duration_minutes,
-        };
-      },
-    }),
-    update_calendar_appointment: tool({
-      description:
-        "Move or update an existing calendar appointment. Find the event id first with list_calendar_events.",
-      inputSchema: z.object({
-        event_id: z.string(),
-        date: dateSchema,
-        time: timeSchema,
-        duration_minutes: z.number(),
-        notes: z.string().optional(),
-      }),
-      execute: async (input) => {
-        const start = zonedToUtc(input.date, input.time, timezone);
-        const end = new Date(start.getTime() + Math.max(5, input.duration_minutes) * 60_000);
-        await updateEvent(connectionAPIKey, calendarId, input.event_id, {
-          startIso: start.toISOString(),
-          endIso: end.toISOString(),
-          timeZone: timezone,
-          ...(input.notes ? { description: input.notes } : {}),
-        });
-        return { updated: true, date: input.date, time: input.time };
-      },
-    }),
-    cancel_calendar_appointment: tool({
-      description:
-        "Cancel (delete) an existing calendar appointment. Find the event id first with list_calendar_events.",
-      inputSchema: z.object({ event_id: z.string() }),
-      execute: async ({ event_id }) => deleteEvent(connectionAPIKey, calendarId, event_id),
-    }),
   };
 }
+
 
 function toneLine(tone: string) {
   switch (tone) {
