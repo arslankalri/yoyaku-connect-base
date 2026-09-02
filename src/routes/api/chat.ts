@@ -226,12 +226,16 @@ export const Route = createFileRoute("/api/chat")({
         const business = await getBusinessForUser(supabase);
         if (!business) return new Response("No business found for this account", { status: 404 });
 
+        const config = await getNagiConfig(supabase, business.id);
+        if (!config.is_enabled) return new Response("NAGI is currently turned off", { status: 403 });
+
         const gateway = createLovableAiGatewayProvider(key);
 
         try {
           const result = streamText({
             model: gateway("google/gemini-3.7-flash"),
-            system: systemPrompt(business.name, business.timezone || "Asia/Tokyo"),
+            system: systemPrompt(business.name, business.timezone || "Asia/Tokyo", config),
+
             messages: await convertToModelMessages(body.messages as UIMessage[]),
             tools: buildTools(supabase, business.id),
             stopWhen: stepCountIs(12),
