@@ -134,6 +134,8 @@ function buildCalendarTools(
 ) {
   const { connectionAPIKey, calendarId, timezone } = calendar;
   const dateSchema = z.string().describe("Date in YYYY-MM-DD (business timezone)");
+  const timeSchema = z.string().describe("Time in 24h HH:MM (business timezone)");
+
   
 
   return {
