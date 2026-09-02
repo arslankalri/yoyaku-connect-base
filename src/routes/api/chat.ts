@@ -8,14 +8,19 @@ import {
   DAY_NAMES_JA,
   createUserClient,
   getBusinessForUser,
+  getNagiConfig,
   get_business_hours,
   get_business_info,
+  get_faqs,
+  get_policies,
   get_service_details,
   get_services,
   get_staff,
   get_staff_services,
   type AuthedClient,
+  type NagiConfig,
 } from "@/lib/nagi-data.server";
+
 
 function dateContext(timezone: string) {
   const now = new Date();
