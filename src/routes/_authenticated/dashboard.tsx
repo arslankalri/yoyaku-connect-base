@@ -1,6 +1,7 @@
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
-import { Clock3, MapPin, Phone, Scissors, UsersRound } from "lucide-react";
+import { Bot, Clock3, Loader2, MapPin, Phone, Scissors, Sparkles, UsersRound } from "lucide-react";
 
+import { OnlineDot } from "@/components/ai-background";
 import { AppShell } from "@/components/app-shell";
 import { DemoBadge, ErrorPanel, LoadingPanel } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
@@ -76,6 +77,8 @@ function Dashboard() {
   const staff = staffQuery.data ?? [];
   const activeServices = services.filter((s) => s.is_active);
   const activeStaff = staff.filter((s) => s.is_active);
+  const syncing =
+    hoursQuery.isFetching || servicesQuery.isFetching || staffQuery.isFetching;
 
   const dateLabel = new Intl.DateTimeFormat(language === "ja" ? "ja-JP" : "en-US", {
     year: "numeric",
@@ -102,11 +105,42 @@ function Dashboard() {
   return (
     <AppShell title={t("dashboard.title")} description={t("dashboard.welcome")}>
       <div className="space-y-6">
-        <section className="panel p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+        <section className="glass-panel glow-border relative overflow-hidden p-6">
+          <div
+            aria-hidden
+            className="animate-ai-float pointer-events-none absolute -right-16 -top-24 size-64 rounded-full bg-ai-violet/15 blur-3xl"
+          />
+          <div className="relative flex flex-wrap items-start justify-between gap-5">
             <div className="min-w-0">
-              <p className="eyebrow">{t("dashboard.today")} · {dateLabel}</p>
-              <h2 className="mt-2 truncate text-xl font-semibold tracking-tight">{business.name}</h2>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span
+                  className="glow-border grid size-10 shrink-0 place-items-center rounded-xl text-base font-semibold text-primary-foreground"
+                  style={{ backgroundImage: "var(--gradient-ai)" }}
+                >
+                  凪
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
+                  <OnlineDot />
+                  {t("dashboard.nagiOnline")}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-ai-indigo/25 bg-ai-indigo/10 px-2.5 py-1 text-xs text-muted-foreground">
+                  {syncing ? (
+                    <Loader2 className="size-3 animate-spin text-ai-indigo" />
+                  ) : (
+                    <Sparkles className="size-3 text-ai-indigo" />
+                  )}
+                  {syncing ? t("dashboard.syncing") : t("dashboard.dataConnected")}
+                </span>
+              </div>
+              <p className="eyebrow mt-4">
+                {t("dashboard.today")} · {dateLabel}
+              </p>
+              <h2 className="mt-1.5 truncate text-xl font-semibold tracking-tight md:text-2xl">
+                {business.name}
+              </h2>
+              <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
+                {t("dashboard.assistantWelcome")}
+              </p>
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
                 {business.phone && (
                   <span className="inline-flex items-center gap-1.5">
@@ -122,21 +156,29 @@ function Dashboard() {
                 )}
               </div>
             </div>
-            <Badge
-              variant="outline"
-              className={
-                status === "open"
-                  ? "border-success/40 bg-success/10 text-success"
-                  : "border-border bg-secondary text-muted-foreground"
-              }
-            >
-              {statusLabel}
-            </Badge>
+            <div className="flex flex-col items-start gap-3 sm:items-end">
+              <Badge
+                variant="outline"
+                className={
+                  status === "open"
+                    ? "border-success/40 bg-success/10 text-success"
+                    : "border-border bg-secondary text-muted-foreground"
+                }
+              >
+                {statusLabel}
+              </Badge>
+              <Button asChild size="sm" className="gap-1.5">
+                <Link to="/ai-receptionist">
+                  <Bot className="size-4" />
+                  {t("nav.receptionist")}
+                </Link>
+              </Button>
+            </div>
           </div>
         </section>
 
         <section className="grid gap-4 sm:grid-cols-3">
-          <div className="panel p-5">
+          <div className="glass-panel p-5">
             <p className="eyebrow">{t("dashboard.todayHours")}</p>
             <p className="mt-3 inline-flex items-center gap-2 text-lg font-semibold">
               <Clock3 className="size-4 text-muted-foreground" />
@@ -147,7 +189,7 @@ function Dashboard() {
                   : "—"}
             </p>
           </div>
-          <div className="panel p-5">
+          <div className="glass-panel p-5">
             <p className="eyebrow">{t("dashboard.activeServices")}</p>
             <p className="mt-3 inline-flex items-center gap-2 text-lg font-semibold">
               <Scissors className="size-4 text-muted-foreground" />
@@ -155,7 +197,7 @@ function Dashboard() {
               <span className="text-sm font-normal text-muted-foreground">/ {services.length}</span>
             </p>
           </div>
-          <div className="panel p-5">
+          <div className="glass-panel p-5">
             <p className="eyebrow">{t("dashboard.activeStaff")}</p>
             <p className="mt-3 inline-flex items-center gap-2 text-lg font-semibold">
               <UsersRound className="size-4 text-muted-foreground" />
@@ -166,7 +208,7 @@ function Dashboard() {
         </section>
 
         {setupTasks.length > 0 && (
-          <section className="panel p-6">
+          <section className="glass-panel p-6">
             <h3 className="text-base font-semibold">{t("dashboard.setupTitle")}</h3>
             <div className="mt-4 flex flex-wrap gap-2">
               {setupTasks.map((task) => (
@@ -179,7 +221,7 @@ function Dashboard() {
         )}
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="panel p-6">
+          <section className="glass-panel p-6">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-base font-semibold">{t("services.title")}</h3>
               {services.length === 0 ? (
@@ -230,7 +272,7 @@ function Dashboard() {
             )}
           </section>
 
-          <section className="panel p-6">
+          <section className="glass-panel p-6">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-base font-semibold">{t("staff.title")}</h3>
               {staff.length === 0 ? (
