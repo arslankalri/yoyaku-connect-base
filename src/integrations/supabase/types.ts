@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_user_connections: {
+        Row: {
+          connection_key_ciphertext: string
+          connector_id: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connection_key_ciphertext: string
+          connector_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connection_key_ciphertext?: string
+          connector_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           business_id: string
@@ -136,6 +163,8 @@ export type Database = {
         Row: {
           address: string | null
           created_at: string
+          google_calendar_id: string | null
+          google_calendar_summary: string | null
           id: string
           name: string
           owner_id: string
@@ -148,6 +177,8 @@ export type Database = {
         Insert: {
           address?: string | null
           created_at?: string
+          google_calendar_id?: string | null
+          google_calendar_summary?: string | null
           id?: string
           name: string
           owner_id: string
@@ -160,6 +191,8 @@ export type Database = {
         Update: {
           address?: string | null
           created_at?: string
+          google_calendar_id?: string | null
+          google_calendar_summary?: string | null
           id?: string
           name?: string
           owner_id?: string

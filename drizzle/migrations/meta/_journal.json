@@ -15,6 +15,13 @@
       "when": 1788348052941,
       "tag": "0001_create_nagi_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788349384952,
+      "tag": "0002_google_calendar_connection",
+      "breakpoints": true
     }
   ]
 }
