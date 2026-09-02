@@ -95,8 +95,62 @@ function buildTools(supabase: AuthedClient, businessId: string) {
       inputSchema: z.object({ staff: z.string().describe("Staff member name") }),
       execute: async ({ staff }) => get_staff_services(supabase, businessId, staff),
     }),
+    get_faqs: tool({
+      description:
+        "Get the business's own frequently asked questions and their approved answers. Use when the customer asks something that may be covered by store policy or general questions.",
+      inputSchema: z.object({}),
+      execute: async () => get_faqs(supabase, businessId),
+    }),
+    get_policies: tool({
+      description:
+        "Get the business's cancellation, late arrival and reservation policies plus other owner instructions. Use for any question about cancelling, changing, being late or booking rules.",
+      inputSchema: z.object({}),
+      execute: async () => get_policies(supabase, businessId),
+    }),
   };
 }
+
+function toneLine(tone: string) {
+  switch (tone) {
+    case "friendly":
+      return "Tone: friendly and approachable, still polite (親しみやすく丁寧).";
+    case "warm":
+      return "Tone: warm, caring and reassuring (温かく親身).";
+    case "concise":
+      return "Tone: efficient and to the point — the shortest polite answer possible.";
+    default:
+      return "Tone: professional, composed and courteous (プロフェッショナルで礼儀正しい).";
+  }
+}
+
+function capabilityRules(config: NagiConfig) {
+  const on = (flag: boolean, label: string) => `- ${label}: ${flag ? "ENABLED" : "DISABLED"}`;
+  const lines = [
+    on(config.can_answer_faqs, "Answering FAQs"),
+    on(config.can_explain_services, "Explaining services"),
+    on(config.can_explain_prices, "Explaining prices"),
+    on(config.can_explain_hours, "Explaining business hours"),
+    on(config.can_accept_appointments, "Accepting appointment requests"),
+    on(config.can_change_appointments, "Changing appointments"),
+    on(config.can_cancel_appointments, "Cancelling appointments"),
+    on(config.can_transfer_to_staff, "Transferring to staff"),
+  ];
+  return lines.join("\n");
+}
+
+function handoffRules(config: NagiConfig) {
+  const reasons: string[] = [];
+  if (config.handoff_on_request) reasons.push("the customer asks to speak to a human/staff member");
+  if (config.handoff_on_unknown) reasons.push("you do not know the answer");
+  if (config.handoff_on_complaint) reasons.push("the customer is complaining or upset");
+  if (config.handoff_outside_scope)
+    reasons.push("the question is outside the stored business information");
+  if (config.handoff_manual_enabled)
+    reasons.push("you judge that a staff member should take over");
+  return reasons.length > 0 ? reasons.map((r) => `- ${r}`).join("\n") : "- (no handoff rules configured)";
+}
+
+
 
 function systemPrompt(businessName: string, timezone: string) {
   return `You are NAGI (ナギ), the AI receptionist of "${businessName}". You are answering a customer in a text chat that simulates a phone call.
