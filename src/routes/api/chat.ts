@@ -21,6 +21,7 @@ import {
   type NagiConfig,
 } from "@/lib/nagi-data.server";
 import {
+  createEvent,
   checkAvailability,
   listEvents,
   zonedToUtc,
