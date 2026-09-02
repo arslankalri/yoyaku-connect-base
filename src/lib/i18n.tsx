@@ -1,0 +1,451 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+
+export type Language = "ja" | "en";
+
+const STORAGE_KEY = "yoyaku-ai.language";
+
+type Dict = Record<string, string>;
+
+const ja: Dict = {
+  "brand.name": "予約AI",
+  "brand.tagline": "AI受付で、電話対応をゼロに",
+  "lang.japanese": "日本語",
+  "lang.english": "English",
+
+  "nav.dashboard": "ダッシュボード",
+  "nav.receptionist": "AI受付",
+  "nav.appointments": "予約",
+  "nav.calendar": "カレンダー",
+  "nav.customers": "顧客",
+  "nav.calls": "通話履歴",
+  "nav.services": "サービス",
+  "nav.staff": "スタッフ",
+  "nav.faq": "FAQ",
+  "nav.analytics": "分析",
+  "nav.settings": "設定",
+  "nav.menu": "メニュー",
+  "nav.section.main": "運営",
+  "nav.section.setup": "設定・管理",
+
+  "common.comingSoon": "準備中",
+  "common.comingSoonDesc": "この機能は現在開発中です。次のフェーズで提供予定です。",
+  "common.save": "保存",
+  "common.saving": "保存中…",
+  "common.cancel": "キャンセル",
+  "common.edit": "編集",
+  "common.delete": "削除",
+  "common.add": "追加",
+  "common.create": "作成",
+  "common.loading": "読み込み中…",
+  "common.error": "エラーが発生しました",
+  "common.retry": "再試行",
+  "common.active": "有効",
+  "common.inactive": "無効",
+  "common.status": "ステータス",
+  "common.actions": "操作",
+  "common.yes": "はい",
+  "common.no": "いいえ",
+  "common.demoData": "デモデータ",
+  "common.realData": "登録済みデータ",
+  "common.required": "必須",
+  "common.optional": "任意",
+  "common.signOut": "ログアウト",
+  "common.minutes": "分",
+  "common.none": "なし",
+  "common.search": "検索",
+  "common.deleteConfirmTitle": "削除しますか？",
+  "common.deleteConfirmDesc": "この操作は取り消せません。",
+
+  "auth.login": "ログイン",
+  "auth.signup": "新規登録",
+  "auth.email": "メールアドレス",
+  "auth.password": "パスワード",
+  "auth.fullName": "お名前",
+  "auth.loginTitle": "アカウントにログイン",
+  "auth.signupTitle": "アカウントを作成",
+  "auth.loginCta": "ログイン",
+  "auth.signupCta": "無料で登録",
+  "auth.forgotPassword": "パスワードをお忘れですか？",
+  "auth.resetTitle": "パスワードをリセット",
+  "auth.resetDesc": "登録済みのメールアドレスに再設定リンクを送信します。",
+  "auth.resetSend": "リセットリンクを送信",
+  "auth.resetSent": "メールを送信しました。受信箱をご確認ください。",
+  "auth.newPassword": "新しいパスワード",
+  "auth.confirmPassword": "パスワード（確認）",
+  "auth.updatePassword": "パスワードを更新",
+  "auth.passwordUpdated": "パスワードを更新しました。",
+  "auth.backToLogin": "ログインに戻る",
+  "auth.checkEmail": "確認メールを送信しました。メール内のリンクからログインしてください。",
+  "auth.errInvalidEmail": "有効なメールアドレスを入力してください。",
+  "auth.errPasswordShort": "パスワードは8文字以上で入力してください。",
+  "auth.errPasswordMismatch": "パスワードが一致しません。",
+  "auth.errNameRequired": "お名前を入力してください。",
+  "auth.errInvalidCredentials": "メールアドレスまたはパスワードが正しくありません。",
+  "auth.haveAccount": "すでにアカウントをお持ちですか？",
+  "auth.noAccount": "アカウントをお持ちでない方",
+
+  "onboarding.title": "店舗情報を登録",
+  "onboarding.desc": "はじめに店舗の基本情報を登録してください。あとから設定画面で変更できます。",
+  "onboarding.submit": "登録して開始",
+
+  "business.name": "店舗名",
+  "business.phone": "電話番号",
+  "business.postalCode": "郵便番号",
+  "business.address": "住所",
+  "business.website": "ウェブサイト",
+  "business.timezone": "タイムゾーン",
+  "business.saved": "店舗情報を保存しました。",
+  "business.errName": "店舗名を入力してください。",
+
+  "hours.title": "営業時間",
+  "hours.desc": "曜日ごとの営業時間を設定します。",
+  "hours.open": "営業",
+  "hours.closed": "定休日",
+  "hours.openTime": "開店",
+  "hours.closeTime": "閉店",
+  "hours.saved": "営業時間を保存しました。",
+  "day.0": "日曜日",
+  "day.1": "月曜日",
+  "day.2": "火曜日",
+  "day.3": "水曜日",
+  "day.4": "木曜日",
+  "day.5": "金曜日",
+  "day.6": "土曜日",
+  "dayShort.0": "日",
+  "dayShort.1": "月",
+  "dayShort.2": "火",
+  "dayShort.3": "水",
+  "dayShort.4": "木",
+  "dayShort.5": "金",
+  "dayShort.6": "土",
+
+  "services.title": "サービス",
+  "services.desc": "提供するメニューを管理します。",
+  "services.new": "サービスを追加",
+  "services.edit": "サービスを編集",
+  "services.name": "サービス名",
+  "services.description": "説明",
+  "services.price": "料金",
+  "services.duration": "所要時間（分）",
+  "services.empty": "まだサービスが登録されていません。",
+  "services.emptyCta": "最初のサービスを追加",
+  "services.created": "サービスを追加しました。",
+  "services.updated": "サービスを更新しました。",
+  "services.deleted": "サービスを削除しました。",
+  "services.errName": "サービス名を入力してください。",
+  "services.count": "サービス数",
+
+  "staff.title": "スタッフ",
+  "staff.desc": "スタッフと対応可能なサービス、勤務時間を管理します。",
+  "staff.new": "スタッフを追加",
+  "staff.edit": "スタッフを編集",
+  "staff.name": "スタッフ名",
+  "staff.services": "対応サービス",
+  "staff.workingDays": "勤務曜日",
+  "staff.workingHours": "勤務時間",
+  "staff.empty": "まだスタッフが登録されていません。",
+  "staff.emptyCta": "最初のスタッフを追加",
+  "staff.created": "スタッフを追加しました。",
+  "staff.updated": "スタッフを更新しました。",
+  "staff.deleted": "スタッフを削除しました。",
+  "staff.errName": "スタッフ名を入力してください。",
+  "staff.noServices": "先にサービスを登録してください。",
+  "staff.count": "スタッフ数",
+
+  "dashboard.title": "ダッシュボード",
+  "dashboard.welcome": "本日の店舗の状況です。",
+  "dashboard.today": "本日",
+  "dashboard.statusOpen": "営業中",
+  "dashboard.statusClosed": "営業時間外",
+  "dashboard.statusHoliday": "定休日",
+  "dashboard.statusUnset": "未設定",
+  "dashboard.todayHours": "本日の営業時間",
+  "dashboard.businessStatus": "営業状況",
+  "dashboard.setupTitle": "セットアップを完了しましょう",
+  "dashboard.setupHours": "営業時間を設定する",
+  "dashboard.setupServices": "サービスを登録する",
+  "dashboard.setupStaff": "スタッフを登録する",
+  "dashboard.viewAll": "すべて見る",
+  "dashboard.demoNotice": "以下はサンプル表示です。実際のデータを登録すると置き換わります。",
+  "dashboard.activeServices": "有効なサービス",
+  "dashboard.activeStaff": "稼働中のスタッフ",
+
+  "settings.title": "設定",
+  "settings.desc": "店舗情報と営業時間を管理します。",
+  "settings.tabBusiness": "店舗情報",
+  "settings.tabHours": "営業時間",
+  "settings.tabAccount": "アカウント",
+  "settings.account": "アカウント",
+  "settings.language": "表示言語",
+  "settings.languageDesc": "画面の表示言語を切り替えます。登録済みのデータは翻訳されません。",
+
+  "landing.heroTitle": "電話対応をAIにまかせる、\n予約管理の新しいかたち",
+  "landing.heroDesc":
+    "美容室・サロン・クリニック向けのAI受付プラットフォーム。店舗情報、サービス、スタッフを一元管理し、次のフェーズでAI受付を有効化できます。",
+  "landing.ctaPrimary": "無料で始める",
+  "landing.ctaSecondary": "ログイン",
+  "landing.f1Title": "店舗情報の一元管理",
+  "landing.f1Desc": "店舗情報・営業時間・定休日をまとめて管理できます。",
+  "landing.f2Title": "サービスとスタッフ",
+  "landing.f2Desc": "メニューと担当スタッフ、勤務時間を柔軟に設定。",
+  "landing.f3Title": "日本語・英語対応",
+  "landing.f3Desc": "ワンクリックで表示言語を切り替え。入力データはそのまま。",
+  "landing.footer": "予約AI — 日本の予約型ビジネスのためのAI受付",
+};
+
+const en: Dict = {
+  "brand.name": "Yoyaku AI",
+  "brand.tagline": "An AI receptionist for appointment businesses",
+  "lang.japanese": "日本語",
+  "lang.english": "English",
+
+  "nav.dashboard": "Dashboard",
+  "nav.receptionist": "AI Receptionist",
+  "nav.appointments": "Appointments",
+  "nav.calendar": "Calendar",
+  "nav.customers": "Customers",
+  "nav.calls": "Call History",
+  "nav.services": "Services",
+  "nav.staff": "Staff",
+  "nav.faq": "FAQ",
+  "nav.analytics": "Analytics",
+  "nav.settings": "Settings",
+  "nav.menu": "Menu",
+  "nav.section.main": "Operations",
+  "nav.section.setup": "Configuration",
+
+  "common.comingSoon": "Coming soon",
+  "common.comingSoonDesc": "This feature is in development and will arrive in a later phase.",
+  "common.save": "Save",
+  "common.saving": "Saving…",
+  "common.cancel": "Cancel",
+  "common.edit": "Edit",
+  "common.delete": "Delete",
+  "common.add": "Add",
+  "common.create": "Create",
+  "common.loading": "Loading…",
+  "common.error": "Something went wrong",
+  "common.retry": "Try again",
+  "common.active": "Active",
+  "common.inactive": "Inactive",
+  "common.status": "Status",
+  "common.actions": "Actions",
+  "common.yes": "Yes",
+  "common.no": "No",
+  "common.demoData": "Demo data",
+  "common.realData": "Your data",
+  "common.required": "Required",
+  "common.optional": "Optional",
+  "common.signOut": "Sign out",
+  "common.minutes": "min",
+  "common.none": "None",
+  "common.search": "Search",
+  "common.deleteConfirmTitle": "Delete this item?",
+  "common.deleteConfirmDesc": "This action cannot be undone.",
+
+  "auth.login": "Log in",
+  "auth.signup": "Sign up",
+  "auth.email": "Email address",
+  "auth.password": "Password",
+  "auth.fullName": "Full name",
+  "auth.loginTitle": "Log in to your account",
+  "auth.signupTitle": "Create your account",
+  "auth.loginCta": "Log in",
+  "auth.signupCta": "Create account",
+  "auth.forgotPassword": "Forgot your password?",
+  "auth.resetTitle": "Reset your password",
+  "auth.resetDesc": "We'll email you a link to set a new password.",
+  "auth.resetSend": "Send reset link",
+  "auth.resetSent": "Email sent. Please check your inbox.",
+  "auth.newPassword": "New password",
+  "auth.confirmPassword": "Confirm password",
+  "auth.updatePassword": "Update password",
+  "auth.passwordUpdated": "Your password has been updated.",
+  "auth.backToLogin": "Back to log in",
+  "auth.checkEmail": "Check your email and click the confirmation link to sign in.",
+  "auth.errInvalidEmail": "Please enter a valid email address.",
+  "auth.errPasswordShort": "Password must be at least 8 characters.",
+  "auth.errPasswordMismatch": "Passwords do not match.",
+  "auth.errNameRequired": "Please enter your name.",
+  "auth.errInvalidCredentials": "Incorrect email or password.",
+  "auth.haveAccount": "Already have an account?",
+  "auth.noAccount": "Don't have an account?",
+
+  "onboarding.title": "Set up your business",
+  "onboarding.desc": "Start by adding your business details. You can change them later in Settings.",
+  "onboarding.submit": "Save and continue",
+
+  "business.name": "Business name",
+  "business.phone": "Phone number",
+  "business.postalCode": "Postal code",
+  "business.address": "Address",
+  "business.website": "Website",
+  "business.timezone": "Timezone",
+  "business.saved": "Business details saved.",
+  "business.errName": "Please enter a business name.",
+
+  "hours.title": "Business hours",
+  "hours.desc": "Set your opening hours for each day of the week.",
+  "hours.open": "Open",
+  "hours.closed": "Closed",
+  "hours.openTime": "Opens",
+  "hours.closeTime": "Closes",
+  "hours.saved": "Business hours saved.",
+  "day.0": "Sunday",
+  "day.1": "Monday",
+  "day.2": "Tuesday",
+  "day.3": "Wednesday",
+  "day.4": "Thursday",
+  "day.5": "Friday",
+  "day.6": "Saturday",
+  "dayShort.0": "Sun",
+  "dayShort.1": "Mon",
+  "dayShort.2": "Tue",
+  "dayShort.3": "Wed",
+  "dayShort.4": "Thu",
+  "dayShort.5": "Fri",
+  "dayShort.6": "Sat",
+
+  "services.title": "Services",
+  "services.desc": "Manage the services you offer.",
+  "services.new": "Add service",
+  "services.edit": "Edit service",
+  "services.name": "Service name",
+  "services.description": "Description",
+  "services.price": "Price",
+  "services.duration": "Duration (minutes)",
+  "services.empty": "No services yet.",
+  "services.emptyCta": "Add your first service",
+  "services.created": "Service added.",
+  "services.updated": "Service updated.",
+  "services.deleted": "Service deleted.",
+  "services.errName": "Please enter a service name.",
+  "services.count": "Services",
+
+  "staff.title": "Staff",
+  "staff.desc": "Manage staff, the services they provide, and their working hours.",
+  "staff.new": "Add staff",
+  "staff.edit": "Edit staff",
+  "staff.name": "Staff name",
+  "staff.services": "Services provided",
+  "staff.workingDays": "Working days",
+  "staff.workingHours": "Working hours",
+  "staff.empty": "No staff yet.",
+  "staff.emptyCta": "Add your first staff member",
+  "staff.created": "Staff added.",
+  "staff.updated": "Staff updated.",
+  "staff.deleted": "Staff deleted.",
+  "staff.errName": "Please enter a staff name.",
+  "staff.noServices": "Add a service first.",
+  "staff.count": "Staff",
+
+  "dashboard.title": "Dashboard",
+  "dashboard.welcome": "Here's how your business looks today.",
+  "dashboard.today": "Today",
+  "dashboard.statusOpen": "Open now",
+  "dashboard.statusClosed": "Outside business hours",
+  "dashboard.statusHoliday": "Closed today",
+  "dashboard.statusUnset": "Not configured",
+  "dashboard.todayHours": "Today's hours",
+  "dashboard.businessStatus": "Business status",
+  "dashboard.setupTitle": "Finish setting up",
+  "dashboard.setupHours": "Set your business hours",
+  "dashboard.setupServices": "Add your services",
+  "dashboard.setupStaff": "Add your staff",
+  "dashboard.viewAll": "View all",
+  "dashboard.demoNotice": "This is sample content. It is replaced once you add your own data.",
+  "dashboard.activeServices": "Active services",
+  "dashboard.activeStaff": "Active staff",
+
+  "settings.title": "Settings",
+  "settings.desc": "Manage your business details and opening hours.",
+  "settings.tabBusiness": "Business",
+  "settings.tabHours": "Business hours",
+  "settings.tabAccount": "Account",
+  "settings.account": "Account",
+  "settings.language": "Interface language",
+  "settings.languageDesc":
+    "Switch the language of the interface. Your saved content is never translated.",
+
+  "landing.heroTitle": "Let AI answer the phone,\nso your team can focus on guests",
+  "landing.heroDesc":
+    "An AI receptionist platform for salons, clinics, and appointment-based businesses in Japan. Manage your business profile, services, and staff — AI reception arrives in the next phase.",
+  "landing.ctaPrimary": "Get started free",
+  "landing.ctaSecondary": "Log in",
+  "landing.f1Title": "One place for your business",
+  "landing.f1Desc": "Business profile, opening hours, and closing days in a single view.",
+  "landing.f2Title": "Services and staff",
+  "landing.f2Desc": "Define your menu, assign staff, and configure working hours.",
+  "landing.f3Title": "Japanese and English",
+  "landing.f3Desc": "Switch the interface language instantly — your data stays as entered.",
+  "landing.footer": "Yoyaku AI — AI reception for Japanese appointment businesses",
+};
+
+const dictionaries: Record<Language, Dict> = { ja, en };
+
+type I18nValue = {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: string, vars?: Record<string, string | number>) => string;
+};
+
+const I18nContext = createContext<I18nValue | null>(null);
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguageState] = useState<Language>("ja");
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY);
+      if (stored === "ja" || stored === "en") setLanguageState(stored);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = language;
+    }
+  }, [language]);
+
+  const setLanguage = useCallback((lang: Language) => {
+    setLanguageState(lang);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, lang);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const t = useCallback(
+    (key: string, vars?: Record<string, string | number>) => {
+      let value = dictionaries[language][key] ?? dictionaries.en[key] ?? key;
+      if (vars) {
+        for (const [k, v] of Object.entries(vars)) {
+          value = value.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+        }
+      }
+      return value;
+    },
+    [language],
+  );
+
+  const value = useMemo(() => ({ language, setLanguage, t }), [language, setLanguage, t]);
+
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+}
+
+export function useI18n() {
+  const ctx = useContext(I18nContext);
+  if (!ctx) throw new Error("useI18n must be used within LanguageProvider");
+  return ctx;
+}
