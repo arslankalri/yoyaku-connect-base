@@ -30,7 +30,7 @@ export function BusinessForm({
   submitLabel,
   onSaved,
 }: {
-  business?: Business | null;
+  business?: Business | null | undefined;
   submitLabel: string;
   onSaved?: ((id: string) => void) | undefined;
 }) {
