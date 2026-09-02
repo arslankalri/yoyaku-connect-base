@@ -196,3 +196,92 @@ export async function getDataStatus(supabase: AuthedClient, businessId: string) 
     staff: staff.length,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* NAGI configuration (Control Center)                                 */
+/* ------------------------------------------------------------------ */
+
+export type NagiConfig = {
+  is_enabled: boolean;
+  tone: string;
+  custom_instructions: string;
+  can_answer_faqs: boolean;
+  can_explain_services: boolean;
+  can_explain_prices: boolean;
+  can_explain_hours: boolean;
+  can_accept_appointments: boolean;
+  can_change_appointments: boolean;
+  can_cancel_appointments: boolean;
+  can_transfer_to_staff: boolean;
+  handoff_on_request: boolean;
+  handoff_on_unknown: boolean;
+  handoff_on_complaint: boolean;
+  handoff_outside_scope: boolean;
+  handoff_manual_enabled: boolean;
+  cancellation_policy: string;
+  late_arrival_policy: string;
+  reservation_policy: string;
+  other_policies: string;
+};
+
+const DEFAULT_CONFIG: NagiConfig = {
+  is_enabled: true,
+  tone: "professional",
+  custom_instructions: "",
+  can_answer_faqs: true,
+  can_explain_services: true,
+  can_explain_prices: true,
+  can_explain_hours: true,
+  can_accept_appointments: true,
+  can_change_appointments: true,
+  can_cancel_appointments: true,
+  can_transfer_to_staff: true,
+  handoff_on_request: true,
+  handoff_on_unknown: true,
+  handoff_on_complaint: true,
+  handoff_outside_scope: true,
+  handoff_manual_enabled: false,
+  cancellation_policy: "",
+  late_arrival_policy: "",
+  reservation_policy: "",
+  other_policies: "",
+};
+
+/** Load the owner's NAGI configuration, falling back to defaults when unset. */
+export async function getNagiConfig(
+  supabase: AuthedClient,
+  businessId: string,
+): Promise<NagiConfig> {
+  const { data, error } = await supabase
+    .from("nagi_settings")
+    .select("*")
+    .eq("business_id", businessId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return DEFAULT_CONFIG;
+  return { ...DEFAULT_CONFIG, ...(data as Partial<NagiConfig>) };
+}
+
+export async function get_faqs(supabase: AuthedClient, businessId: string) {
+  const { data, error } = await supabase
+    .from("faqs")
+    .select("question, answer")
+    .eq("business_id", businessId)
+    .eq("is_active", true)
+    .order("sort_order")
+    .order("created_at");
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function get_policies(supabase: AuthedClient, businessId: string) {
+  const config = await getNagiConfig(supabase, businessId);
+  const policies = {
+    cancellation: config.cancellation_policy.trim() || null,
+    late_arrival: config.late_arrival_policy.trim() || null,
+    reservation: config.reservation_policy.trim() || null,
+    other: config.other_policies.trim() || null,
+  };
+  const any = Object.values(policies).some(Boolean);
+  return { found: any, ...policies };
+}
