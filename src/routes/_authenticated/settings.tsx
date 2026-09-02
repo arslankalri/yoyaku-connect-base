@@ -4,6 +4,8 @@ import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
 import { BusinessForm } from "@/components/business-form";
+import { GoogleCalendarPanel } from "@/components/google-calendar-panel";
+
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ErrorPanel, LoadingPanel } from "@/components/states";
 import { Button } from "@/components/ui/button";
