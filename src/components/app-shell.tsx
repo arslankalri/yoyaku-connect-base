@@ -53,7 +53,7 @@ function BrandMark() {
       </span>
       <span className="flex flex-col leading-tight">
         <span className="text-sm font-semibold tracking-tight">{t("brand.name")}</span>
-        <span className="text-[11px] text-muted-foreground">Yoyaku AI</span>
+        <span className="text-[11px] text-muted-foreground">NAGI AI</span>
       </span>
     </div>
   );

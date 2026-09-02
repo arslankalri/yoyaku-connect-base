@@ -13,13 +13,13 @@ export const Route = createFileRoute("/forgot-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Password reset / パスワード再設定 — Yoyaku AI" },
+      { title: "Password reset / パスワード再設定 — NAGI AI" },
       {
         name: "description",
-        content: "Request a password reset link for your Yoyaku AI account.",
+        content: "Request a password reset link for your NAGI AI account.",
       },
-      { property: "og:title", content: "Password reset — Yoyaku AI" },
-      { property: "og:description", content: "Request a Yoyaku AI password reset link." },
+      { property: "og:title", content: "Password reset — NAGI AI" },
+      { property: "og:description", content: "Request a NAGI AI password reset link." },
     ],
   }),
   component: ForgotPassword,
@@ -55,7 +55,7 @@ function ForgotPassword() {
     <div className="flex min-h-screen flex-col bg-secondary/40">
       <header className="flex h-16 items-center px-4 md:px-8">
         <Link to="/" className="text-sm font-semibold">
-          Yoyaku AI
+          NAGI AI
         </Link>
         <div className="ml-auto">
           <LanguageToggle />

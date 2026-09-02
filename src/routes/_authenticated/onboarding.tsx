@@ -9,10 +9,10 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
     meta: [
-      { title: "Business setup / 店舗情報の登録 — Yoyaku AI" },
-      { name: "description", content: "Add your business details to get started with Yoyaku AI." },
-      { property: "og:title", content: "Business setup — Yoyaku AI" },
-      { property: "og:description", content: "Add your business details to start using Yoyaku AI." },
+      { title: "Business setup / 店舗情報の登録 — NAGI AI" },
+      { name: "description", content: "Add your business details to get started with NAGI AI." },
+      { property: "og:title", content: "Business setup — NAGI AI" },
+      { property: "og:description", content: "Add your business details to start using NAGI AI." },
     ],
   }),
   component: Onboarding,

@@ -43,12 +43,12 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({
     meta: [
-      { title: "Staff / スタッフ — Yoyaku AI" },
+      { title: "Staff / スタッフ — NAGI AI" },
       {
         name: "description",
         content: "Manage staff members, the services they provide, and their working hours.",
       },
-      { property: "og:title", content: "Staff — Yoyaku AI" },
+      { property: "og:title", content: "Staff — NAGI AI" },
       { property: "og:description", content: "Staff, assigned services, and working hours." },
     ],
   }),

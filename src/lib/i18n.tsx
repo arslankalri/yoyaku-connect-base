@@ -15,7 +15,7 @@ const STORAGE_KEY = "yoyaku-ai.language";
 type Dict = Record<string, string>;
 
 const ja: Dict = {
-  "brand.name": "予約AI",
+  "brand.name": "NAGI AI",
   "brand.tagline": "AI受付で、電話対応をゼロに",
   "lang.japanese": "日本語",
   "lang.english": "English",
@@ -198,11 +198,11 @@ const ja: Dict = {
   "landing.f2Desc": "メニューと担当スタッフ、勤務時間を柔軟に設定。",
   "landing.f3Title": "日本語・英語対応",
   "landing.f3Desc": "ワンクリックで表示言語を切り替え。入力データはそのまま。",
-  "landing.footer": "予約AI — 日本の予約型ビジネスのためのAI受付",
+  "landing.footer": "NAGI AI — 日本の予約型ビジネスのためのAI受付",
 };
 
 const en: Dict = {
-  "brand.name": "Yoyaku AI",
+  "brand.name": "NAGI AI",
   "brand.tagline": "An AI receptionist for appointment businesses",
   "lang.japanese": "日本語",
   "lang.english": "English",
@@ -386,7 +386,7 @@ const en: Dict = {
   "landing.f2Desc": "Define your menu, assign staff, and configure working hours.",
   "landing.f3Title": "Japanese and English",
   "landing.f3Desc": "Switch the interface language instantly — your data stays as entered.",
-  "landing.footer": "Yoyaku AI — AI reception for Japanese appointment businesses",
+  "landing.footer": "NAGI AI — AI reception for Japanese appointment businesses",
 };
 
 const dictionaries: Record<Language, Dict> = { ja, en };
