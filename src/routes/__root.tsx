@@ -80,13 +80,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Yoyaku AI 予約AI — AI receptionist for salons & clinics" },
+      { title: "NAGI AI — AI receptionist for salons & clinics" },
       {
         name: "description",
         content:
-          "Yoyaku AI (予約AI) is an AI receptionist platform for Japanese appointment-based businesses. Manage your business profile, hours, services, and staff.",
+          "NAGI AI is an AI receptionist platform for Japanese appointment-based businesses. Manage your business profile, hours, services, and staff.",
       },
-      { property: "og:title", content: "Yoyaku AI 予約AI" },
+      { property: "og:title", content: "NAGI AI" },
       {
         property: "og:description",
         content: "AI reception and appointment management for Japanese salons, clinics, and studios.",

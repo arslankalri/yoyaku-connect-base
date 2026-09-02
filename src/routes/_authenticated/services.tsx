@@ -40,9 +40,9 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/_authenticated/services")({
   head: () => ({
     meta: [
-      { title: "Services / サービス — Yoyaku AI" },
+      { title: "Services / サービス — NAGI AI" },
       { name: "description", content: "Create, edit, and remove the services your business offers." },
-      { property: "og:title", content: "Services — Yoyaku AI" },
+      { property: "og:title", content: "Services — NAGI AI" },
       { property: "og:description", content: "Manage your service menu, pricing, and duration." },
     ],
   }),

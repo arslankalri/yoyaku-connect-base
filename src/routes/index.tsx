@@ -8,13 +8,13 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Yoyaku AI 予約AI — AI receptionist for appointment businesses" },
+      { title: "NAGI AI — AI receptionist for appointment businesses" },
       {
         name: "description",
         content:
           "Manage your salon or clinic profile, opening hours, services, and staff in Japanese or English. AI reception coming next.",
       },
-      { property: "og:title", content: "Yoyaku AI 予約AI" },
+      { property: "og:title", content: "NAGI AI" },
       {
         property: "og:description",
         content:
@@ -39,11 +39,11 @@ function Landing() {
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 md:px-6">
           <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
-            予約
+            凪
           </span>
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold">Yoyaku AI</span>
-            <span className="text-[11px] text-muted-foreground">予約AI</span>
+            <span className="text-sm font-semibold">NAGI AI</span>
+            <span className="text-[11px] text-muted-foreground">AI受付 / Reception</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <LanguageToggle />

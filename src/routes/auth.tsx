@@ -19,13 +19,13 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Log in / ログイン — Yoyaku AI 予約AI" },
+      { title: "Log in / ログイン — NAGI AI" },
       {
         name: "description",
-        content: "Log in or create your Yoyaku AI account to manage your business, services, and staff.",
+        content: "Log in or create your NAGI AI account to manage your business, services, and staff.",
       },
-      { property: "og:title", content: "Log in — Yoyaku AI 予約AI" },
-      { property: "og:description", content: "Access your Yoyaku AI business dashboard." },
+      { property: "og:title", content: "Log in — NAGI AI" },
+      { property: "og:description", content: "Access your NAGI AI business dashboard." },
     ],
   }),
   component: AuthPage,
@@ -105,9 +105,9 @@ function AuthPage() {
       <header className="flex h-16 items-center px-4 md:px-8">
         <Link to="/" className="flex items-center gap-2.5">
           <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
-            予約
+            凪
           </span>
-          <span className="text-sm font-semibold">Yoyaku AI</span>
+          <span className="text-sm font-semibold">NAGI AI</span>
         </Link>
         <div className="ml-auto">
           <LanguageToggle />

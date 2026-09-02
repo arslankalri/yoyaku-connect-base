@@ -29,7 +29,7 @@ type NavItem = { to: string; labelKey: string; icon: typeof LayoutDashboard; soo
 
 const mainNav: NavItem[] = [
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
-  { to: "/ai-receptionist", labelKey: "nav.receptionist", icon: PhoneIncoming, soon: true },
+  { to: "/ai-receptionist", labelKey: "nav.receptionist", icon: PhoneIncoming },
   { to: "/appointments", labelKey: "nav.appointments", icon: ClipboardList, soon: true },
   { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays, soon: true },
   { to: "/customers", labelKey: "nav.customers", icon: Users, soon: true },
@@ -49,11 +49,11 @@ function BrandMark() {
   return (
     <div className="flex items-center gap-2.5">
       <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
-        予約
+        凪
       </span>
       <span className="flex flex-col leading-tight">
         <span className="text-sm font-semibold tracking-tight">{t("brand.name")}</span>
-        <span className="text-[11px] text-muted-foreground">Yoyaku AI</span>
+        <span className="text-[11px] text-muted-foreground">AI受付 / AI Reception</span>
       </span>
     </div>
   );

@@ -10,12 +10,12 @@ import {
 
 export type Language = "ja" | "en";
 
-const STORAGE_KEY = "yoyaku-ai.language";
+const STORAGE_KEY = "nagi-ai.language";
 
 type Dict = Record<string, string>;
 
 const ja: Dict = {
-  "brand.name": "予約AI",
+  "brand.name": "NAGI AI",
   "brand.tagline": "AI受付で、電話対応をゼロに",
   "lang.japanese": "日本語",
   "lang.english": "English",
@@ -198,11 +198,44 @@ const ja: Dict = {
   "landing.f2Desc": "メニューと担当スタッフ、勤務時間を柔軟に設定。",
   "landing.f3Title": "日本語・英語対応",
   "landing.f3Desc": "ワンクリックで表示言語を切り替え。入力データはそのまま。",
-  "landing.footer": "予約AI — 日本の予約型ビジネスのためのAI受付",
+  "landing.footer": "NAGI AI — 日本の予約型ビジネスのためのAI受付",
+
+  "recept.title": "AI受付",
+  "recept.desc": "NAGIがお客様にどう応対するかをテストできます。テキストシミュレーションのみです。",
+  "recept.status": "オンライン — 対応可能",
+  "recept.testMode": "テストモード",
+  "recept.testModeNote":
+    "これはテキストのシミュレーションです。実際の電話対応や予約作成は行われません。",
+  "recept.clear": "会話をクリア",
+  "recept.new": "新しいテスト会話",
+  "recept.placeholder": "お客様のメッセージを入力…",
+  "recept.send": "送信",
+  "recept.activity": "NAGIの動作状況",
+  "recept.act.idle": "次のお客様のメッセージを待機中",
+  "recept.act.business": "店舗情報を確認中…",
+  "recept.act.services": "サービス情報を確認中…",
+  "recept.act.hours": "営業時間を確認中…",
+  "recept.act.staff": "スタッフ情報を確認中…",
+  "recept.act.booking": "予約情報を確認中…",
+  "recept.act.thinking": "回答を作成中…",
+  "recept.typing": "NAGIが入力中…",
+  "recept.sim.processing": "予約処理をシミュレーション中…",
+  "recept.sim.result": "テスト予約 — 実際の予約は作成されていません。",
+  "recept.empty": "テスト会話を始めるか、下のシナリオを選んでください。",
+  "recept.tests": "テストシナリオ",
+  "recept.test.book": "予約したい",
+  "recept.test.price": "料金を知りたい",
+  "recept.test.hours": "営業時間は？",
+  "recept.test.tomorrow": "明日予約したい",
+  "recept.test.cancel": "キャンセルしたい",
+  "recept.test.staff": "スタッフと話したい",
+  "recept.customer": "お客様",
+  "recept.noBusiness": "正確に応対するため、まず店舗情報を登録してください。",
+  "recept.error": "NAGIが応答できませんでした。もう一度お試しください。",
 };
 
 const en: Dict = {
-  "brand.name": "Yoyaku AI",
+  "brand.name": "NAGI AI",
   "brand.tagline": "An AI receptionist for appointment businesses",
   "lang.japanese": "日本語",
   "lang.english": "English",
@@ -386,7 +419,40 @@ const en: Dict = {
   "landing.f2Desc": "Define your menu, assign staff, and configure working hours.",
   "landing.f3Title": "Japanese and English",
   "landing.f3Desc": "Switch the interface language instantly — your data stays as entered.",
-  "landing.footer": "Yoyaku AI — AI reception for Japanese appointment businesses",
+  "landing.footer": "NAGI AI — AI reception for Japanese appointment businesses",
+
+  "recept.title": "AI Receptionist",
+  "recept.desc": "Test how NAGI answers your customers. Text simulation only.",
+  "recept.status": "Online — ready",
+  "recept.testMode": "TEST MODE",
+  "recept.testModeNote":
+    "This is a text simulation. NAGI does not make phone calls and does not create real bookings.",
+  "recept.clear": "Clear conversation",
+  "recept.new": "New test conversation",
+  "recept.placeholder": "Type a customer message…",
+  "recept.send": "Send",
+  "recept.activity": "NAGI activity",
+  "recept.act.idle": "Waiting for the next customer message",
+  "recept.act.business": "Checking business details…",
+  "recept.act.services": "Checking service information…",
+  "recept.act.hours": "Checking opening hours…",
+  "recept.act.staff": "Checking staff information…",
+  "recept.act.booking": "Checking appointment details…",
+  "recept.act.thinking": "Preparing a reply…",
+  "recept.typing": "NAGI is typing…",
+  "recept.sim.processing": "Simulating booking…",
+  "recept.sim.result": "Test booking — no real appointment was created.",
+  "recept.empty": "Start a test conversation, or pick a scenario below.",
+  "recept.tests": "Test scenarios",
+  "recept.test.book": "I want to make an appointment",
+  "recept.test.price": "What's the price?",
+  "recept.test.hours": "What are your opening hours?",
+  "recept.test.tomorrow": "I want to book tomorrow",
+  "recept.test.cancel": "I want to cancel",
+  "recept.test.staff": "I want to speak with a staff member",
+  "recept.customer": "Customer",
+  "recept.noBusiness": "Add your business details first so NAGI can answer accurately.",
+  "recept.error": "NAGI could not reply. Please try again.",
 };
 
 const dictionaries: Record<Language, Dict> = { ja, en };

@@ -7,9 +7,9 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/_authenticated/appointments")({
   head: () => ({
     meta: [
-      { title: "Appointments / 予約 — Yoyaku AI" },
+      { title: "Appointments / 予約 — NAGI AI" },
       { name: "description", content: "Appointment management. Coming in a later phase." },
-      { property: "og:title", content: "Appointments / 予約 — Yoyaku AI" },
+      { property: "og:title", content: "Appointments / 予約 — NAGI AI" },
       { property: "og:description", content: "Appointment management. Coming in a later phase." },
     ],
   }),

@@ -7,9 +7,9 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({
     meta: [
-      { title: "Calendar / カレンダー — Yoyaku AI" },
+      { title: "Calendar / カレンダー — NAGI AI" },
       { name: "description", content: "Calendar view of your bookings. Coming in a later phase." },
-      { property: "og:title", content: "Calendar / カレンダー — Yoyaku AI" },
+      { property: "og:title", content: "Calendar / カレンダー — NAGI AI" },
       { property: "og:description", content: "Calendar view of your bookings. Coming in a later phase." },
     ],
   }),
