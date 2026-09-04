@@ -28,11 +28,11 @@ const CONNECTOR_ID = "google_calendar";
 /** Wait for the popup's same-origin completion message and return the one-time code. */
 function waitForOAuthCompletion(popup: Window) {
   return new Promise<string | null>((resolve, reject) => {
-    let poll: number | undefined;
     const cleanup = () => {
       window.removeEventListener("message", onMessage);
       if (poll !== undefined) window.clearInterval(poll);
     };
+
     const onMessage = (event: MessageEvent) => {
       const type = (event.data as { type?: string } | null)?.type;
       const data = event.data as { connectorId?: string; code?: unknown } | null;
