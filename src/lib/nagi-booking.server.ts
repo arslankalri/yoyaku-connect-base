@@ -19,21 +19,18 @@ export type CalendarLink = { connectionAPIKey: string; calendarId: string } | nu
 
 const ACTIVE_STATUSES = ["pending", "confirmed"] as const;
 
-async function googleBusy(
-  calendar: CalendarLink,
-  timeMin: string,
-  timeMax: string,
-  timeZone: string,
-) {
+async function googleBusy(calendar: CalendarLink, timeMin: string, timeMax: string) {
   if (!calendar) return [] as Array<{ start: number; end: number }>;
-  const { GATEWAY_BASE_URL } = await import("@/server/googleCalendar.server");
-  void GATEWAY_BASE_URL; // keep the import graph explicit for the gateway module
   const { listEvents } = await import("@/server/googleCalendar.server");
-  const events = await listEvents(calendar.connectionAPIKey, calendar.calendarId, timeMin, timeMax);
-  return (events as Array<{ start?: string; end?: string }>)
+  const events = (await listEvents(
+    calendar.connectionAPIKey,
+    calendar.calendarId,
+    timeMin,
+    timeMax,
+  )) as Array<{ start?: string | null; end?: string | null }>;
+  return events
     .filter((e) => e.start && e.end)
     .map((e) => ({ start: new Date(e.start!).getTime(), end: new Date(e.end!).getTime() }));
-  void timeZone;
 }
 
 /** Free start times on `date`, honouring opening hours, existing appointments and calendar events. */
