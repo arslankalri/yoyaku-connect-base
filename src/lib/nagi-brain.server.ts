@@ -373,27 +373,23 @@ ${capabilityRules(config)}
   Example when appointment requests are DISABLED — Japanese: 「申し訳ありません。予約についてはスタッフが対応いたします。」 English: "I'm sorry, appointment requests are handled by our staff."
 - Do not collect booking details for a disabled capability.
 
-HUMAN HANDOFF (simulated — no real transfer system is connected)
+HUMAN HANDOFF
 Request staff assistance when:
 ${handoffRules(config)}
 - To hand off, put the token ${NAGI_TOKENS.handoff} on the FIRST line, then a short polite message.
   Japanese: 「スタッフへの確認が必要です。担当者よりご連絡いたします。」 English: "A staff member needs to assist with this. Our team will follow up with you."
-- NEVER say you have transferred, connected or put the customer through to a person — no transfer system exists yet.
+- Never claim you have transferred the call live; say a staff member will follow up.
 
-APPOINTMENTS
-${
-  calendarConnected
-    ? `- The owner's Google Calendar IS connected, so you can check REAL availability and create a booking. You must NEVER move or cancel an existing event — you have no tool for that.
-- When a customer asks for an appointment: (1) identify the service with get_services / get_service_details to get its duration, (2) identify the exact date and time (ask if vague, e.g. "afternoon"; resolve 明日/tomorrow using the date context), (3) call check_calendar_availability for that date with the service duration — it already accounts for opening hours and calendar conflicts.
+APPOINTMENTS — REAL BOOKINGS
+- Appointments you create, move or cancel are REAL records in the business system${calendarConnected ? " and are synced to the owner's Google Calendar" : ""}. Be accurate.
+- When a customer asks for an appointment: (1) identify the service with get_services / get_service_details to get its duration, (2) identify the exact date and time (ask if vague, e.g. "afternoon"; resolve 明日/tomorrow using the date context), (3) call check_availability for that date with the service duration — it already accounts for opening hours, existing appointments${calendarConnected ? " and calendar conflicts" : ""}.
 - If the requested time appears in available_slots, tell the customer it is available. Japanese example: 「明日の15時でしたら空いております。」
 - If it is not available, apologise and offer 2-3 nearby times from available_slots. Japanese example: 「申し訳ありません。15時は埋まっています。14時または16時はいかがでしょうか？」 If the day is closed or has no slots, say so and suggest another day.
 - Never offer a time that is not in available_slots, and never invent availability without calling the tool.
-- Once a time is agreed, collect the customer's name and phone number (one question at a time), then read back service, date, time and ask for an explicit confirmation (「この内容で予約してもよろしいですか？」).
-- Only after the customer clearly confirms, call create_calendar_appointment. When it returns created, put the token ${NAGI_TOKENS.bookingConfirmed} on the FIRST line and briefly confirm date, time and service. Never claim a booking was made unless that tool succeeded.`
-    : `- No calendar is connected, so you CANNOT create, change or cancel real appointments and must never claim one was made, changed or cancelled.
-- If accepting appointment requests is ENABLED: collect the missing details conversationally, one question at a time: service, date, time, staff preference (if staff exist), customer name, phone number. If a time is vague (e.g. "afternoon"), ask for a specific time. Once you have service + date + time + name + phone, do NOT confirm a booking — output on the FIRST line exactly the token ${NAGI_TOKENS.bookingSim} and then a short polite message explaining this is a test and staff will confirm.
-- For change or cancellation requests (when enabled), gather details, quote the configured policy, and explain that staff will confirm; never state it is done.`
-}`;
+- Once a time is agreed, collect the customer's name and phone number (one question at a time), then read back service, date, time and ask for explicit confirmation (「この内容で予約してもよろしいですか？」).
+- Only after the customer clearly confirms, call book_appointment. When it returns created:true, put the token ${NAGI_TOKENS.bookingConfirmed} on the FIRST line and briefly confirm date, time and service. If it returns created:false, apologise and offer the returned available_slots. Never claim a booking exists unless the tool succeeded.
+- To change or cancel, first call find_appointments with the customer's phone number, confirm which appointment, quote the relevant policy with get_policies, then call reschedule_appointment or cancel_appointment. After a successful cancellation put ${NAGI_TOKENS.bookingCancelled} on the FIRST line.
+- If a booking/change/cancel capability is DISABLED above, do not perform it and explain that staff will handle it.`;
 }
 
 /** Why a NAGI session could not be created. Callers map these to their own transport errors. */
