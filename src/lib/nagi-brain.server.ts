@@ -413,6 +413,8 @@ export type NagiSession = {
   config: NagiConfig;
   calendarConnected: boolean;
   channel: NagiChannel;
+  /** RLS-scoped client for the owner, reused for conversation logging. */
+  supabase: AuthedClient;
   /** Everything the model needs for one turn — shared by chat and future voice. */
   model: ReturnType<ReturnType<typeof createLovableAiGatewayProvider>>;
   system: string;
@@ -470,7 +472,8 @@ export async function createNagiSession(
     channel,
     model: gateway(NAGI_MODEL),
     system: systemPrompt(business.name, timezone, config, calendar !== null, channel),
-    tools: buildTools(supabase, business.id, calendar),
+    supabase,
+    tools: buildTools(supabase, business.id, calendar, timezone, config, channel),
   };
 }
 
@@ -503,4 +506,21 @@ export async function generateNagiReply(session: NagiSession, messages: ModelMes
 /** Convert AI SDK UI messages into the model messages the brain expects. */
 export function toNagiMessages(messages: UIMessage[]) {
   return convertToModelMessages(messages);
+}
+
+/** Persist a finished NAGI conversation so it shows up in the owner's history. */
+export async function logNagiConversation(
+  session: NagiSession,
+  sessionKey: string,
+  transcript: string,
+  summary: string | null,
+) {
+  await saveConversation(
+    session.supabase,
+    session.businessId,
+    sessionKey,
+    session.channel,
+    transcript,
+    summary,
+  );
 }
