@@ -55,7 +55,7 @@ function waitForOAuthCompletion(popup: Window) {
       reject(new Error("OAuth connection failed."));
     };
     window.addEventListener("message", onMessage);
-    const poll: number | undefined = window.setInterval(() => {
+    timers.poll = window.setInterval(() => {
       if (!popup.closed) return;
       cleanup();
       reject(new Error("OAuth window closed before completion."));
