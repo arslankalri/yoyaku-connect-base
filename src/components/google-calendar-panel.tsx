@@ -58,7 +58,6 @@ function waitForOAuthCompletion(popup: Window) {
       cleanup();
       reject(new Error("OAuth window closed before completion."));
     }, 500);
-
   });
 }
 
