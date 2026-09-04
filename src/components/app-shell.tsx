@@ -40,7 +40,7 @@ const mainNav: NavItem[] = [
 const setupNav: NavItem[] = [
   { to: "/services", labelKey: "nav.services", icon: Scissors },
   { to: "/staff", labelKey: "nav.staff", icon: UsersRound },
-  { to: "/faq", labelKey: "nav.faq", icon: HelpCircle, soon: true },
+  { to: "/faq", labelKey: "nav.faq", icon: HelpCircle },
   { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3, soon: true },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
