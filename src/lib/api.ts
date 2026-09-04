@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -440,4 +441,273 @@ export function useDeleteFaq() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["faqs"] }),
   });
+}
+
+/* ------------------------------------------------------------------ */
+/* Appointments, customers and conversations (live operational data)   */
+/* ------------------------------------------------------------------ */
+
+export type Appointment = {
+  id: string;
+  business_id: string;
+  customer_id: string | null;
+  staff_id: string | null;
+  service_id: string | null;
+  starts_at: string;
+  ends_at: string;
+  status: string;
+  source: string;
+  notes: string | null;
+  external_calendar_event_id: string | null;
+  customers: { id: string; name: string; phone: string | null } | null;
+  services: { id: string; name: string; price: number; duration_minutes: number } | null;
+  staff: { id: string; name: string } | null;
+};
+
+const APPOINTMENT_SELECT =
+  "id, business_id, customer_id, staff_id, service_id, starts_at, ends_at, status, source, notes, external_calendar_event_id, customers(id, name, phone), services(id, name, price, duration_minutes), staff(id, name)";
+
+export function useAppointments(businessId?: string, range?: { from: string; to: string }) {
+  return useQuery({
+    queryKey: ["appointments", businessId, range?.from ?? null, range?.to ?? null],
+    enabled: !!businessId,
+    queryFn: async () => {
+      let query = supabase
+        .from("appointments")
+        .select(APPOINTMENT_SELECT)
+        .eq("business_id", businessId!)
+        .order("starts_at", { ascending: true });
+      if (range) query = query.gte("starts_at", range.from).lt("starts_at", range.to);
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data ?? []) as unknown as Appointment[];
+    },
+  });
+}
+
+export type AppointmentInput = {
+  id?: string;
+  customer_name: string;
+  customer_phone: string;
+  service_id: string | null;
+  staff_id: string | null;
+  starts_at: string;
+  ends_at: string;
+  status: string;
+  notes: string | null;
+};
+
+export function useSaveAppointment(businessId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: AppointmentInput) => {
+      if (!businessId) throw new Error("No business");
+      // Reuse an existing customer with the same phone, otherwise create one.
+      let customerId: string | null = null;
+      const phone = input.customer_phone.trim();
+      if (phone) {
+        const { data: existing } = await supabase
+          .from("customers")
+          .select("id")
+          .eq("business_id", businessId)
+          .eq("phone", phone)
+          .maybeSingle();
+        customerId = existing?.id ?? null;
+      }
+      if (!customerId) {
+        const { data, error } = await supabase
+          .from("customers")
+          .insert({
+            business_id: businessId,
+            name: input.customer_name.trim() || "—",
+            phone: phone || null,
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        customerId = data.id;
+      }
+
+      const row = {
+        business_id: businessId,
+        customer_id: customerId,
+        service_id: input.service_id,
+        staff_id: input.staff_id,
+        starts_at: input.starts_at,
+        ends_at: input.ends_at,
+        status: input.status,
+        notes: input.notes,
+      };
+      if (input.id) {
+        const { error } = await supabase.from("appointments").update(row).eq("id", input.id);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase.from("appointments").insert({ ...row, source: "manual" });
+      if (error) throw error;
+    },
+    onSuccess: () =>
+      qc.invalidateQueries({
+        predicate: (q) => ["appointments", "customers"].includes(String(q.queryKey[0])),
+      }),
+  });
+}
+
+export function useUpdateAppointmentStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase.from("appointments").update({ status }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["appointments"] }),
+  });
+}
+
+export function useDeleteAppointment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("appointments").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["appointments"] }),
+  });
+}
+
+export type Customer = {
+  id: string;
+  business_id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export function useCustomers(businessId?: string) {
+  return useQuery({
+    queryKey: ["customers", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("customers")
+        .select("id, business_id, name, phone, email, notes, created_at")
+        .eq("business_id", businessId!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Customer[];
+    },
+  });
+}
+
+export function useSaveCustomer(businessId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      id?: string;
+      name: string;
+      phone: string | null;
+      email: string | null;
+      notes: string | null;
+    }) => {
+      if (!businessId) throw new Error("No business");
+      if (input.id) {
+        const { id, ...rest } = input;
+        const { error } = await supabase.from("customers").update(rest).eq("id", id);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase
+        .from("customers")
+        .insert({ ...input, business_id: businessId });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["customers"] }),
+  });
+}
+
+export function useDeleteCustomer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("customers").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["customers"] }),
+  });
+}
+
+export type Conversation = {
+  id: string;
+  business_id: string;
+  channel: string;
+  session_key: string | null;
+  direction: string;
+  status: string | null;
+  transcript: string | null;
+  summary: string | null;
+  started_at: string | null;
+  created_at: string;
+  duration_seconds: number | null;
+};
+
+export function useConversations(businessId?: string) {
+  return useQuery({
+    queryKey: ["conversations", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("calls")
+        .select(
+          "id, business_id, channel, session_key, direction, status, transcript, summary, started_at, created_at, duration_seconds",
+        )
+        .eq("business_id", businessId!)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as Conversation[];
+    },
+  });
+}
+
+export function useDeleteConversation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("calls").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["conversations"] }),
+  });
+}
+
+/**
+ * Live updates: subscribe to Postgres changes for this business and refresh the
+ * matching React Query caches, so every page reflects new data immediately.
+ */
+export function useRealtime(
+  businessId: string | undefined,
+  tables: Array<{ table: string; queryKey: string }>,
+) {
+  const qc = useQueryClient();
+  const signature = tables.map((t) => `${t.table}:${t.queryKey}`).join("|");
+  useEffect(() => {
+    if (!businessId) return;
+    const channel = supabase.channel(`nagi-live-${businessId}-${signature}`);
+    for (const { table, queryKey } of tables) {
+      channel.on(
+        "postgres_changes",
+        { event: "*", schema: "public", table, filter: `business_id=eq.${businessId}` },
+        () => {
+          void qc.invalidateQueries({ queryKey: [queryKey] });
+        },
+      );
+    }
+    channel.subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+    // `signature` captures the table list identity.
+  }, [businessId, signature, qc]);
 }

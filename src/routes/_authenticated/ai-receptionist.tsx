@@ -46,12 +46,12 @@ export const Route = createFileRoute("/_authenticated/ai-receptionist")({
       {
         name: "description",
         content:
-          "Test the NAGI AI receptionist in a live text simulation using your own business hours, services, and staff.",
+          "Chat with your live NAGI AI receptionist using your real business hours, services, staff, and calendar.",
       },
       { property: "og:title", content: "AI Receptionist / AI受付 — NAGI AI" },
       {
         property: "og:description",
-        content: "Live text simulation of the NAGI AI receptionist for your business.",
+        content: "Your live NAGI AI receptionist, grounded in your real business data.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -60,9 +60,9 @@ export const Route = createFileRoute("/_authenticated/ai-receptionist")({
   component: Page,
 });
 
-const BOOKING_TOKEN = "[[BOOKING_SIM]]";
 const HANDOFF_TOKEN = "[[HANDOFF]]";
 const CONFIRMED_TOKEN = "[[BOOKING_CONFIRMED]]";
+const CANCELLED_TOKEN = "[[BOOKING_CANCELLED]]";
 
 const SCENARIOS = [
   { key: "recept.test.book", ja: "予約したい", en: "I want to make an appointment" },
@@ -204,13 +204,14 @@ function Page() {
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
+        body: { sessionKey: sessionId },
         headers: async () => {
           const { data } = await supabase.auth.getSession();
           const token = data.session?.access_token;
           return token ? { Authorization: `Bearer ${token}` } : {};
         },
       }),
-    [],
+    [sessionId],
   );
 
   const { messages, sendMessage, setMessages, status } = useChat({
@@ -282,8 +283,8 @@ function Page() {
                 </div>
                 <div className="relative ml-auto flex items-center gap-3">
                   <Waveform active={busy} />
-                  <span className="rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-[11px] font-medium text-warning-foreground">
-                    {t("recept.testMode")}
+                  <span className="rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[11px] font-medium text-success">
+                    {t("recept.liveMode")}
                   </span>
                 </div>
               </header>
@@ -294,7 +295,7 @@ function Page() {
                 </p>
               )}
               <p className="border-b border-border/70 bg-secondary/30 px-4 py-2 text-[11px] leading-relaxed text-muted-foreground">
-                {t("recept.testModeNote")}
+                {t("recept.liveNote")}
               </p>
 
               <div className="flex-1 space-y-3 overflow-y-auto p-4" aria-live="polite">
@@ -313,20 +314,19 @@ function Page() {
                 {messages.map((message) => {
                   const raw = textOf(message);
                   const isUser = message.role === "user";
-                  const booking = !isUser && raw.includes(BOOKING_TOKEN);
+                  const cancelled = !isUser && raw.includes(CANCELLED_TOKEN);
                   const handoff = !isUser && raw.includes(HANDOFF_TOKEN);
                   const confirmed = !isUser && raw.includes(CONFIRMED_TOKEN);
                   const body = raw
-                    .replaceAll(BOOKING_TOKEN, "")
+                    .replaceAll(CANCELLED_TOKEN, "")
                     .replaceAll(HANDOFF_TOKEN, "")
                     .replaceAll(CONFIRMED_TOKEN, "")
                     .trim();
                   return (
                     <div key={message.id} className="space-y-2">
-                      {booking && (
-                        <div className="mx-auto max-w-md space-y-1 rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-center text-[11px] text-warning-foreground">
-                          <p>{t("recept.sim.processing")}</p>
-                          <p className="font-medium">{t("recept.sim.result")}</p>
+                      {cancelled && (
+                        <div className="mx-auto max-w-md rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-center text-[11px] font-medium text-warning-foreground">
+                          <p>{t("recept.cancelled")}</p>
                         </div>
                       )}
                       {confirmed && (
@@ -336,7 +336,7 @@ function Page() {
                       )}
                       {handoff && (
                         <div className="mx-auto max-w-md rounded-xl border border-ai-indigo/35 bg-ai-indigo/10 px-3 py-2 text-center text-[11px] text-foreground">
-                          <p>{t("recept.sim.handoff")}</p>
+                          <p>{t("nagi.handoff.title")}</p>
                           <p className="text-muted-foreground">{t("nagi.handoff.note")}</p>
                         </div>
                       )}

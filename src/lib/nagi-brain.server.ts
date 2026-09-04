@@ -39,18 +39,22 @@ import {
   type NagiConfig,
 } from "@/lib/nagi-data.server";
 import {
-  createEvent,
-  checkAvailability,
-  listEvents,
-  zonedToUtc,
-} from "@/server/googleCalendar.server";
+  availabilityFor,
+  bookAppointment,
+  cancelAppointment,
+  findAppointments,
+  rescheduleAppointment,
+  saveConversation,
+  type CalendarLink,
+} from "@/lib/nagi-booking.server";
+import { listEvents, zonedToUtc } from "@/server/googleCalendar.server";
 
 export const NAGI_MODEL = "google/gemini-3.7-flash";
 /** Tokens the presentation layer may render as system events. */
 export const NAGI_TOKENS = {
-  bookingSim: "[[BOOKING_SIM]]",
   handoff: "[[HANDOFF]]",
   bookingConfirmed: "[[BOOKING_CONFIRMED]]",
+  bookingCancelled: "[[BOOKING_CANCELLED]]",
 } as const;
 
 function dateContext(timezone: string) {
@@ -97,9 +101,21 @@ type CalendarCtx = {
   timezone: string;
 };
 
-function buildTools(supabase: AuthedClient, businessId: string, calendar: CalendarCtx | null) {
-  const calendarTools = calendar ? buildCalendarTools(supabase, businessId, calendar) : {};
+function buildTools(
+  supabase: AuthedClient,
+  businessId: string,
+  calendar: CalendarCtx | null,
+  timezone: string,
+  config: NagiConfig,
+  channel: NagiChannel,
+) {
+  const link: CalendarLink = calendar
+    ? { connectionAPIKey: calendar.connectionAPIKey, calendarId: calendar.calendarId }
+    : null;
+  const bookingTools = buildBookingTools(supabase, businessId, timezone, link, config, channel);
+  const calendarTools = calendar ? buildCalendarTools(calendar) : {};
   return {
+    ...bookingTools,
     ...calendarTools,
     get_business_info: tool({
       description:
@@ -152,35 +168,16 @@ function buildTools(supabase: AuthedClient, businessId: string, calendar: Calend
   };
 }
 
-function buildCalendarTools(supabase: AuthedClient, businessId: string, calendar: CalendarCtx) {
-  const { connectionAPIKey, calendarId, timezone } = calendar;
-  const dateSchema = z.string().describe("Date in YYYY-MM-DD (business timezone)");
-  const timeSchema = z.string().describe("Time in 24h HH:MM (business timezone)");
+const dateSchema = z.string().describe("Date in YYYY-MM-DD (business timezone)");
+const timeSchema = z.string().describe("Time in 24h HH:MM (business timezone)");
 
+/** Read-only Google Calendar visibility, only when a calendar is connected. */
+function buildCalendarTools(calendar: CalendarCtx) {
+  const { connectionAPIKey, calendarId, timezone } = calendar;
   return {
-    check_calendar_availability: tool({
-      description:
-        "Check open appointment start times on a date, using the business opening hours and the owner's Google Calendar. Always call before proposing or booking a time.",
-      inputSchema: z.object({
-        date: dateSchema,
-        duration_minutes: z
-          .number()
-          .describe("Appointment length in minutes (use the service duration)"),
-      }),
-      execute: async ({ date, duration_minutes }) =>
-        checkAvailability(
-          supabase,
-          businessId,
-          connectionAPIKey,
-          calendarId,
-          timezone,
-          date,
-          duration_minutes,
-        ),
-    }),
     list_calendar_events: tool({
       description:
-        "Read existing calendar events between two dates (inclusive start, exclusive end) to see what is already scheduled.",
+        "Read existing calendar events between two dates to see what is already scheduled.",
       inputSchema: z.object({ from_date: dateSchema, to_date: dateSchema }),
       execute: async ({ from_date, to_date }) =>
         listEvents(
@@ -190,48 +187,104 @@ function buildCalendarTools(supabase: AuthedClient, businessId: string, calendar
           zonedToUtc(to_date, "23:59", timezone).toISOString(),
         ),
     }),
-    create_calendar_appointment: tool({
+  };
+}
+
+/** Real appointment operations against the business's own records. */
+function buildBookingTools(
+  supabase: AuthedClient,
+  businessId: string,
+  timezone: string,
+  calendar: CalendarLink,
+  config: NagiConfig,
+  channel: NagiChannel,
+) {
+  const availability = {
+    check_availability: tool({
       description:
-        "Create the appointment in the owner's Google Calendar. Only call after check_calendar_availability showed the slot is free AND the customer explicitly confirmed the booking.",
+        "Check open appointment start times on a date, using the business opening hours, existing appointments and (when connected) the owner's Google Calendar. Always call before proposing or booking a time.",
       inputSchema: z.object({
         date: dateSchema,
-        time: timeSchema,
-        duration_minutes: z.number(),
-        service: z.string(),
-        customer_name: z.string(),
-        customer_phone: z.string(),
-        staff: z.string().optional(),
-        notes: z.string().optional(),
+        duration_minutes: z
+          .number()
+          .describe("Appointment length in minutes (use the service duration)"),
       }),
-      execute: async (input) => {
-        const start = zonedToUtc(input.date, input.time, timezone);
-        const end = new Date(start.getTime() + Math.max(5, input.duration_minutes) * 60_000);
-        const created = await createEvent(connectionAPIKey, calendarId, {
-          summary: `${input.service} — ${input.customer_name}`,
-          description: [
-            `Service: ${input.service}`,
-            `Customer: ${input.customer_name}`,
-            `Phone: ${input.customer_phone}`,
-            input.staff ? `Staff: ${input.staff}` : null,
-            input.notes ? `Notes: ${input.notes}` : null,
-            "Booked by NAGI AI receptionist.",
-          ]
-            .filter(Boolean)
-            .join("\n"),
-          startIso: start.toISOString(),
-          endIso: end.toISOString(),
-          timeZone: timezone,
-        });
-        return {
-          created: true,
-          event_id: created.id,
-          date: input.date,
-          time: input.time,
-          duration_minutes: input.duration_minutes,
-        };
-      },
+      execute: async ({ date, duration_minutes }) =>
+        availabilityFor(supabase, businessId, timezone, calendar, date, duration_minutes),
     }),
   };
+
+  const create = config.can_accept_appointments
+    ? {
+        book_appointment: tool({
+          description:
+            "Create the real appointment. Only call after check_availability showed the exact time is free AND the customer explicitly confirmed the details.",
+          inputSchema: z.object({
+            date: dateSchema,
+            time: timeSchema,
+            duration_minutes: z.number(),
+            service: z.string(),
+            customer_name: z.string(),
+            customer_phone: z.string(),
+            staff: z.string().optional(),
+            notes: z.string().optional(),
+          }),
+          execute: async (input) =>
+            bookAppointment(supabase, businessId, timezone, calendar, channel, input),
+        }),
+      }
+    : {};
+
+  const lookup =
+    config.can_change_appointments || config.can_cancel_appointments
+      ? {
+          find_appointments: tool({
+            description:
+              "Find the customer's upcoming appointments by their phone number. Use before changing or cancelling a booking.",
+            inputSchema: z.object({ customer_phone: z.string() }),
+            execute: async ({ customer_phone }) =>
+              findAppointments(supabase, businessId, timezone, customer_phone),
+          }),
+        }
+      : {};
+
+  const change = config.can_change_appointments
+    ? {
+        reschedule_appointment: tool({
+          description:
+            "Move an existing appointment to a new date/time. Call find_appointments first and confirm with the customer.",
+          inputSchema: z.object({
+            appointment_id: z.string(),
+            date: dateSchema,
+            time: timeSchema,
+          }),
+          execute: async ({ appointment_id, date, time }) =>
+            rescheduleAppointment(
+              supabase,
+              businessId,
+              timezone,
+              calendar,
+              appointment_id,
+              date,
+              time,
+            ),
+        }),
+      }
+    : {};
+
+  const cancel = config.can_cancel_appointments
+    ? {
+        cancel_appointment: tool({
+          description:
+            "Cancel an existing appointment. Call find_appointments first and confirm with the customer.",
+          inputSchema: z.object({ appointment_id: z.string() }),
+          execute: async ({ appointment_id }) =>
+            cancelAppointment(supabase, businessId, calendar, appointment_id),
+        }),
+      }
+    : {};
+
+  return { ...availability, ...create, ...lookup, ...change, ...cancel };
 }
 
 function toneLine(tone: string) {
@@ -320,27 +373,23 @@ ${capabilityRules(config)}
   Example when appointment requests are DISABLED — Japanese: 「申し訳ありません。予約についてはスタッフが対応いたします。」 English: "I'm sorry, appointment requests are handled by our staff."
 - Do not collect booking details for a disabled capability.
 
-HUMAN HANDOFF (simulated — no real transfer system is connected)
+HUMAN HANDOFF
 Request staff assistance when:
 ${handoffRules(config)}
 - To hand off, put the token ${NAGI_TOKENS.handoff} on the FIRST line, then a short polite message.
   Japanese: 「スタッフへの確認が必要です。担当者よりご連絡いたします。」 English: "A staff member needs to assist with this. Our team will follow up with you."
-- NEVER say you have transferred, connected or put the customer through to a person — no transfer system exists yet.
+- Never claim you have transferred the call live; say a staff member will follow up.
 
-APPOINTMENTS
-${
-  calendarConnected
-    ? `- The owner's Google Calendar IS connected, so you can check REAL availability and create a booking. You must NEVER move or cancel an existing event — you have no tool for that.
-- When a customer asks for an appointment: (1) identify the service with get_services / get_service_details to get its duration, (2) identify the exact date and time (ask if vague, e.g. "afternoon"; resolve 明日/tomorrow using the date context), (3) call check_calendar_availability for that date with the service duration — it already accounts for opening hours and calendar conflicts.
+APPOINTMENTS — REAL BOOKINGS
+- Appointments you create, move or cancel are REAL records in the business system${calendarConnected ? " and are synced to the owner's Google Calendar" : ""}. Be accurate.
+- When a customer asks for an appointment: (1) identify the service with get_services / get_service_details to get its duration, (2) identify the exact date and time (ask if vague, e.g. "afternoon"; resolve 明日/tomorrow using the date context), (3) call check_availability for that date with the service duration — it already accounts for opening hours, existing appointments${calendarConnected ? " and calendar conflicts" : ""}.
 - If the requested time appears in available_slots, tell the customer it is available. Japanese example: 「明日の15時でしたら空いております。」
 - If it is not available, apologise and offer 2-3 nearby times from available_slots. Japanese example: 「申し訳ありません。15時は埋まっています。14時または16時はいかがでしょうか？」 If the day is closed or has no slots, say so and suggest another day.
 - Never offer a time that is not in available_slots, and never invent availability without calling the tool.
-- Once a time is agreed, collect the customer's name and phone number (one question at a time), then read back service, date, time and ask for an explicit confirmation (「この内容で予約してもよろしいですか？」).
-- Only after the customer clearly confirms, call create_calendar_appointment. When it returns created, put the token ${NAGI_TOKENS.bookingConfirmed} on the FIRST line and briefly confirm date, time and service. Never claim a booking was made unless that tool succeeded.`
-    : `- No calendar is connected, so you CANNOT create, change or cancel real appointments and must never claim one was made, changed or cancelled.
-- If accepting appointment requests is ENABLED: collect the missing details conversationally, one question at a time: service, date, time, staff preference (if staff exist), customer name, phone number. If a time is vague (e.g. "afternoon"), ask for a specific time. Once you have service + date + time + name + phone, do NOT confirm a booking — output on the FIRST line exactly the token ${NAGI_TOKENS.bookingSim} and then a short polite message explaining this is a test and staff will confirm.
-- For change or cancellation requests (when enabled), gather details, quote the configured policy, and explain that staff will confirm; never state it is done.`
-}`;
+- Once a time is agreed, collect the customer's name and phone number (one question at a time), then read back service, date, time and ask for explicit confirmation (「この内容で予約してもよろしいですか？」).
+- Only after the customer clearly confirms, call book_appointment. When it returns created:true, put the token ${NAGI_TOKENS.bookingConfirmed} on the FIRST line and briefly confirm date, time and service. If it returns created:false, apologise and offer the returned available_slots. Never claim a booking exists unless the tool succeeded.
+- To change or cancel, first call find_appointments with the customer's phone number, confirm which appointment, quote the relevant policy with get_policies, then call reschedule_appointment or cancel_appointment. After a successful cancellation put ${NAGI_TOKENS.bookingCancelled} on the FIRST line.
+- If a booking/change/cancel capability is DISABLED above, do not perform it and explain that staff will handle it.`;
 }
 
 /** Why a NAGI session could not be created. Callers map these to their own transport errors. */
@@ -364,6 +413,8 @@ export type NagiSession = {
   config: NagiConfig;
   calendarConnected: boolean;
   channel: NagiChannel;
+  /** RLS-scoped client for the owner, reused for conversation logging. */
+  supabase: AuthedClient;
   /** Everything the model needs for one turn — shared by chat and future voice. */
   model: ReturnType<ReturnType<typeof createLovableAiGatewayProvider>>;
   system: string;
@@ -421,7 +472,8 @@ export async function createNagiSession(
     channel,
     model: gateway(NAGI_MODEL),
     system: systemPrompt(business.name, timezone, config, calendar !== null, channel),
-    tools: buildTools(supabase, business.id, calendar),
+    supabase,
+    tools: buildTools(supabase, business.id, calendar, timezone, config, channel),
   };
 }
 
@@ -454,4 +506,21 @@ export async function generateNagiReply(session: NagiSession, messages: ModelMes
 /** Convert AI SDK UI messages into the model messages the brain expects. */
 export function toNagiMessages(messages: UIMessage[]) {
   return convertToModelMessages(messages);
+}
+
+/** Persist a finished NAGI conversation so it shows up in the owner's history. */
+export async function logNagiConversation(
+  session: NagiSession,
+  sessionKey: string,
+  transcript: string,
+  summary: string | null,
+) {
+  await saveConversation(
+    session.supabase,
+    session.businessId,
+    sessionKey,
+    session.channel,
+    transcript,
+    summary,
+  );
 }

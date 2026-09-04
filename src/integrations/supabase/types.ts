@@ -207,12 +207,14 @@ export type Database = {
       calls: {
         Row: {
           business_id: string
+          channel: string
           created_at: string
           customer_id: string | null
           direction: string
           duration_seconds: number | null
           from_number: string | null
           id: string
+          session_key: string | null
           started_at: string | null
           status: string | null
           summary: string | null
@@ -221,12 +223,14 @@ export type Database = {
         }
         Insert: {
           business_id: string
+          channel?: string
           created_at?: string
           customer_id?: string | null
           direction?: string
           duration_seconds?: number | null
           from_number?: string | null
           id?: string
+          session_key?: string | null
           started_at?: string | null
           status?: string | null
           summary?: string | null
@@ -235,12 +239,14 @@ export type Database = {
         }
         Update: {
           business_id?: string
+          channel?: string
           created_at?: string
           customer_id?: string | null
           direction?: string
           duration_seconds?: number | null
           from_number?: string | null
           id?: string
+          session_key?: string | null
           started_at?: string | null
           status?: string | null
           summary?: string | null

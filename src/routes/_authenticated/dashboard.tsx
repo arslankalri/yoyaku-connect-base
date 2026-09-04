@@ -3,13 +3,15 @@ import { Bot, Clock3, Loader2, MapPin, Phone, Scissors, Sparkles, UsersRound } f
 
 import { OnlineDot } from "@/components/ai-background";
 import { AppShell } from "@/components/app-shell";
-import { DemoBadge, ErrorPanel, LoadingPanel } from "@/components/states";
+import { EmptyState, ErrorPanel, LoadingPanel } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   hhmm,
+  useAppointments,
   useBusiness,
   useBusinessHours,
+  useRealtime,
   useServices,
   useStaff,
   type BusinessHour,
@@ -52,6 +54,11 @@ function Dashboard() {
   const hoursQuery = useBusinessHours(businessId);
   const servicesQuery = useServices(businessId);
   const staffQuery = useStaff(businessId);
+  const appointmentsQuery = useAppointments(businessId);
+  useRealtime(businessId, [
+    { table: "appointments", queryKey: "appointments" },
+    { table: "customers", queryKey: "customers" },
+  ]);
 
   if (businessQuery.isLoading) {
     return (
@@ -223,38 +230,24 @@ function Dashboard() {
           <section className="glass-panel p-6">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-base font-semibold">{t("services.title")}</h3>
-              {services.length === 0 ? (
-                <DemoBadge />
-              ) : (
-                <Button asChild variant="ghost" size="sm">
-                  <Link to="/services">{t("dashboard.viewAll")}</Link>
-                </Button>
-              )}
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/services">{t("dashboard.viewAll")}</Link>
+              </Button>
             </div>
             {servicesQuery.isLoading ? (
               <div className="mt-4">
                 <LoadingPanel rows={2} />
               </div>
             ) : services.length === 0 ? (
-              <div className="mt-4 space-y-3">
-                <p className="text-xs text-muted-foreground">{t("dashboard.demoNotice")}</p>
-                <ul className="space-y-2 opacity-70">
-                  {[
-                    { name: "カット / Haircut", meta: "60 " + t("common.minutes") + " · ¥5,500" },
-                    { name: "カラー / Color", meta: "90 " + t("common.minutes") + " · ¥9,900" },
-                  ].map((demo) => (
-                    <li
-                      key={demo.name}
-                      className="flex items-center justify-between rounded-lg border border-dashed border-border px-3 py-2 text-sm"
-                    >
-                      <span>{demo.name}</span>
-                      <span className="text-muted-foreground">{demo.meta}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button asChild size="sm">
-                  <Link to="/services">{t("services.emptyCta")}</Link>
-                </Button>
+              <div className="mt-4">
+                <EmptyState
+                  title={t("services.empty")}
+                  action={
+                    <Button asChild size="sm">
+                      <Link to="/services">{t("services.emptyCta")}</Link>
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               <ul className="mt-4 divide-y divide-border">
@@ -277,34 +270,24 @@ function Dashboard() {
           <section className="glass-panel p-6">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-base font-semibold">{t("staff.title")}</h3>
-              {staff.length === 0 ? (
-                <DemoBadge />
-              ) : (
-                <Button asChild variant="ghost" size="sm">
-                  <Link to="/staff">{t("dashboard.viewAll")}</Link>
-                </Button>
-              )}
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/staff">{t("dashboard.viewAll")}</Link>
+              </Button>
             </div>
             {staffQuery.isLoading ? (
               <div className="mt-4">
                 <LoadingPanel rows={2} />
               </div>
             ) : staff.length === 0 ? (
-              <div className="mt-4 space-y-3">
-                <p className="text-xs text-muted-foreground">{t("dashboard.demoNotice")}</p>
-                <ul className="space-y-2 opacity-70">
-                  {["佐藤 / Sato", "田中 / Tanaka"].map((demo) => (
-                    <li
-                      key={demo}
-                      className="rounded-lg border border-dashed border-border px-3 py-2 text-sm"
-                    >
-                      {demo}
-                    </li>
-                  ))}
-                </ul>
-                <Button asChild size="sm">
-                  <Link to="/staff">{t("staff.emptyCta")}</Link>
-                </Button>
+              <div className="mt-4">
+                <EmptyState
+                  title={t("staff.empty")}
+                  action={
+                    <Button asChild size="sm">
+                      <Link to="/staff">{t("staff.emptyCta")}</Link>
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               <ul className="mt-4 divide-y divide-border">
