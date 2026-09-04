@@ -101,9 +101,21 @@ type CalendarCtx = {
   timezone: string;
 };
 
-function buildTools(supabase: AuthedClient, businessId: string, calendar: CalendarCtx | null) {
-  const calendarTools = calendar ? buildCalendarTools(supabase, businessId, calendar) : {};
+function buildTools(
+  supabase: AuthedClient,
+  businessId: string,
+  calendar: CalendarCtx | null,
+  timezone: string,
+  config: NagiConfig,
+  channel: NagiChannel,
+) {
+  const link: CalendarLink = calendar
+    ? { connectionAPIKey: calendar.connectionAPIKey, calendarId: calendar.calendarId }
+    : null;
+  const bookingTools = buildBookingTools(supabase, businessId, timezone, link, config, channel);
+  const calendarTools = calendar ? buildCalendarTools(calendar) : {};
   return {
+    ...bookingTools,
     ...calendarTools,
     get_business_info: tool({
       description:
