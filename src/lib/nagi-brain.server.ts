@@ -39,18 +39,22 @@ import {
   type NagiConfig,
 } from "@/lib/nagi-data.server";
 import {
-  createEvent,
-  checkAvailability,
-  listEvents,
-  zonedToUtc,
-} from "@/server/googleCalendar.server";
+  availabilityFor,
+  bookAppointment,
+  cancelAppointment,
+  findAppointments,
+  rescheduleAppointment,
+  saveConversation,
+  type CalendarLink,
+} from "@/lib/nagi-booking.server";
+import { listEvents, zonedToUtc } from "@/server/googleCalendar.server";
 
 export const NAGI_MODEL = "google/gemini-3.7-flash";
 /** Tokens the presentation layer may render as system events. */
 export const NAGI_TOKENS = {
-  bookingSim: "[[BOOKING_SIM]]",
   handoff: "[[HANDOFF]]",
   bookingConfirmed: "[[BOOKING_CONFIRMED]]",
+  bookingCancelled: "[[BOOKING_CANCELLED]]",
 } as const;
 
 function dateContext(timezone: string) {
