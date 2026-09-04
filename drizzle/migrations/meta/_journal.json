@@ -22,6 +22,13 @@
       "when": 1788349384952,
       "tag": "0002_google_calendar_connection",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788482639785,
+      "tag": "0003_realtime_operations_tables",
+      "breakpoints": true
     }
   ]
 }
