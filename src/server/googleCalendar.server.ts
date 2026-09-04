@@ -19,11 +19,7 @@ export const GOOGLE_CALENDAR_SCOPES = [
   "https://www.googleapis.com/auth/calendar.events",
 ];
 
-async function gcal(
-  connectionAPIKey: string,
-  path: string,
-  init?: RequestInit,
-): Promise<unknown> {
+async function gcal(connectionAPIKey: string, path: string, init?: RequestInit): Promise<unknown> {
   const res = await callAsAppUser({
     gatewayBaseUrl: GATEWAY_BASE_URL,
     connectionAPIKey,
@@ -200,11 +196,7 @@ export async function updateEvent(
   return { id: body.id, title: body.summary ?? null };
 }
 
-export async function deleteEvent(
-  connectionAPIKey: string,
-  calendarId: string,
-  eventId: string,
-) {
+export async function deleteEvent(connectionAPIKey: string, calendarId: string, eventId: string) {
   await gcal(
     connectionAPIKey,
     `/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,

@@ -27,9 +27,15 @@ export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
       { title: "Settings / 設定 — NAGI AI" },
-      { name: "description", content: "Update your business profile, opening hours, and language." },
+      {
+        name: "description",
+        content: "Update your business profile, opening hours, and language.",
+      },
       { property: "og:title", content: "Settings — NAGI AI" },
-      { property: "og:description", content: "Business profile, opening hours, and interface language." },
+      {
+        property: "og:description",
+        content: "Business profile, opening hours, and interface language.",
+      },
     ],
   }),
   component: SettingsPage,
@@ -172,7 +178,6 @@ function SettingsPage() {
             <GoogleCalendarPanel businessId={businessQuery.data.id} />
           </div>
         </TabsContent>
-
 
         <TabsContent value="account">
           <div className="glass-panel max-w-2xl space-y-4 p-6">

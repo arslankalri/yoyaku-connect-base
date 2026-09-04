@@ -188,7 +188,12 @@ export function AppShell({
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/70 bg-background/70 px-4 backdrop-blur-xl md:px-6">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="lg:hidden" aria-label={t("nav.menu")}>
+              <Button
+                variant="outline"
+                size="icon"
+                className="lg:hidden"
+                aria-label={t("nav.menu")}
+              >
                 <Menu className="size-4" />
               </Button>
             </SheetTrigger>
@@ -225,9 +230,7 @@ export function AppShell({
           <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold tracking-tight md:text-[27px]">{title}</h1>
-              {description && (
-                <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
-              )}
+              {description && <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>}
             </div>
             {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
           </div>

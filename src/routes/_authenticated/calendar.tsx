@@ -10,7 +10,10 @@ export const Route = createFileRoute("/_authenticated/calendar")({
       { title: "Calendar / カレンダー — NAGI AI" },
       { name: "description", content: "Calendar view of your bookings. Coming in a later phase." },
       { property: "og:title", content: "Calendar / カレンダー — NAGI AI" },
-      { property: "og:description", content: "Calendar view of your bookings. Coming in a later phase." },
+      {
+        property: "og:description",
+        content: "Calendar view of your bookings. Coming in a later phase.",
+      },
     ],
   }),
   component: Page,

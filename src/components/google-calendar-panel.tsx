@@ -28,11 +28,11 @@ const CONNECTOR_ID = "google_calendar";
 /** Wait for the popup's same-origin completion message and return the one-time code. */
 function waitForOAuthCompletion(popup: Window) {
   return new Promise<string | null>((resolve, reject) => {
-    let poll: number | undefined;
     const cleanup = () => {
       window.removeEventListener("message", onMessage);
       if (poll !== undefined) window.clearInterval(poll);
     };
+
     const onMessage = (event: MessageEvent) => {
       const type = (event.data as { type?: string } | null)?.type;
       const data = event.data as { connectorId?: string; code?: unknown } | null;
@@ -53,7 +53,7 @@ function waitForOAuthCompletion(popup: Window) {
       reject(new Error("OAuth connection failed."));
     };
     window.addEventListener("message", onMessage);
-    poll = window.setInterval(() => {
+    const poll: number | undefined = window.setInterval(() => {
       if (!popup.closed) return;
       cleanup();
       reject(new Error("OAuth window closed before completion."));
@@ -152,7 +152,9 @@ export function GoogleCalendarPanel({ businessId }: { businessId: string }) {
             </span>
           </>
         ) : connected ? (
-          <span className="font-medium text-warning-foreground">{t("gcal.statusPickCalendar")}</span>
+          <span className="font-medium text-warning-foreground">
+            {t("gcal.statusPickCalendar")}
+          </span>
         ) : (
           <span className="text-muted-foreground">{t("gcal.statusNotConnected")}</span>
         )}
@@ -186,7 +188,11 @@ export function GoogleCalendarPanel({ businessId }: { businessId: string }) {
 
       <div className="mt-5 flex flex-wrap gap-2">
         {!connected ? (
-          <Button size="sm" disabled={connectMutation.isPending} onClick={() => connectMutation.mutate()}>
+          <Button
+            size="sm"
+            disabled={connectMutation.isPending}
+            onClick={() => connectMutation.mutate()}
+          >
             {connectMutation.isPending ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (

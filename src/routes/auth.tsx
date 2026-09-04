@@ -22,7 +22,8 @@ export const Route = createFileRoute("/auth")({
       { title: "Log in / ログイン — NAGI AI" },
       {
         name: "description",
-        content: "Log in or create your NAGI AI account to manage your business, services, and staff.",
+        content:
+          "Log in or create your NAGI AI account to manage your business, services, and staff.",
       },
       { property: "og:title", content: "Log in — NAGI AI" },
       { property: "og:description", content: "Access your NAGI AI business dashboard." },
@@ -158,7 +159,10 @@ function AuthPage() {
             </div>
 
             {error && (
-              <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <p
+                role="alert"
+                className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
                 {error}
               </p>
             )}

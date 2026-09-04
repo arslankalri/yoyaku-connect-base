@@ -10,7 +10,10 @@ export const Route = createFileRoute("/_authenticated/calls")({
       { title: "Call History / 通話履歴 — NAGI AI" },
       { name: "description", content: "Call history and transcripts. Coming in a later phase." },
       { property: "og:title", content: "Call History / 通話履歴 — NAGI AI" },
-      { property: "og:description", content: "Call history and transcripts. Coming in a later phase." },
+      {
+        property: "og:description",
+        content: "Call history and transcripts. Coming in a later phase.",
+      },
     ],
   }),
   component: Page,

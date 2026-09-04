@@ -20,7 +20,9 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found / ページが見つかりません</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">
+          Page not found / ページが見つかりません
+        </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           The page you're looking for doesn't exist or has been moved.
         </p>
@@ -89,7 +91,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "NAGI AI" },
       {
         property: "og:description",
-        content: "AI reception and appointment management for Japanese salons, clinics, and studios.",
+        content:
+          "AI reception and appointment management for Japanese salons, clinics, and studios.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
