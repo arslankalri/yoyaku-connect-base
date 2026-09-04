@@ -26,22 +26,22 @@ import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
-type NavItem = { to: string; labelKey: string; icon: typeof LayoutDashboard; soon?: boolean };
+type NavItem = { to: string; labelKey: string; icon: typeof LayoutDashboard };
 
 const mainNav: NavItem[] = [
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
   { to: "/ai-receptionist", labelKey: "nav.receptionist", icon: PhoneIncoming },
-  { to: "/appointments", labelKey: "nav.appointments", icon: ClipboardList, soon: true },
-  { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays, soon: true },
-  { to: "/customers", labelKey: "nav.customers", icon: Users, soon: true },
-  { to: "/calls", labelKey: "nav.calls", icon: PhoneCall, soon: true },
+  { to: "/appointments", labelKey: "nav.appointments", icon: ClipboardList },
+  { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
+  { to: "/customers", labelKey: "nav.customers", icon: Users },
+  { to: "/calls", labelKey: "nav.calls", icon: PhoneCall },
 ];
 
 const setupNav: NavItem[] = [
   { to: "/services", labelKey: "nav.services", icon: Scissors },
   { to: "/staff", labelKey: "nav.staff", icon: UsersRound },
   { to: "/faq", labelKey: "nav.faq", icon: HelpCircle },
-  { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3, soon: true },
+  { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 
@@ -98,11 +98,6 @@ function NavSection({
           >
             <item.icon className="size-4 shrink-0" />
             <span className="truncate">{t(item.labelKey)}</span>
-            {item.soon && (
-              <span className="ml-auto rounded-full border border-border bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                {t("common.comingSoon")}
-              </span>
-            )}
           </Link>
         );
       })}

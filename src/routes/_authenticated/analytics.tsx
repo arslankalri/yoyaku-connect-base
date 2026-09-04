@@ -77,7 +77,8 @@ function AnalyticsPage() {
     for (const appointment of last30) {
       const name = appointment.services?.name ?? t("appt.noService");
       serviceCounts.set(name, (serviceCounts.get(name) ?? 0) + 1);
-      weekdayCounts[new Date(appointment.starts_at).getDay()] += 1;
+      const dow = new Date(appointment.starts_at).getDay();
+      weekdayCounts[dow] = (weekdayCounts[dow] ?? 0) + 1;
     }
 
     return {
