@@ -114,14 +114,17 @@ function buildTools(supabase: AuthedClient, businessId: string, calendar: Calend
       execute: async () => get_business_hours(supabase, businessId),
     }),
     get_services: tool({
-      description: "List all active services with price (JPY), duration in minutes and description.",
+      description:
+        "List all active services with price (JPY), duration in minutes and description.",
       inputSchema: z.object({}),
       execute: async () => get_services(supabase, businessId),
     }),
     get_service_details: tool({
       description:
         "Get the price, duration, description and capable staff for one named service. Use for questions like 'how much is a cut?'.",
-      inputSchema: z.object({ service: z.string().describe("Service name as the customer said it") }),
+      inputSchema: z.object({
+        service: z.string().describe("Service name as the customer said it"),
+      }),
       execute: async ({ service }) => get_service_details(supabase, businessId, service),
     }),
     get_staff: tool({
@@ -266,8 +269,7 @@ function handoffRules(config: NagiConfig) {
   if (config.handoff_on_complaint) reasons.push("the customer is complaining or upset");
   if (config.handoff_outside_scope)
     reasons.push("the question is outside the stored business information");
-  if (config.handoff_manual_enabled)
-    reasons.push("you judge that a staff member should take over");
+  if (config.handoff_manual_enabled) reasons.push("you judge that a staff member should take over");
   return reasons.length > 0
     ? reasons.map((r) => `- ${r}`).join("\n")
     : "- (no handoff rules configured)";
@@ -326,27 +328,30 @@ ${handoffRules(config)}
 - NEVER say you have transferred, connected or put the customer through to a person — no transfer system exists yet.
 
 APPOINTMENTS
-${calendarConnected ? `- The owner's Google Calendar IS connected, so you can check REAL availability and create a booking. You must NEVER move or cancel an existing event — you have no tool for that.
+${
+  calendarConnected
+    ? `- The owner's Google Calendar IS connected, so you can check REAL availability and create a booking. You must NEVER move or cancel an existing event — you have no tool for that.
 - When a customer asks for an appointment: (1) identify the service with get_services / get_service_details to get its duration, (2) identify the exact date and time (ask if vague, e.g. "afternoon"; resolve 明日/tomorrow using the date context), (3) call check_calendar_availability for that date with the service duration — it already accounts for opening hours and calendar conflicts.
 - If the requested time appears in available_slots, tell the customer it is available. Japanese example: 「明日の15時でしたら空いております。」
 - If it is not available, apologise and offer 2-3 nearby times from available_slots. Japanese example: 「申し訳ありません。15時は埋まっています。14時または16時はいかがでしょうか？」 If the day is closed or has no slots, say so and suggest another day.
 - Never offer a time that is not in available_slots, and never invent availability without calling the tool.
 - Once a time is agreed, collect the customer's name and phone number (one question at a time), then read back service, date, time and ask for an explicit confirmation (「この内容で予約してもよろしいですか？」).
-- Only after the customer clearly confirms, call create_calendar_appointment. When it returns created, put the token ${NAGI_TOKENS.bookingConfirmed} on the FIRST line and briefly confirm date, time and service. Never claim a booking was made unless that tool succeeded.` : `- No calendar is connected, so you CANNOT create, change or cancel real appointments and must never claim one was made, changed or cancelled.
+- Only after the customer clearly confirms, call create_calendar_appointment. When it returns created, put the token ${NAGI_TOKENS.bookingConfirmed} on the FIRST line and briefly confirm date, time and service. Never claim a booking was made unless that tool succeeded.`
+    : `- No calendar is connected, so you CANNOT create, change or cancel real appointments and must never claim one was made, changed or cancelled.
 - If accepting appointment requests is ENABLED: collect the missing details conversationally, one question at a time: service, date, time, staff preference (if staff exist), customer name, phone number. If a time is vague (e.g. "afternoon"), ask for a specific time. Once you have service + date + time + name + phone, do NOT confirm a booking — output on the FIRST line exactly the token ${NAGI_TOKENS.bookingSim} and then a short polite message explaining this is a test and staff will confirm.
-- For change or cancellation requests (when enabled), gather details, quote the configured policy, and explain that staff will confirm; never state it is done.`}`;
+- For change or cancellation requests (when enabled), gather details, quote the configured policy, and explain that staff will confirm; never state it is done.`
+}`;
 }
 
 /** Why a NAGI session could not be created. Callers map these to their own transport errors. */
 export type NagiSessionError =
-  | "unauthorized"
-  | "backend_not_configured"
-  | "missing_api_key"
-  | "no_business"
-  | "nagi_disabled";
+  "unauthorized" | "backend_not_configured" | "missing_api_key" | "no_business" | "nagi_disabled";
 
 export class NagiError extends Error {
-  constructor(public readonly reason: NagiSessionError, message: string) {
+  constructor(
+    public readonly reason: NagiSessionError,
+    message: string,
+  ) {
     super(message);
     this.name = "NagiError";
   }

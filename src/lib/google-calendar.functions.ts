@@ -126,9 +126,8 @@ export const disconnectGoogleCalendar = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { businessId: string }) => input)
   .handler(async ({ data, context }) => {
-    const { getConnectionKeyForUser, deleteConnectionForUser } = await import(
-      "@/server/appUserConnections.server"
-    );
+    const { getConnectionKeyForUser, deleteConnectionForUser } =
+      await import("@/server/appUserConnections.server");
     const connectionAPIKey = await getConnectionKeyForUser(context.userId, CONNECTOR_ID);
     if (connectionAPIKey) {
       const { disconnectAppUser } = await import("@/integrations/lovable/appUserConnector");

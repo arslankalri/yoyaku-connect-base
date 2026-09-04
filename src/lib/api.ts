@@ -133,12 +133,10 @@ export function useSaveBusinessHours(businessId?: string) {
       rows: { day_of_week: number; is_open: boolean; open_time: string; close_time: string }[],
     ) => {
       if (!businessId) throw new Error("No business");
-      const { error } = await supabase
-        .from("business_hours")
-        .upsert(
-          rows.map((r) => ({ ...r, business_id: businessId })),
-          { onConflict: "business_id,day_of_week" },
-        );
+      const { error } = await supabase.from("business_hours").upsert(
+        rows.map((r) => ({ ...r, business_id: businessId })),
+        { onConflict: "business_id,day_of_week" },
+      );
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["business_hours"] }),
@@ -181,7 +179,9 @@ export function useSaveService(businessId?: string) {
         if (error) throw error;
         return;
       }
-      const { error } = await supabase.from("services").insert({ ...input, business_id: businessId });
+      const { error } = await supabase
+        .from("services")
+        .insert({ ...input, business_id: businessId });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["services"] }),

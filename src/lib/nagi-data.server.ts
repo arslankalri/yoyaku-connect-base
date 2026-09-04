@@ -71,9 +71,9 @@ export async function get_business_info(supabase: AuthedClient, businessId: stri
     found: true as const,
     name: data.name,
     phone: data.phone ?? null,
-    address: [data.postal_code ? `〒${data.postal_code}` : null, data.address]
-      .filter(Boolean)
-      .join(" ") || null,
+    address:
+      [data.postal_code ? `〒${data.postal_code}` : null, data.address].filter(Boolean).join(" ") ||
+      null,
     website: data.website ?? null,
     timezone: data.timezone,
   };
@@ -135,10 +135,7 @@ export async function get_staff(supabase: AuthedClient, businessId: string) {
     .order("created_at");
   if (error) throw error;
 
-  const services = await supabase
-    .from("services")
-    .select("id, name")
-    .eq("business_id", businessId);
+  const services = await supabase.from("services").select("id, name").eq("business_id", businessId);
 
   const nameById = new Map((services.data ?? []).map((s) => [s.id, s.name]));
 

@@ -188,7 +188,12 @@ export function NagiSettingsPanel({
             value={draft.custom_instructions}
             onChange={(e) => patch({ custom_instructions: e.target.value })}
           />
-          <Button className="mt-3" size="sm" disabled={save.isPending} onClick={() => void persist()}>
+          <Button
+            className="mt-3"
+            size="sm"
+            disabled={save.isPending}
+            onClick={() => void persist()}
+          >
             <Save className="size-4" />
             {save.isPending ? t("common.saving") : t("common.save")}
           </Button>
@@ -225,9 +230,17 @@ export function NagiSettingsPanel({
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {(
             [
-              ["cancellation_policy", "nagi.policy.cancellation", "nagi.policy.cancellationPlaceholder"],
+              [
+                "cancellation_policy",
+                "nagi.policy.cancellation",
+                "nagi.policy.cancellationPlaceholder",
+              ],
               ["late_arrival_policy", "nagi.policy.late", "nagi.policy.latePlaceholder"],
-              ["reservation_policy", "nagi.policy.reservation", "nagi.policy.reservationPlaceholder"],
+              [
+                "reservation_policy",
+                "nagi.policy.reservation",
+                "nagi.policy.reservationPlaceholder",
+              ],
               ["other_policies", "nagi.policy.other", "nagi.policy.otherPlaceholder"],
             ] as const
           ).map(([field, labelKey, placeholderKey]) => (

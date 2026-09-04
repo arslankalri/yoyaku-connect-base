@@ -185,7 +185,8 @@ const ja: Dict = {
   "settings.tabCalendar": "カレンダー",
   "recept.calendar.booked": "Google カレンダーに予約を登録しました。",
   "gcal.title": "Google カレンダー連携",
-  "gcal.desc": "オーナー様のGoogleカレンダーを接続すると、NAGIが空き状況の確認と予約の作成・変更・キャンセルを行えます。",
+  "gcal.desc":
+    "オーナー様のGoogleカレンダーを接続すると、NAGIが空き状況の確認と予約の作成・変更・キャンセルを行えます。",
   "gcal.connect": "Google Calendarを接続",
   "gcal.disconnect": "接続を解除",
   "gcal.statusConnected": "接続済み",
@@ -199,7 +200,8 @@ const ja: Dict = {
   "gcal.calendarSaved": "使用するカレンダーを保存しました。",
   "gcal.connectFailed": "Google カレンダーの接続に失敗しました。",
   "gcal.popupBlocked": "ポップアップがブロックされました。許可して再度お試しください。",
-  "gcal.note": "空き状況は店舗のタイムゾーンと営業時間に基づいて確認されます。接続情報は暗号化して安全に保存されます。",
+  "gcal.note":
+    "空き状況は店舗のタイムゾーンと営業時間に基づいて確認されます。接続情報は暗号化して安全に保存されます。",
   "settings.tabAccount": "アカウント",
   "settings.account": "アカウント",
   "settings.language": "表示言語",
@@ -299,7 +301,8 @@ const ja: Dict = {
   "nagi.instructions.placeholder": "お客様には丁寧で親しみやすく対応してください。",
   "nagi.handoff.title": "スタッフへの引き継ぎ",
   "nagi.handoff.desc": "どんなときにNAGIがスタッフの対応を依頼するかを設定します。",
-  "nagi.handoff.note": "実際の転送システムは未接続のため、チャット内でのシミュレーションのみ行われます。",
+  "nagi.handoff.note":
+    "実際の転送システムは未接続のため、チャット内でのシミュレーションのみ行われます。",
   "nagi.handoff.handoff_on_request": "お客様がスタッフを希望した場合",
   "nagi.handoff.handoff_on_unknown": "NAGIが答えを持っていない場合",
   "nagi.handoff.handoff_on_complaint": "お客様からのご不満・クレームの場合",
@@ -423,7 +426,8 @@ const en: Dict = {
   "auth.noAccount": "Don't have an account?",
 
   "onboarding.title": "Set up your business",
-  "onboarding.desc": "Start by adding your business details. You can change them later in Settings.",
+  "onboarding.desc":
+    "Start by adding your business details. You can change them later in Settings.",
   "onboarding.submit": "Save and continue",
 
   "business.name": "Business name",
@@ -515,7 +519,8 @@ const en: Dict = {
   "settings.tabCalendar": "Calendar",
   "recept.calendar.booked": "Appointment created in Google Calendar.",
   "gcal.title": "Google Calendar",
-  "gcal.desc": "Connect the owner's Google Calendar so NAGI can check availability and create, update, or cancel appointments.",
+  "gcal.desc":
+    "Connect the owner's Google Calendar so NAGI can check availability and create, update, or cancel appointments.",
   "gcal.connect": "Connect Google Calendar",
   "gcal.disconnect": "Disconnect",
   "gcal.statusConnected": "Connected",
@@ -529,7 +534,8 @@ const en: Dict = {
   "gcal.calendarSaved": "Calendar selection saved.",
   "gcal.connectFailed": "Could not connect Google Calendar.",
   "gcal.popupBlocked": "Popup blocked. Allow popups and try again.",
-  "gcal.note": "Availability respects your business timezone and opening hours. The connection is stored encrypted.",
+  "gcal.note":
+    "Availability respects your business timezone and opening hours. The connection is stored encrypted.",
   "settings.tabAccount": "Account",
   "settings.account": "Account",
   "settings.language": "Interface language",
@@ -601,7 +607,8 @@ const en: Dict = {
   "nagi.tab.chat": "Chat test",
   "nagi.tab.settings": "NAGI settings",
   "nagi.settings.title": "NAGI Settings",
-  "nagi.settings.desc": "Configure what NAGI knows and what NAGI is allowed to handle. Changes apply immediately.",
+  "nagi.settings.desc":
+    "Configure what NAGI knows and what NAGI is allowed to handle. Changes apply immediately.",
   "nagi.saved": "Settings saved",
   "nagi.testSettings": "Test settings",
   "nagi.status.title": "NAGI status",
@@ -629,8 +636,10 @@ const en: Dict = {
   "nagi.instructions.desc": "Anything specific about how your business speaks to customers.",
   "nagi.instructions.placeholder": "Please be polite and friendly with every customer.",
   "nagi.handoff.title": "Human Handoff",
-  "nagi.handoff.desc": "Decide when NAGI should stop handling a conversation and ask for staff help.",
-  "nagi.handoff.note": "No real transfer system is connected yet, so handoff is simulated in the chat.",
+  "nagi.handoff.desc":
+    "Decide when NAGI should stop handling a conversation and ask for staff help.",
+  "nagi.handoff.note":
+    "No real transfer system is connected yet, so handoff is simulated in the chat.",
   "nagi.handoff.handoff_on_request": "Customer requests a human",
   "nagi.handoff.handoff_on_unknown": "NAGI does not know the answer",
   "nagi.handoff.handoff_on_complaint": "Customer has a complaint",
@@ -641,7 +650,8 @@ const en: Dict = {
   "nagi.policy.cancellation": "Cancellation policy",
   "nagi.policy.cancellationPlaceholder": "Please cancel at least 24 hours in advance.",
   "nagi.policy.late": "Late arrival policy",
-  "nagi.policy.latePlaceholder": "If you are more than 15 minutes late the service may be adjusted.",
+  "nagi.policy.latePlaceholder":
+    "If you are more than 15 minutes late the service may be adjusted.",
   "nagi.policy.reservation": "Reservation policy",
   "nagi.policy.reservationPlaceholder": "Please book at least one day in advance.",
   "nagi.policy.other": "Other important instructions",
@@ -691,7 +701,6 @@ const contextRegistry = globalThis as typeof globalThis & {
 const I18nContext =
   contextRegistry.__nagiI18nContext ??
   (contextRegistry.__nagiI18nContext = createContext<I18nValue | null>(null));
-
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>("ja");
@@ -757,4 +766,3 @@ export function useI18n() {
   // provider (or a duplicated module during dev reloads) never blanks the app.
   return useContext(I18nContext) ?? fallbackI18n;
 }
-

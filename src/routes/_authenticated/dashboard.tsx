@@ -77,8 +77,7 @@ function Dashboard() {
   const staff = staffQuery.data ?? [];
   const activeServices = services.filter((s) => s.is_active);
   const activeStaff = staff.filter((s) => s.is_active);
-  const syncing =
-    hoursQuery.isFetching || servicesQuery.isFetching || staffQuery.isFetching;
+  const syncing = hoursQuery.isFetching || servicesQuery.isFetching || staffQuery.isFetching;
 
   const dateLabel = new Intl.DateTimeFormat(language === "ja" ? "ja-JP" : "en-US", {
     year: "numeric",
@@ -260,7 +259,10 @@ function Dashboard() {
             ) : (
               <ul className="mt-4 divide-y divide-border">
                 {services.slice(0, 5).map((service) => (
-                  <li key={service.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                  <li
+                    key={service.id}
+                    className="flex items-center justify-between gap-3 py-2.5 text-sm"
+                  >
                     <span className="truncate">{service.name}</span>
                     <span className="shrink-0 text-muted-foreground">
                       {service.duration_minutes} {t("common.minutes")} · ¥
@@ -307,7 +309,10 @@ function Dashboard() {
             ) : (
               <ul className="mt-4 divide-y divide-border">
                 {staff.slice(0, 5).map((member) => (
-                  <li key={member.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                  <li
+                    key={member.id}
+                    className="flex items-center justify-between gap-3 py-2.5 text-sm"
+                  >
                     <span className="truncate">{member.name}</span>
                     <Badge variant="outline" className="shrink-0">
                       {member.is_active ? t("common.active") : t("common.inactive")}

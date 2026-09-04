@@ -152,7 +152,9 @@ export function GoogleCalendarPanel({ businessId }: { businessId: string }) {
             </span>
           </>
         ) : connected ? (
-          <span className="font-medium text-warning-foreground">{t("gcal.statusPickCalendar")}</span>
+          <span className="font-medium text-warning-foreground">
+            {t("gcal.statusPickCalendar")}
+          </span>
         ) : (
           <span className="text-muted-foreground">{t("gcal.statusNotConnected")}</span>
         )}
@@ -186,7 +188,11 @@ export function GoogleCalendarPanel({ businessId }: { businessId: string }) {
 
       <div className="mt-5 flex flex-wrap gap-2">
         {!connected ? (
-          <Button size="sm" disabled={connectMutation.isPending} onClick={() => connectMutation.mutate()}>
+          <Button
+            size="sm"
+            disabled={connectMutation.isPending}
+            onClick={() => connectMutation.mutate()}
+          >
             {connectMutation.isPending ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (

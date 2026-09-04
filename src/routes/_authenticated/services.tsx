@@ -41,7 +41,10 @@ export const Route = createFileRoute("/_authenticated/services")({
   head: () => ({
     meta: [
       { title: "Services / サービス — NAGI AI" },
-      { name: "description", content: "Create, edit, and remove the services your business offers." },
+      {
+        name: "description",
+        content: "Create, edit, and remove the services your business offers.",
+      },
       { property: "og:title", content: "Services — NAGI AI" },
       { property: "og:description", content: "Manage your service menu, pricing, and duration." },
     ],
@@ -280,7 +283,10 @@ function ServicesPage() {
             </div>
 
             {formError && (
-              <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <p
+                role="alert"
+                className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
                 {formError}
               </p>
             )}
