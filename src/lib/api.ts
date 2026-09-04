@@ -543,13 +543,13 @@ export function useSaveAppointment(businessId?: string) {
         if (error) throw error;
         return;
       }
-      const { error } = await supabase
-        .from("appointments")
-        .insert({ ...row, source: "manual" });
+      const { error } = await supabase.from("appointments").insert({ ...row, source: "manual" });
       if (error) throw error;
     },
     onSuccess: () =>
-      qc.invalidateQueries({ predicate: (q) => ["appointments", "customers"].includes(String(q.queryKey[0])) }),
+      qc.invalidateQueries({
+        predicate: (q) => ["appointments", "customers"].includes(String(q.queryKey[0])),
+      }),
   });
 }
 
@@ -709,6 +709,5 @@ export function useRealtime(
       void supabase.removeChannel(channel);
     };
     // `signature` captures the table list identity.
-     
   }, [businessId, signature, qc]);
 }

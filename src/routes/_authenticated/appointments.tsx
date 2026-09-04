@@ -288,7 +288,10 @@ function AppointmentsPage() {
                       <p className="text-sm">
                         {appointment.customers?.name ?? "—"}
                         {appointment.customers?.phone && (
-                          <span className="text-muted-foreground"> · {appointment.customers.phone}</span>
+                          <span className="text-muted-foreground">
+                            {" "}
+                            · {appointment.customers.phone}
+                          </span>
                         )}
                       </p>
                       <p className="text-xs text-muted-foreground">

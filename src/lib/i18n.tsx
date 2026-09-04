@@ -410,7 +410,8 @@ const ja: Dict = {
   "an.byWeekday": "曜日別の予約",
   "an.empty": "まだ分析できるデータがありません。",
   "recept.liveMode": "本番モード",
-  "recept.liveNote": "NAGIは登録済みの店舗データを参照し、確定した予約は実際の予約として保存されます。",
+  "recept.liveNote":
+    "NAGIは登録済みの店舗データを参照し、確定した予約は実際の予約として保存されます。",
   "recept.booked": "予約を登録しました。",
   "recept.cancelled": "予約をキャンセルしました。",
 };
@@ -816,7 +817,8 @@ const en: Dict = {
   "an.byWeekday": "Bookings by weekday",
   "an.empty": "There is no data to analyse yet.",
   "recept.liveMode": "Live mode",
-  "recept.liveNote": "NAGI uses your stored business data, and confirmed bookings are saved as real appointments.",
+  "recept.liveNote":
+    "NAGI uses your stored business data, and confirmed bookings are saved as real appointments.",
   "recept.booked": "Appointment created.",
   "recept.cancelled": "Appointment cancelled.",
 };

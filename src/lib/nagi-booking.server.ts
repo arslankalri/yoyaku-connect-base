@@ -331,11 +331,16 @@ export async function rescheduleAppointment(
   const start = zonedToUtc(date, time, timeZone);
   const end = new Date(start.getTime() + duration * 60_000);
   if (calendar && appt.external_calendar_event_id) {
-    await updateEvent(calendar.connectionAPIKey, calendar.calendarId, appt.external_calendar_event_id, {
-      startIso: start.toISOString(),
-      endIso: end.toISOString(),
-      timeZone,
-    });
+    await updateEvent(
+      calendar.connectionAPIKey,
+      calendar.calendarId,
+      appt.external_calendar_event_id,
+      {
+        startIso: start.toISOString(),
+        endIso: end.toISOString(),
+        timeZone,
+      },
+    );
   }
   const { error: updateError } = await supabase
     .from("appointments")
@@ -361,7 +366,11 @@ export async function cancelAppointment(
   if (!appt) return { cancelled: false as const, reason: "not_found" };
 
   if (calendar && appt.external_calendar_event_id) {
-    await deleteEvent(calendar.connectionAPIKey, calendar.calendarId, appt.external_calendar_event_id);
+    await deleteEvent(
+      calendar.connectionAPIKey,
+      calendar.calendarId,
+      appt.external_calendar_event_id,
+    );
   }
   const { error: updateError } = await supabase
     .from("appointments")
