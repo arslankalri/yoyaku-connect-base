@@ -168,35 +168,16 @@ function buildTools(
   };
 }
 
-function buildCalendarTools(supabase: AuthedClient, businessId: string, calendar: CalendarCtx) {
-  const { connectionAPIKey, calendarId, timezone } = calendar;
-  const dateSchema = z.string().describe("Date in YYYY-MM-DD (business timezone)");
-  const timeSchema = z.string().describe("Time in 24h HH:MM (business timezone)");
+const dateSchema = z.string().describe("Date in YYYY-MM-DD (business timezone)");
+const timeSchema = z.string().describe("Time in 24h HH:MM (business timezone)");
 
+/** Read-only Google Calendar visibility, only when a calendar is connected. */
+function buildCalendarTools(calendar: CalendarCtx) {
+  const { connectionAPIKey, calendarId, timezone } = calendar;
   return {
-    check_calendar_availability: tool({
-      description:
-        "Check open appointment start times on a date, using the business opening hours and the owner's Google Calendar. Always call before proposing or booking a time.",
-      inputSchema: z.object({
-        date: dateSchema,
-        duration_minutes: z
-          .number()
-          .describe("Appointment length in minutes (use the service duration)"),
-      }),
-      execute: async ({ date, duration_minutes }) =>
-        checkAvailability(
-          supabase,
-          businessId,
-          connectionAPIKey,
-          calendarId,
-          timezone,
-          date,
-          duration_minutes,
-        ),
-    }),
     list_calendar_events: tool({
       description:
-        "Read existing calendar events between two dates (inclusive start, exclusive end) to see what is already scheduled.",
+        "Read existing calendar events between two dates to see what is already scheduled.",
       inputSchema: z.object({ from_date: dateSchema, to_date: dateSchema }),
       execute: async ({ from_date, to_date }) =>
         listEvents(
@@ -206,48 +187,104 @@ function buildCalendarTools(supabase: AuthedClient, businessId: string, calendar
           zonedToUtc(to_date, "23:59", timezone).toISOString(),
         ),
     }),
-    create_calendar_appointment: tool({
+  };
+}
+
+/** Real appointment operations against the business's own records. */
+function buildBookingTools(
+  supabase: AuthedClient,
+  businessId: string,
+  timezone: string,
+  calendar: CalendarLink,
+  config: NagiConfig,
+  channel: NagiChannel,
+) {
+  const availability = {
+    check_availability: tool({
       description:
-        "Create the appointment in the owner's Google Calendar. Only call after check_calendar_availability showed the slot is free AND the customer explicitly confirmed the booking.",
+        "Check open appointment start times on a date, using the business opening hours, existing appointments and (when connected) the owner's Google Calendar. Always call before proposing or booking a time.",
       inputSchema: z.object({
         date: dateSchema,
-        time: timeSchema,
-        duration_minutes: z.number(),
-        service: z.string(),
-        customer_name: z.string(),
-        customer_phone: z.string(),
-        staff: z.string().optional(),
-        notes: z.string().optional(),
+        duration_minutes: z
+          .number()
+          .describe("Appointment length in minutes (use the service duration)"),
       }),
-      execute: async (input) => {
-        const start = zonedToUtc(input.date, input.time, timezone);
-        const end = new Date(start.getTime() + Math.max(5, input.duration_minutes) * 60_000);
-        const created = await createEvent(connectionAPIKey, calendarId, {
-          summary: `${input.service} — ${input.customer_name}`,
-          description: [
-            `Service: ${input.service}`,
-            `Customer: ${input.customer_name}`,
-            `Phone: ${input.customer_phone}`,
-            input.staff ? `Staff: ${input.staff}` : null,
-            input.notes ? `Notes: ${input.notes}` : null,
-            "Booked by NAGI AI receptionist.",
-          ]
-            .filter(Boolean)
-            .join("\n"),
-          startIso: start.toISOString(),
-          endIso: end.toISOString(),
-          timeZone: timezone,
-        });
-        return {
-          created: true,
-          event_id: created.id,
-          date: input.date,
-          time: input.time,
-          duration_minutes: input.duration_minutes,
-        };
-      },
+      execute: async ({ date, duration_minutes }) =>
+        availabilityFor(supabase, businessId, timezone, calendar, date, duration_minutes),
     }),
   };
+
+  const create = config.can_accept_appointments
+    ? {
+        book_appointment: tool({
+          description:
+            "Create the real appointment. Only call after check_availability showed the exact time is free AND the customer explicitly confirmed the details.",
+          inputSchema: z.object({
+            date: dateSchema,
+            time: timeSchema,
+            duration_minutes: z.number(),
+            service: z.string(),
+            customer_name: z.string(),
+            customer_phone: z.string(),
+            staff: z.string().optional(),
+            notes: z.string().optional(),
+          }),
+          execute: async (input) =>
+            bookAppointment(supabase, businessId, timezone, calendar, channel, input),
+        }),
+      }
+    : {};
+
+  const lookup =
+    config.can_change_appointments || config.can_cancel_appointments
+      ? {
+          find_appointments: tool({
+            description:
+              "Find the customer's upcoming appointments by their phone number. Use before changing or cancelling a booking.",
+            inputSchema: z.object({ customer_phone: z.string() }),
+            execute: async ({ customer_phone }) =>
+              findAppointments(supabase, businessId, timezone, customer_phone),
+          }),
+        }
+      : {};
+
+  const change = config.can_change_appointments
+    ? {
+        reschedule_appointment: tool({
+          description:
+            "Move an existing appointment to a new date/time. Call find_appointments first and confirm with the customer.",
+          inputSchema: z.object({
+            appointment_id: z.string(),
+            date: dateSchema,
+            time: timeSchema,
+          }),
+          execute: async ({ appointment_id, date, time }) =>
+            rescheduleAppointment(
+              supabase,
+              businessId,
+              timezone,
+              calendar,
+              appointment_id,
+              date,
+              time,
+            ),
+        }),
+      }
+    : {};
+
+  const cancel = config.can_cancel_appointments
+    ? {
+        cancel_appointment: tool({
+          description:
+            "Cancel an existing appointment. Call find_appointments first and confirm with the customer.",
+          inputSchema: z.object({ appointment_id: z.string() }),
+          execute: async ({ appointment_id }) =>
+            cancelAppointment(supabase, businessId, calendar, appointment_id),
+        }),
+      }
+    : {};
+
+  return { ...availability, ...create, ...lookup, ...change, ...cancel };
 }
 
 function toneLine(tone: string) {
