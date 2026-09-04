@@ -34,7 +34,6 @@ function waitForOAuthCompletion(popup: Window) {
       if (timers.poll !== undefined) window.clearInterval(timers.poll);
     };
 
-
     const onMessage = (event: MessageEvent) => {
       const type = (event.data as { type?: string } | null)?.type;
       const data = event.data as { connectorId?: string; code?: unknown } | null;
