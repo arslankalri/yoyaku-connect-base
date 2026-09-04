@@ -53,11 +53,12 @@ function waitForOAuthCompletion(popup: Window) {
       reject(new Error("OAuth connection failed."));
     };
     window.addEventListener("message", onMessage);
-    poll = window.setInterval(() => {
+    const poll: number | undefined = window.setInterval(() => {
       if (!popup.closed) return;
       cleanup();
       reject(new Error("OAuth window closed before completion."));
     }, 500);
+
   });
 }
 
