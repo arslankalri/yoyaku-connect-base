@@ -70,8 +70,9 @@ export const Route = createFileRoute("/api/chat")({
                   transcript,
                   firstCustomer ? plainText(firstCustomer).slice(0, 200) : null,
                 );
-              } catch {
+              } catch (logError) {
                 // Logging must never break the customer conversation.
+                console.error("[nagi] failed to save conversation", logError);
               }
             },
           });
