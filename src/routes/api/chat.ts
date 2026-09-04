@@ -9,6 +9,7 @@ import type { UIMessage } from "ai";
 import {
   NagiError,
   createNagiSession,
+  logNagiConversation,
   streamNagiReply,
   toNagiMessages,
 } from "@/lib/nagi-brain.server";
@@ -21,23 +22,59 @@ const STATUS: Record<string, number> = {
   nagi_disabled: 403,
 };
 
+function plainText(message: UIMessage) {
+  return message.parts
+    .map((part) => (part.type === "text" ? part.text : ""))
+    .join("")
+    .replaceAll("[[HANDOFF]]", "")
+    .replaceAll("[[BOOKING_CONFIRMED]]", "")
+    .replaceAll("[[BOOKING_CANCELLED]]", "")
+    .trim();
+}
+
+function transcriptOf(messages: UIMessage[]) {
+  return messages
+    .map((m) => `${m.role === "user" ? "Customer" : "NAGI"}: ${plainText(m)}`)
+    .filter((line) => line.split(": ").slice(1).join(": ").length > 0)
+    .join("\n");
+}
+
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const body = (await request.json()) as { messages?: unknown };
+        const body = (await request.json()) as { messages?: unknown; sessionKey?: unknown };
         if (!Array.isArray(body.messages)) {
           return new Response("Messages are required", { status: 400 });
         }
 
         const authHeader = request.headers.get("Authorization") ?? "";
         const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+        const sessionKey = typeof body.sessionKey === "string" ? body.sessionKey : null;
 
         try {
           const session = await createNagiSession(token, "chat");
           const messages = body.messages as UIMessage[];
           const result = streamNagiReply(session, await toNagiMessages(messages));
-          return result.toUIMessageStreamResponse({ originalMessages: messages });
+          return result.toUIMessageStreamResponse({
+            originalMessages: messages,
+            onFinish: async ({ messages: finished }) => {
+              if (!sessionKey) return;
+              const transcript = transcriptOf(finished as UIMessage[]);
+              if (!transcript) return;
+              const firstCustomer = (finished as UIMessage[]).find((m) => m.role === "user");
+              try {
+                await logNagiConversation(
+                  session,
+                  sessionKey,
+                  transcript,
+                  firstCustomer ? plainText(firstCustomer).slice(0, 200) : null,
+                );
+              } catch {
+                // Logging must never break the customer conversation.
+              }
+            },
+          });
         } catch (error) {
           if (error instanceof NagiError) {
             return new Response(error.message, { status: STATUS[error.reason] ?? 500 });
