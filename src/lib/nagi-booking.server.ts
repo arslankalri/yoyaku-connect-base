@@ -73,7 +73,7 @@ export async function availabilityFor(
       start: new Date(a.starts_at).getTime(),
       end: new Date(a.ends_at).getTime(),
     })),
-    ...(await googleBusy(calendar, dayStart.toISOString(), dayEnd.toISOString(), timeZone)),
+    ...(await googleBusy(calendar, dayStart.toISOString(), dayEnd.toISOString())),
   ];
 
   const step = 30 * 60_000;
