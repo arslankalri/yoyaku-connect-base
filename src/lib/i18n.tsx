@@ -88,6 +88,10 @@ const ja: Dict = {
   "auth.errInvalidCredentials": "メールアドレスまたはパスワードが正しくありません。",
   "auth.haveAccount": "すでにアカウントをお持ちですか？",
   "auth.noAccount": "アカウントをお持ちでない方",
+  "auth.guestCta": "ゲストとして試す",
+  "auth.guestHint": "登録不要でお試しいただけます（データは一時的です）",
+  "auth.guestError": "ゲストログインに失敗しました。もう一度お試しください。",
+  "auth.or": "または",
 
   "onboarding.title": "店舗情報を登録",
   "onboarding.desc": "はじめに店舗の基本情報を登録してください。あとから設定画面で変更できます。",
