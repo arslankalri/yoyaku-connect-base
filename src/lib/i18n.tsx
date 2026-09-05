@@ -494,6 +494,10 @@ const en: Dict = {
   "auth.errInvalidCredentials": "Incorrect email or password.",
   "auth.haveAccount": "Already have an account?",
   "auth.noAccount": "Don't have an account?",
+  "auth.guestCta": "Continue as guest",
+  "auth.guestHint": "Try it without signing up (guest data is temporary)",
+  "auth.guestError": "Guest login failed. Please try again.",
+  "auth.or": "or",
 
   "onboarding.title": "Set up your business",
   "onboarding.desc":
