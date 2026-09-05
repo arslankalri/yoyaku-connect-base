@@ -179,6 +179,25 @@ function AuthPage() {
             </Button>
           </form>
 
+          <div className="my-5 flex items-center gap-3">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-xs uppercase tracking-wide text-muted-foreground">
+              {t("auth.or")}
+            </span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={submitting}
+            onClick={onGuestLogin}
+          >
+            {t("auth.guestCta")}
+          </Button>
+          <p className="mt-2 text-center text-xs text-muted-foreground">{t("auth.guestHint")}</p>
+
           <div className="mt-5 flex flex-col gap-2 text-sm">
             <Link to="/forgot-password" className="text-primary hover:underline">
               {t("auth.forgotPassword")}
