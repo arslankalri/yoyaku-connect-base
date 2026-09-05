@@ -101,6 +101,22 @@ function AuthPage() {
     }
   }
 
+  async function onGuestLogin() {
+    setError(null);
+    setNotice(null);
+    setSubmitting(true);
+    try {
+      const { error: guestError } = await supabase.auth.signInAnonymously();
+      if (guestError) {
+        setError(t("auth.guestError"));
+        return;
+      }
+      navigate({ to: "/dashboard" });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-secondary/40">
       <header className="flex h-16 items-center px-4 md:px-8">
