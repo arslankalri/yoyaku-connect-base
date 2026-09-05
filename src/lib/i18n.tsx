@@ -88,6 +88,10 @@ const ja: Dict = {
   "auth.errInvalidCredentials": "メールアドレスまたはパスワードが正しくありません。",
   "auth.haveAccount": "すでにアカウントをお持ちですか？",
   "auth.noAccount": "アカウントをお持ちでない方",
+  "auth.guestCta": "ゲストとして試す",
+  "auth.guestHint": "登録不要でお試しいただけます（データは一時的です）",
+  "auth.guestError": "ゲストログインに失敗しました。もう一度お試しください。",
+  "auth.or": "または",
 
   "onboarding.title": "店舗情報を登録",
   "onboarding.desc": "はじめに店舗の基本情報を登録してください。あとから設定画面で変更できます。",
@@ -490,6 +494,10 @@ const en: Dict = {
   "auth.errInvalidCredentials": "Incorrect email or password.",
   "auth.haveAccount": "Already have an account?",
   "auth.noAccount": "Don't have an account?",
+  "auth.guestCta": "Continue as guest",
+  "auth.guestHint": "Try it without signing up (guest data is temporary)",
+  "auth.guestError": "Guest login failed. Please try again.",
+  "auth.or": "or",
 
   "onboarding.title": "Set up your business",
   "onboarding.desc":
