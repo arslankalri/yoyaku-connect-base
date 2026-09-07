@@ -12,6 +12,7 @@ export type Business = {
   address: string | null;
   website: string | null;
   timezone: string;
+  business_type: string | null;
 };
 
 export type BusinessHour = {
@@ -64,7 +65,7 @@ export function useBusiness() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("id, owner_id, name, phone, postal_code, address, website, timezone")
+        .select("id, owner_id, name, phone, postal_code, address, website, timezone, business_type")
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle();
@@ -74,12 +75,25 @@ export function useBusiness() {
   });
 }
 
+export type SaveBusinessInput = {
+  id?: string;
+  name: string;
+  phone?: string | null;
+  postal_code?: string | null;
+  address?: string | null;
+  website?: string | null;
+  timezone?: string;
+  business_type?: string | null;
+  skipDefaultHours?: boolean;
+};
+
 export function useSaveBusiness() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: Partial<Business> & { name: string; id?: string }) => {
+    mutationFn: async (input: SaveBusinessInput) => {
       if (input.id) {
-        const { id, ...rest } = input;
+        const { id, skipDefaultHours: _skip, ...rest } = input;
+        void _skip;
         const { error } = await supabase.from("businesses").update(rest).eq("id", id);
         if (error) throw error;
         return id;
@@ -87,28 +101,74 @@ export function useSaveBusiness() {
       const { data: userData } = await supabase.auth.getUser();
       const ownerId = userData.user?.id;
       if (!ownerId) throw new Error("Not authenticated");
+      const { skipDefaultHours, ...rest } = input;
       const { data, error } = await supabase
         .from("businesses")
-        .insert({ ...input, owner_id: ownerId })
+        .insert({ ...rest, owner_id: ownerId })
         .select("id")
         .single();
       if (error) throw error;
 
-      // Seed a sensible default week so hours are never empty.
-      const rows = DAYS.map((day) => ({
-        business_id: data.id,
-        day_of_week: day,
-        is_open: day !== 0,
-        open_time: "09:00",
-        close_time: "18:00",
-      }));
-      await supabase.from("business_hours").insert(rows);
+      if (!skipDefaultHours) {
+        // Seed a sensible default week so hours are never empty.
+        const rows = DAYS.map((day) => ({
+          business_id: data.id,
+          day_of_week: day,
+          is_open: day !== 0,
+          open_time: "09:00",
+          close_time: "18:00",
+        }));
+        await supabase.from("business_hours").insert(rows);
+      }
       return data.id;
     },
     onSuccess: async () => {
       await qc.invalidateQueries();
     },
   });
+}
+
+export function useUpdateBusinessType() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, type }: { id: string; type: string }) => {
+      const { error } = await supabase
+        .from("businesses")
+        .update({ business_type: type })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["business"] }),
+  });
+}
+
+export function useSetupProgress(businessId?: string) {
+  const businessQuery = useBusiness();
+  const hoursQuery = useBusinessHours(businessId);
+  const servicesQuery = useServices(businessId);
+  const staffQuery = useStaff(businessId);
+
+  const isLoading =
+    businessQuery.isLoading ||
+    hoursQuery.isLoading ||
+    servicesQuery.isLoading ||
+    staffQuery.isLoading;
+  const hasBusiness = !!businessQuery.data;
+  const hasBusinessType = !!businessQuery.data?.business_type;
+  const hasHours = (hoursQuery.data?.length ?? 0) > 0;
+  const hasServices = (servicesQuery.data?.length ?? 0) > 0;
+  const hasStaff = (staffQuery.data?.length ?? 0) > 0;
+  const isComplete = hasBusiness && hasHours && hasServices && hasStaff;
+
+  return {
+    isLoading,
+    hasBusiness,
+    hasBusinessType,
+    hasHours,
+    hasServices,
+    hasStaff,
+    isComplete,
+  };
 }
 
 export function useBusinessHours(businessId?: string) {
@@ -708,6 +768,7 @@ export function useRealtime(
     return () => {
       void supabase.removeChannel(channel);
     };
-    // `signature` captures the table list identity.
+    // `signature` captures the table list identity, so we do not need `tables` in deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [businessId, signature, qc]);
 }
