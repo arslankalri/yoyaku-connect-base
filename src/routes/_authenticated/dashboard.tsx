@@ -1,5 +1,15 @@
 import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
-import { Bot, Clock3, Loader2, MapPin, Phone, Scissors, Sparkles, UsersRound } from "lucide-react";
+import {
+  Bot,
+  CheckCircle2,
+  Clock3,
+  Loader2,
+  MapPin,
+  Phone,
+  Scissors,
+  Sparkles,
+  UsersRound,
+} from "lucide-react";
 
 import { OnlineDot } from "@/components/ai-background";
 import { AppShell } from "@/components/app-shell";
@@ -13,10 +23,12 @@ import {
   useBusinessHours,
   useRealtime,
   useServices,
+  useSetupProgress,
   useStaff,
   type BusinessHour,
 } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -55,6 +67,7 @@ function Dashboard() {
   const servicesQuery = useServices(businessId);
   const staffQuery = useStaff(businessId);
   const appointmentsQuery = useAppointments(businessId);
+  const setup = useSetupProgress(businessId);
   useRealtime(businessId, [
     { table: "appointments", queryKey: "appointments" },
     { table: "customers", queryKey: "customers" },
@@ -84,7 +97,8 @@ function Dashboard() {
   const staff = staffQuery.data ?? [];
   const activeServices = services.filter((s) => s.is_active);
   const activeStaff = staff.filter((s) => s.is_active);
-  const syncing = hoursQuery.isFetching || servicesQuery.isFetching || staffQuery.isFetching;
+  const syncing =
+    hoursQuery.isFetching || servicesQuery.isFetching || staffQuery.isFetching || setup.isLoading;
 
   const dateLabel = new Intl.DateTimeFormat(language === "ja" ? "ja-JP" : "en-US", {
     year: "numeric",
@@ -100,13 +114,12 @@ function Dashboard() {
     unset: t("dashboard.statusUnset"),
   }[status];
 
-  const setupTasks = [
-    ...(hoursQuery.data && hoursQuery.data.length > 0
-      ? []
-      : [{ to: "/settings", label: t("dashboard.setupHours") }]),
-    ...(services.length > 0 ? [] : [{ to: "/services", label: t("dashboard.setupServices") }]),
-    ...(staff.length > 0 ? [] : [{ to: "/staff", label: t("dashboard.setupStaff") }]),
-  ] as const;
+  const steps = [
+    { key: "profile" as const, ready: setup.hasBusiness, to: "/onboarding" as const },
+    { key: "hours" as const, ready: setup.hasHours, to: "/onboarding" as const },
+    { key: "services" as const, ready: setup.hasServices, to: "/services" as const },
+    { key: "staff" as const, ready: setup.hasStaff, to: "/staff" as const },
+  ];
 
   return (
     <AppShell title={t("dashboard.title")} description={t("dashboard.welcome")}>
@@ -213,18 +226,42 @@ function Dashboard() {
           </div>
         </section>
 
-        {setupTasks.length > 0 && (
-          <section className="glass-panel p-6">
-            <h3 className="text-base font-semibold">{t("dashboard.setupTitle")}</h3>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {setupTasks.map((task) => (
-                <Button key={task.to} asChild variant="outline" size="sm">
-                  <Link to={task.to}>{task.label}</Link>
-                </Button>
-              ))}
+        <section className="glass-panel p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h3 className="text-base font-semibold">
+                {setup.isComplete ? t("setup.progress.ready") : t("setup.progress.title")}
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {setup.isComplete ? t("setup.progress.readyDesc") : t("setup.progress.desc")}
+              </p>
             </div>
-          </section>
-        )}
+            {!setup.isComplete && (
+              <Button asChild size="sm">
+                <Link to="/onboarding">{t("setup.progress.cta")}</Link>
+              </Button>
+            )}
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step) => (
+              <div
+                key={step.key}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm",
+                  step.ready
+                    ? "border-success/30 bg-success/10 text-success"
+                    : "border-border bg-secondary text-muted-foreground",
+                )}
+              >
+                <CheckCircle2
+                  className={cn("size-4", step.ready ? "text-success" : "text-muted-foreground/50")}
+                />
+                <span className="flex-1">{t(`setup.progress.${step.key}`)}</span>
+                {!step.ready && <span className="text-xs">{t("common.required")}</span>}
+              </div>
+            ))}
+          </div>
+        </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <section className="glass-panel p-6">

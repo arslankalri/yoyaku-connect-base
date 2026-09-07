@@ -1,16 +1,18 @@
 import { useChat } from "@ai-sdk/react";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import {
   Activity,
+  AlertTriangle,
+  CheckCircle2,
   Clock3,
   Database,
   Eraser,
   HelpCircle,
   Loader2,
-  ScrollText,
   RotateCcw,
   Scissors,
+  ScrollText,
   Send,
   Sparkles,
   Store,
@@ -33,6 +35,7 @@ import {
   useFaqs,
   useNagiSettings,
   useServices,
+  useSetupProgress,
   useStaff,
 } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
@@ -167,6 +170,7 @@ function Page() {
   const faqsQuery = useFaqs(business?.id);
   const settingsQuery = useNagiSettings(business?.id);
   const settings = settingsQuery.data;
+  const setup = useSetupProgress(business?.id);
   const [tab, setTab] = useState("chat");
 
   const [sessionId, setSessionId] = useState(() => `nagi-${Date.now()}`);
@@ -518,6 +522,30 @@ function Page() {
                   {t("recept.data.note")}
                 </p>
               </div>
+
+              {!setup.isComplete && (
+                <div className="glass-panel space-y-3 p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-warning-foreground">
+                    <AlertTriangle className="size-4" />
+                    {t("setup.progress.title")}
+                  </div>
+                  <ul className="space-y-1.5 text-xs text-muted-foreground">
+                    {!setup.hasHours && <li>{t("setup.progress.hours")}</li>}
+                    {!setup.hasServices && <li>{t("setup.progress.services")}</li>}
+                    {!setup.hasStaff && <li>{t("setup.progress.staff")}</li>}
+                  </ul>
+                  <Button asChild variant="outline" size="sm" className="w-full">
+                    <Link to="/onboarding">{t("setup.progress.cta")}</Link>
+                  </Button>
+                </div>
+              )}
+
+              {setup.isComplete && (
+                <div className="glass-panel flex items-center gap-2 p-4 text-sm text-success">
+                  <CheckCircle2 className="size-4" />
+                  {t("setup.progress.ready")}
+                </div>
+              )}
 
               <div className="glass-panel p-4">
                 <p className="eyebrow flex items-center gap-1.5">

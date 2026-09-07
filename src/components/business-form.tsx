@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSaveBusiness, type Business } from "@/lib/api";
+import { useSaveBusiness, type Business, type SaveBusinessInput } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 
 const TIMEZONES = [
@@ -29,10 +29,12 @@ export function BusinessForm({
   business,
   submitLabel,
   onSaved,
+  skipDefaultHours,
 }: {
   business?: Business | null | undefined;
   submitLabel: string;
   onSaved?: ((id: string) => void) | undefined;
+  skipDefaultHours?: boolean;
 }) {
   const { t } = useI18n();
   const save = useSaveBusiness();
@@ -70,7 +72,8 @@ export function BusinessForm({
         address: form.address.trim() || null,
         website: form.website.trim() || null,
         timezone: form.timezone,
-      });
+        skipDefaultHours,
+      } as SaveBusinessInput);
       toast.success(t("business.saved"));
       onSaved?.(id);
     } catch (err) {
