@@ -41,8 +41,18 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { mode: initialMode } = Route.useSearch();
+  const { mode: initialMode, next } = Route.useSearch();
+  const redirectTo = safeNext(next);
   const [mode, setMode] = useState<"login" | "signup">(initialMode ?? "login");
+
+  function goAfterAuth() {
+    if (redirectTo) {
+      window.location.href = redirectTo;
+      return;
+    }
+    navigate({ to: "/dashboard" });
+  }
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
