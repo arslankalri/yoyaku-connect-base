@@ -383,6 +383,9 @@ export type NagiSettings = {
   late_arrival_policy: string;
   reservation_policy: string;
   other_policies: string;
+  voice_enabled: boolean;
+  voice_phone_number: string | null;
+  voice_greeting: string;
 } & Record<(typeof NAGI_CAPABILITIES)[number], boolean> &
   Record<(typeof NAGI_HANDOFF_RULES)[number], boolean>;
 
@@ -396,6 +399,9 @@ const NAGI_COLUMNS = [
   "late_arrival_policy",
   "reservation_policy",
   "other_policies",
+  "voice_enabled",
+  "voice_phone_number",
+  "voice_greeting",
   ...NAGI_CAPABILITIES,
   ...NAGI_HANDOFF_RULES,
 ].join(", ");
