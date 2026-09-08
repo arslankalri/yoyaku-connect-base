@@ -12,7 +12,13 @@ import { useI18n } from "@/lib/i18n";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).optional(),
+  next: z.string().optional(),
 });
+
+/** Only same-origin relative paths may be used as a post-login redirect. */
+function safeNext(next: string | undefined) {
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+}
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -35,8 +41,18 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { mode: initialMode } = Route.useSearch();
+  const { mode: initialMode, next } = Route.useSearch();
+  const redirectTo = safeNext(next);
   const [mode, setMode] = useState<"login" | "signup">(initialMode ?? "login");
+
+  function goAfterAuth() {
+    if (redirectTo) {
+      window.location.href = redirectTo;
+      return;
+    }
+    navigate({ to: "/dashboard" });
+  }
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,7 +83,7 @@ function AuthPage() {
           email: email.trim(),
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: redirectTo ? window.location.origin + redirectTo : window.location.origin,
             data: { full_name: fullName.trim() },
           },
         });
@@ -79,7 +95,7 @@ function AuthPage() {
           setNotice(t("auth.checkEmail"));
           return;
         }
-        navigate({ to: "/dashboard" });
+        goAfterAuth();
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -94,7 +110,7 @@ function AuthPage() {
           return;
         }
         toast.success(t("auth.loginCta"));
-        navigate({ to: "/dashboard" });
+        goAfterAuth();
       }
     } finally {
       setSubmitting(false);
@@ -111,7 +127,7 @@ function AuthPage() {
         setError(t("auth.guestError"));
         return;
       }
-      navigate({ to: "/dashboard" });
+      goAfterAuth();
     } finally {
       setSubmitting(false);
     }
