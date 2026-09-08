@@ -83,7 +83,7 @@ function AuthPage() {
           email: email.trim(),
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: redirectTo ? window.location.origin + redirectTo : window.location.origin,
             data: { full_name: fullName.trim() },
           },
         });
@@ -95,7 +95,7 @@ function AuthPage() {
           setNotice(t("auth.checkEmail"));
           return;
         }
-        navigate({ to: "/dashboard" });
+        goAfterAuth();
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -110,7 +110,7 @@ function AuthPage() {
           return;
         }
         toast.success(t("auth.loginCta"));
-        navigate({ to: "/dashboard" });
+        goAfterAuth();
       }
     } finally {
       setSubmitting(false);
@@ -127,7 +127,7 @@ function AuthPage() {
         setError(t("auth.guestError"));
         return;
       }
-      navigate({ to: "/dashboard" });
+      goAfterAuth();
     } finally {
       setSubmitting(false);
     }
