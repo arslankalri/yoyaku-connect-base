@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "sdk_version": "2.0.3",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://akfdmchmlzxnmthuyhtm.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "nagi-ai-voice",
+      "version": "0.1.0",
+      "title": "NAGI AI Voice"
+    },
+    "tools": [
+      {
+        "name": "get_business_overview",
+        "title": "Get business overview",
+        "description": "Return the signed-in owner's business profile plus its weekly opening hours, services and staff.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_appointments",
+        "title": "List appointments",
+        "description": "List appointments for the signed-in owner's business, optionally filtered by date range and status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "from": {
+              "description": "ISO date or datetime lower bound, e.g. 2026-09-08.",
+              "type": "string"
+            },
+            "to": {
+              "description": "ISO date or datetime upper bound.",
+              "type": "string"
+            },
+            "status": {
+              "description": "Filter by appointment status.",
+              "type": "string",
+              "enum": [
+                "scheduled",
+                "cancelled",
+                "completed",
+                "no_show"
+              ]
+            },
+            "limit": {
+              "default": 25,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_customers",
+        "title": "List customers",
+        "description": "List or search the customers of the signed-in owner's business.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Match against customer name or phone.",
+              "type": "string",
+              "minLength": 1
+            },
+            "limit": {
+              "default": 25,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_appointment",
+        "title": "Create appointment",
+        "description": "Book an appointment in the signed-in owner's business. The end time is derived from the service duration. Creates the customer record when needed.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "service_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "Service id from get_business_overview."
+            },
+            "starts_at": {
+              "type": "string",
+              "description": "Start time as an ISO 8601 timestamp with offset."
+            },
+            "customer_name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "customer_phone": {
+              "type": "string",
+              "minLength": 1
+            },
+            "staff_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "notes": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "service_id",
+            "starts_at",
+            "customer_name"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "cancel_appointment",
+        "title": "Cancel appointment",
+        "description": "Mark an appointment of the signed-in owner's business as cancelled.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "appointment_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "reason": {
+              "type": "string",
+              "maxLength": 300
+            }
+          },
+          "required": [
+            "appointment_id"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
