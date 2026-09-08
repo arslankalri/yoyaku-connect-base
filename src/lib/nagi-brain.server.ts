@@ -421,31 +421,26 @@ export type NagiSession = {
   tools: ReturnType<typeof buildTools>;
 };
 
-/**
- * Build a NAGI brain session for the authenticated owner's business.
- * Transport-agnostic: pass the Supabase access token and the channel.
- */
-export async function createNagiSession(
-  accessToken: string,
-  channel: NagiChannel = "chat",
-): Promise<NagiSession> {
-  if (!accessToken) throw new NagiError("unauthorized", "Unauthorized");
+type BusinessRow = {
+  id: string;
+  name: string;
+  timezone: string;
+  google_calendar_id?: string | null;
+};
 
+/**
+ * Build a NAGI session for one business, using an already-scoped Supabase client.
+ * Shared by the chat transport (owner-scoped client) and the phone channel
+ * (server-side client resolved from the dialled number).
+ */
+export async function createNagiSessionForBusiness(
+  supabase: AuthedClient,
+  business: BusinessRow,
+  ownerUserId: string,
+  channel: NagiChannel,
+): Promise<NagiSession> {
   const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new NagiError("missing_api_key", "Missing LOVABLE_API_KEY");
-
-  let supabase: AuthedClient;
-  try {
-    supabase = createUserClient(accessToken);
-  } catch {
-    throw new NagiError("backend_not_configured", "Backend not configured");
-  }
-
-  const { data: userData } = await supabase.auth.getUser(accessToken);
-  if (!userData.user) throw new NagiError("unauthorized", "Unauthorized");
-
-  const business = await getBusinessForUser(supabase);
-  if (!business) throw new NagiError("no_business", "No business found for this account");
 
   const config = await getNagiConfig(supabase, business.id);
   if (!config.is_enabled) throw new NagiError("nagi_disabled", "NAGI is currently turned off");
@@ -455,7 +450,7 @@ export async function createNagiSession(
   let calendar: CalendarCtx | null = null;
   if (business.google_calendar_id) {
     const { getConnectionKeyForUser } = await import("@/server/appUserConnections.server");
-    const connectionAPIKey = await getConnectionKeyForUser(userData.user.id, "google_calendar");
+    const connectionAPIKey = await getConnectionKeyForUser(ownerUserId, "google_calendar");
     if (connectionAPIKey) {
       calendar = { connectionAPIKey, calendarId: business.google_calendar_id, timezone };
     }
@@ -475,6 +470,32 @@ export async function createNagiSession(
     supabase,
     tools: buildTools(supabase, business.id, calendar, timezone, config, channel),
   };
+}
+
+/**
+ * Build a NAGI brain session for the authenticated owner's business.
+ * Transport-agnostic: pass the Supabase access token and the channel.
+ */
+export async function createNagiSession(
+  accessToken: string,
+  channel: NagiChannel = "chat",
+): Promise<NagiSession> {
+  if (!accessToken) throw new NagiError("unauthorized", "Unauthorized");
+
+  let supabase: AuthedClient;
+  try {
+    supabase = createUserClient(accessToken);
+  } catch {
+    throw new NagiError("backend_not_configured", "Backend not configured");
+  }
+
+  const { data: userData } = await supabase.auth.getUser(accessToken);
+  if (!userData.user) throw new NagiError("unauthorized", "Unauthorized");
+
+  const business = await getBusinessForUser(supabase);
+  if (!business) throw new NagiError("no_business", "No business found for this account");
+
+  return createNagiSessionForBusiness(supabase, business, userData.user.id, channel);
 }
 
 /** Run one NAGI turn as a stream (used by the chat UI transport). */
