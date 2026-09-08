@@ -12,7 +12,13 @@ import { useI18n } from "@/lib/i18n";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).optional(),
+  next: z.string().optional(),
 });
+
+/** Only same-origin relative paths may be used as a post-login redirect. */
+function safeNext(next: string | undefined) {
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+}
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
