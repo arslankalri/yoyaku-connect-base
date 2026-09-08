@@ -56,6 +56,7 @@ function SettingsPage() {
           <TabsTrigger value="business">{t("settings.tabBusiness")}</TabsTrigger>
           <TabsTrigger value="hours">{t("settings.tabHours")}</TabsTrigger>
           <TabsTrigger value="calendar">{t("settings.tabCalendar")}</TabsTrigger>
+          <TabsTrigger value="phone">{t("settings.tabPhone")}</TabsTrigger>
           <TabsTrigger value="account">{t("settings.tabAccount")}</TabsTrigger>
         </TabsList>
 
@@ -72,6 +73,12 @@ function SettingsPage() {
         <TabsContent value="calendar">
           <div className="max-w-2xl">
             <GoogleCalendarPanel businessId={businessQuery.data.id} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="phone">
+          <div className="max-w-2xl">
+            <VoicePanel businessId={businessQuery.data.id} />
           </div>
         </TabsContent>
 

@@ -384,6 +384,9 @@ export type Database = {
           reservation_policy: string
           tone: string
           updated_at: string
+          voice_enabled: boolean
+          voice_greeting: string
+          voice_phone_number: string | null
         }
         Insert: {
           business_id: string
@@ -410,6 +413,9 @@ export type Database = {
           reservation_policy?: string
           tone?: string
           updated_at?: string
+          voice_enabled?: boolean
+          voice_greeting?: string
+          voice_phone_number?: string | null
         }
         Update: {
           business_id?: string
@@ -436,6 +442,9 @@ export type Database = {
           reservation_policy?: string
           tone?: string
           updated_at?: string
+          voice_enabled?: boolean
+          voice_greeting?: string
+          voice_phone_number?: string | null
         }
         Relationships: [
           {
