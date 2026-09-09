@@ -669,6 +669,7 @@ const en: Dict = {
   "settings.tabBusiness": "Business",
   "settings.tabHours": "Business hours",
   "settings.tabCalendar": "Calendar",
+  "settings.tabPhone": "Phone",
   "recept.calendar.booked": "Appointment created in Google Calendar.",
   "gcal.title": "Google Calendar",
   "gcal.desc":
