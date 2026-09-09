@@ -129,9 +129,7 @@ export async function saveTranscript(
       started_at: new Date().toISOString(),
       ...(extra.from_number !== undefined ? { from_number: extra.from_number } : {}),
       ...(extra.to_number !== undefined ? { to_number: extra.to_number } : {}),
-      ...(extra.duration_seconds !== undefined
-        ? { duration_seconds: extra.duration_seconds }
-        : {}),
+      ...(extra.duration_seconds !== undefined ? { duration_seconds: extra.duration_seconds } : {}),
       ...(extra.summary !== undefined ? { summary: extra.summary } : {}),
     },
     { onConflict: "business_id,session_key" },
@@ -220,7 +218,10 @@ export function twiml(body: string) {
 }
 
 export function say(text: string, lang: VoiceLang) {
-  const voice = lang === "ja" ? 'language="ja-JP" voice="Polly.Mizuki"' : 'language="en-US" voice="Polly.Joanna"';
+  const voice =
+    lang === "ja"
+      ? 'language="ja-JP" voice="Polly.Mizuki"'
+      : 'language="en-US" voice="Polly.Joanna"';
   return `<Say ${voice}>${xmlEscape(text)}</Say>`;
 }
 
@@ -273,9 +274,7 @@ export async function nagiVoiceTurn(
   history.push({ role: "user", content: callerText });
   const raw = await generateNagiReply(session, history);
   const reply = stripTokens(raw) || "申し訳ありません。もう一度お願いできますか。";
-  const next = [transcript, `Customer: ${callerText}`, `NAGI: ${reply}`]
-    .filter(Boolean)
-    .join("\n");
+  const next = [transcript, `Customer: ${callerText}`, `NAGI: ${reply}`].filter(Boolean).join("\n");
   return { reply, transcript: next, handoff: raw.includes(NAGI_TOKENS.handoff) };
 }
 

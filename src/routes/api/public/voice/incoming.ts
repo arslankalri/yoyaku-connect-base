@@ -38,10 +38,7 @@ export const Route = createFileRoute("/api/public/voice/incoming")({
 
         const target = await resolveVoiceTarget(to);
         if (!target) {
-          return sayAndHangUp(
-            "申し訳ありません。この番号は現在ご利用いただけません。",
-            "ja",
-          );
+          return sayAndHangUp("申し訳ありません。この番号は現在ご利用いただけません。", "ja");
         }
 
         const greeting = defaultGreeting(target.business.name, target.greeting);
