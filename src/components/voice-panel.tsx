@@ -50,8 +50,10 @@ export function VoicePanel({ businessId }: { businessId: string }) {
   return (
     <div className="glass-panel space-y-6 p-6">
       <div className="flex items-start gap-3">
-        <span className="glow-border grid size-9 shrink-0 place-items-center rounded-xl text-primary-foreground"
-          style={{ backgroundImage: "var(--gradient-ai)" }}>
+        <span
+          className="glow-border grid size-9 shrink-0 place-items-center rounded-xl text-primary-foreground"
+          style={{ backgroundImage: "var(--gradient-ai)" }}
+        >
           <PhoneCall className="size-4" />
         </span>
         <div>
@@ -68,7 +70,9 @@ export function VoicePanel({ businessId }: { businessId: string }) {
 
       <div className="flex items-center justify-between rounded-xl border border-border/60 p-4">
         <div>
-          <p className="text-sm font-medium">{ja ? "電話応対を有効にする" : "Answer phone calls"}</p>
+          <p className="text-sm font-medium">
+            {ja ? "電話応対を有効にする" : "Answer phone calls"}
+          </p>
           <p className="text-xs text-muted-foreground">
             {ja ? "オフの間、電話には応対しません。" : "While off, calls are not answered."}
           </p>

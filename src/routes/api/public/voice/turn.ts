@@ -62,13 +62,9 @@ export const Route = createFileRoute("/api/public/voice/turn")({
         try {
           const session = await voiceSession(target);
           const turn = await nagiVoiceTurn(session, transcript, callerText);
-          await saveTranscript(
-            target.supabase,
-            target.business.id,
-            callSid,
-            turn.transcript,
-            { status: "in_progress" },
-          );
+          await saveTranscript(target.supabase, target.business.id, callSid, turn.transcript, {
+            status: "in_progress",
+          });
           const lang = looksJapanese(turn.reply) ? "ja" : "en";
           return turn.handoff
             ? sayAndHangUp(turn.reply, lang)
