@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { BusinessForm } from "@/components/business-form";
 import { BusinessHoursForm } from "@/components/business-hours-form";
 import { GoogleCalendarPanel } from "@/components/google-calendar-panel";
+import { VoicePanel } from "@/components/voice-panel";
 
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ErrorPanel, LoadingPanel } from "@/components/states";
