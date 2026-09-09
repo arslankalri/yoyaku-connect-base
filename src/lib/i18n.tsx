@@ -222,6 +222,7 @@ const ja: Dict = {
   "settings.tabBusiness": "店舗情報",
   "settings.tabHours": "営業時間",
   "settings.tabCalendar": "カレンダー",
+  "settings.tabPhone": "電話",
   "recept.calendar.booked": "Google カレンダーに予約を登録しました。",
   "gcal.title": "Google カレンダー連携",
   "gcal.desc":
