@@ -415,17 +415,17 @@ function Page() {
               <div className="border-t border-border/70 px-3 pt-3">
                 <p className="mb-2 text-[11px] text-muted-foreground">{t("recept.suggested")}</p>
                 <div className="flex flex-wrap gap-2">
-                {chips.map((chip) => (
-                  <button
-                    key={chip.key}
-                    type="button"
-                    disabled={busy}
-                    onClick={() => void send(language === "ja" ? chip.ja : chip.en)}
-                    className="rounded-full border border-ai-indigo/25 bg-ai-indigo/5 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-ai-indigo/50 hover:bg-ai-indigo/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                  >
-                    {language === "ja" ? chip.ja : chip.en}
-                  </button>
-                ))}
+                  {chips.map((chip) => (
+                    <button
+                      key={chip.key}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void send(language === "ja" ? chip.ja : chip.en)}
+                      className="rounded-full border border-ai-indigo/25 bg-ai-indigo/5 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-ai-indigo/50 hover:bg-ai-indigo/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                    >
+                      {language === "ja" ? chip.ja : chip.en}
+                    </button>
+                  ))}
                 </div>
               </div>
 

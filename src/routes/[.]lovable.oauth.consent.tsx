@@ -89,7 +89,10 @@ function Consent() {
           This lets {clientName} read and manage your business, appointments and customers as you.
         </p>
         {error && (
-          <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <p
+            role="alert"
+            className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
             {error}
           </p>
         )}

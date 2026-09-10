@@ -18,7 +18,12 @@ import {
   useStaff,
   useUpdateBusinessType,
 } from "@/lib/api";
-import { BUSINESS_TYPES, presetHours, presetServices, type BusinessType } from "@/lib/business-presets";
+import {
+  BUSINESS_TYPES,
+  presetHours,
+  presetServices,
+  type BusinessType,
+} from "@/lib/business-presets";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";

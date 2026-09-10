@@ -37,7 +37,10 @@ export default defineTool({
 
     const start = new Date(input.starts_at);
     if (Number.isNaN(start.getTime()))
-      return { content: [{ type: "text", text: "starts_at is not a valid timestamp." }], isError: true };
+      return {
+        content: [{ type: "text", text: "starts_at is not a valid timestamp." }],
+        isError: true,
+      };
     const end = new Date(start.getTime() + service.duration_minutes * 60_000);
 
     const { data: existing } = await supabase
