@@ -67,22 +67,22 @@ const HANDOFF_TOKEN = "[[HANDOFF]]";
 const CONFIRMED_TOKEN = "[[BOOKING_CONFIRMED]]";
 const CANCELLED_TOKEN = "[[BOOKING_CANCELLED]]";
 
-const SCENARIOS = [
-  { key: "recept.test.book", ja: "予約したい", en: "I want to make an appointment" },
-  { key: "recept.test.price", ja: "カットはいくらですか？", en: "What services do you offer?" },
-  { key: "recept.test.hours", ja: "営業時間は？", en: "What are your opening hours?" },
+const SUGGESTIONS = [
+  { key: "recept.ask.book", ja: "予約したい", en: "I want to make an appointment" },
+  { key: "recept.ask.price", ja: "カットはいくらですか？", en: "What services do you offer?" },
+  { key: "recept.ask.hours", ja: "営業時間は？", en: "What are your opening hours?" },
   {
-    key: "recept.test.tomorrow",
+    key: "recept.ask.tomorrow",
     ja: "明日は何時まで営業していますか？",
     en: "How late are you open tomorrow?",
   },
   {
-    key: "recept.test.colorStaff",
+    key: "recept.ask.colorStaff",
     ja: "カラーは誰が担当できますか？",
     en: "Which staff can do a colour?",
   },
-  { key: "recept.test.unknown", ja: "駐車場ありますか？", en: "Do you have parking?" },
-  { key: "recept.test.cancel", ja: "キャンセルしたい", en: "I want to cancel" },
+  { key: "recept.ask.unknown", ja: "駐車場ありますか？", en: "Do you have parking?" },
+  { key: "recept.ask.cancel", ja: "キャンセルしたい", en: "I want to cancel" },
 ] as const;
 
 function textOf(message: UIMessage) {
@@ -254,7 +254,7 @@ function Page() {
     setInput("");
   }
 
-  const chips = SCENARIOS.slice(0, 5);
+  const chips = SUGGESTIONS;
 
   return (
     <AppShell title={t("recept.title")} description={t("recept.desc")}>
@@ -412,7 +412,9 @@ function Page() {
                 <div ref={bottomRef} />
               </div>
 
-              <div className="flex flex-wrap gap-2 border-t border-border/70 px-3 pt-3">
+              <div className="border-t border-border/70 px-3 pt-3">
+                <p className="mb-2 text-[11px] text-muted-foreground">{t("recept.suggested")}</p>
+                <div className="flex flex-wrap gap-2">
                 {chips.map((chip) => (
                   <button
                     key={chip.key}
@@ -424,6 +426,7 @@ function Page() {
                     {language === "ja" ? chip.ja : chip.en}
                   </button>
                 ))}
+                </div>
               </div>
 
               <form
@@ -566,24 +569,6 @@ function Page() {
                   />
                   {t(busy ? activityKey : "recept.act.idle")}
                 </p>
-              </div>
-
-              <div className="glass-panel p-4">
-                <p className="eyebrow">{t("recept.tests")}</p>
-                <div className="mt-3 flex flex-col gap-2">
-                  {SCENARIOS.map((s) => (
-                    <Button
-                      key={s.key}
-                      variant="outline"
-                      size="sm"
-                      className="h-auto justify-start whitespace-normal py-2 text-left"
-                      disabled={busy}
-                      onClick={() => void send(language === "ja" ? s.ja : s.en)}
-                    >
-                      {language === "ja" ? s.ja : s.en}
-                    </Button>
-                  ))}
-                </div>
               </div>
 
               <div className="glass-panel flex flex-col gap-2 p-4">
