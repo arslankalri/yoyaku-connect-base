@@ -92,7 +92,7 @@ function OnboardingPage() {
     );
   }
 
-  const step: Step = STEPS[stepIndex];
+  const step: Step = STEPS[stepIndex]!;
   const stepCount = STEPS.length - 1;
   const completed = stepIndex;
   const effectiveType: BusinessType = selectedType ?? "other";
@@ -280,7 +280,7 @@ function HoursStep({
       <StepHeader title={t("setup.hours.title")} desc={t("setup.hours.desc")} />
       <BusinessHoursForm
         businessId={businessId}
-        preset={hasSaved ? undefined : presetHours(type).map((h) => ({ ...h }))}
+        {...(hasSaved ? {} : { preset: presetHours(type).map((h) => ({ ...h })) })}
         submitLabel={t("setup.next")}
         onSaved={onSaved}
       />
@@ -524,7 +524,7 @@ function DoneStep({
   onDashboard,
   onTryNagi,
 }: {
-  businessId?: string;
+  businessId?: string | undefined;
   onDashboard: () => void;
   onTryNagi: () => void;
 }) {
