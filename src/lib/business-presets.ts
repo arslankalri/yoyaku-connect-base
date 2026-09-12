@@ -1,7 +1,20 @@
 import { useI18n } from "@/lib/i18n";
 
 export type BusinessType =
-  "hair_salon" | "beauty_salon" | "clinic" | "dental" | "massage_spa" | "studio" | "other";
+  | "hair_salon"
+  | "barber"
+  | "beauty_salon"
+  | "massage_spa"
+  | "clinic"
+  | "dental"
+  | "restaurant"
+  | "cafe"
+  | "bar_izakaya"
+  | "studio"
+  | "pet_care"
+  | "repair_service"
+  | "lessons"
+  | "other";
 
 export type BusinessTypeOption = {
   key: BusinessType;
@@ -11,11 +24,18 @@ export type BusinessTypeOption = {
 
 export const BUSINESS_TYPES: BusinessTypeOption[] = [
   { key: "hair_salon", label: { ja: "美容室・ヘアサロン", en: "Hair salon" }, icon: "✂️" },
-  { key: "beauty_salon", label: { ja: "エステ・ネイルサロン", en: "Beauty salon" }, icon: "💅" },
-  { key: "clinic", label: { ja: "クリニック", en: "Clinic" }, icon: "🏥" },
+  { key: "barber", label: { ja: "理容室・バーバー", en: "Barbershop" }, icon: "💈" },
+  { key: "beauty_salon", label: { ja: "エステ・ネイルサロン", en: "Beauty / nail salon" }, icon: "💅" },
+  { key: "massage_spa", label: { ja: "マッサージ・整体・スパ", en: "Massage / spa" }, icon: "🧘" },
+  { key: "clinic", label: { ja: "クリニック・整骨院", en: "Clinic" }, icon: "🏥" },
   { key: "dental", label: { ja: "歯科医院", en: "Dental clinic" }, icon: "🦷" },
-  { key: "massage_spa", label: { ja: "マッサージ・スパ", en: "Massage / spa" }, icon: "🧘" },
-  { key: "studio", label: { ja: "ヨガ・フィットネススタジオ", en: "Studio" }, icon: "🧘‍♀️" },
+  { key: "restaurant", label: { ja: "レストラン・飲食店", en: "Restaurant" }, icon: "🍽️" },
+  { key: "cafe", label: { ja: "カフェ・ベーカリー", en: "Cafe / bakery" }, icon: "☕" },
+  { key: "bar_izakaya", label: { ja: "居酒屋・バー", en: "Bar / izakaya" }, icon: "🍶" },
+  { key: "studio", label: { ja: "ヨガ・フィットネススタジオ", en: "Fitness studio" }, icon: "🧘‍♀️" },
+  { key: "pet_care", label: { ja: "ペットサロン・動物病院", en: "Pet care" }, icon: "🐾" },
+  { key: "repair_service", label: { ja: "修理・整備・出張サービス", en: "Repair / home service" }, icon: "🔧" },
+  { key: "lessons", label: { ja: "教室・スクール", en: "Lessons / school" }, icon: "🎓" },
   { key: "other", label: { ja: "その他", en: "Other" }, icon: "🏢" },
 ];
 
@@ -33,35 +53,29 @@ export type PresetHour = {
   close_time: string;
 };
 
-const DEFAULT_HOURS: PresetHour[] = [
-  { day_of_week: 0, is_open: false, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 1, is_open: true, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 2, is_open: true, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 3, is_open: true, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 4, is_open: true, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 5, is_open: true, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 6, is_open: true, open_time: "09:00", close_time: "18:00" },
-];
+function week(
+  open: string,
+  close: string,
+  closedDays: number[] = [0],
+  overrides: Partial<Record<number, { open: string; close: string }>> = {},
+): PresetHour[] {
+  return [0, 1, 2, 3, 4, 5, 6].map((day) => {
+    const o = overrides[day];
+    return {
+      day_of_week: day,
+      is_open: !closedDays.includes(day),
+      open_time: o?.open ?? open,
+      close_time: o?.close ?? close,
+    };
+  });
+}
 
-const SALON_HOURS: PresetHour[] = [
-  { day_of_week: 0, is_open: false, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 1, is_open: true, open_time: "10:00", close_time: "19:00" },
-  { day_of_week: 2, is_open: true, open_time: "10:00", close_time: "19:00" },
-  { day_of_week: 3, is_open: true, open_time: "10:00", close_time: "19:00" },
-  { day_of_week: 4, is_open: true, open_time: "10:00", close_time: "19:00" },
-  { day_of_week: 5, is_open: true, open_time: "10:00", close_time: "19:00" },
-  { day_of_week: 6, is_open: true, open_time: "10:00", close_time: "18:00" },
-];
-
-const CLINIC_HOURS: PresetHour[] = [
-  { day_of_week: 0, is_open: false, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 1, is_open: true, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 2, is_open: true, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 3, is_open: true, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 4, is_open: true, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 5, is_open: true, open_time: "09:00", close_time: "18:00" },
-  { day_of_week: 6, is_open: false, open_time: "09:00", close_time: "18:00" },
-];
+const DEFAULT_HOURS = week("09:00", "18:00");
+const SALON_HOURS = week("10:00", "19:00", [0], { 6: { open: "10:00", close: "18:00" } });
+const CLINIC_HOURS = week("09:00", "18:00", [0, 6]);
+const RESTAURANT_HOURS = week("11:00", "22:00", [1]);
+const CAFE_HOURS = week("08:00", "19:00", []);
+const BAR_HOURS = week("17:00", "23:30", [0]);
 
 const PRESETS: Record<BusinessType, { services: PresetService[]; hours: PresetHour[] }> = {
   hair_salon: {
@@ -83,6 +97,30 @@ const PRESETS: Record<BusinessType, { services: PresetService[]; hours: PresetHo
       },
     ],
     hours: SALON_HOURS,
+  },
+  barber: {
+    services: [
+      { name: { ja: "カット", en: "Haircut" }, duration_minutes: 45, price: 3800, is_active: true },
+      {
+        name: { ja: "カット＋シェービング", en: "Cut + shave" },
+        duration_minutes: 60,
+        price: 5200,
+        is_active: true,
+      },
+      {
+        name: { ja: "ヒゲ整え", en: "Beard trim" },
+        duration_minutes: 30,
+        price: 2200,
+        is_active: true,
+      },
+      {
+        name: { ja: "お子様カット", en: "Kids cut" },
+        duration_minutes: 30,
+        price: 2500,
+        is_active: true,
+      },
+    ],
+    hours: week("09:00", "19:00", [1]),
   },
   beauty_salon: {
     services: [
@@ -187,15 +225,91 @@ const PRESETS: Record<BusinessType, { services: PresetService[]; hours: PresetHo
         is_active: true,
       },
     ],
-    hours: [
-      { day_of_week: 0, is_open: true, open_time: "10:00", close_time: "20:00" },
-      { day_of_week: 1, is_open: true, open_time: "10:00", close_time: "21:00" },
-      { day_of_week: 2, is_open: true, open_time: "10:00", close_time: "21:00" },
-      { day_of_week: 3, is_open: true, open_time: "10:00", close_time: "21:00" },
-      { day_of_week: 4, is_open: true, open_time: "10:00", close_time: "21:00" },
-      { day_of_week: 5, is_open: true, open_time: "10:00", close_time: "21:00" },
-      { day_of_week: 6, is_open: true, open_time: "10:00", close_time: "20:00" },
+    hours: week("10:00", "21:00", [], {
+      0: { open: "10:00", close: "20:00" },
+      6: { open: "10:00", close: "20:00" },
+    }),
+  },
+  restaurant: {
+    services: [
+      {
+        name: { ja: "ランチ予約（2名）", en: "Lunch table (2 people)" },
+        duration_minutes: 60,
+        price: 0,
+        is_active: true,
+      },
+      {
+        name: { ja: "ディナー予約（2名）", en: "Dinner table (2 people)" },
+        duration_minutes: 90,
+        price: 0,
+        is_active: true,
+      },
+      {
+        name: { ja: "ディナー予約（4名）", en: "Dinner table (4 people)" },
+        duration_minutes: 120,
+        price: 0,
+        is_active: true,
+      },
+      {
+        name: { ja: "コースディナー", en: "Course dinner" },
+        duration_minutes: 120,
+        price: 5500,
+        is_active: true,
+      },
+      {
+        name: { ja: "個室・宴会", en: "Private room / party" },
+        duration_minutes: 180,
+        price: 0,
+        is_active: true,
+      },
     ],
+    hours: RESTAURANT_HOURS,
+  },
+  cafe: {
+    services: [
+      {
+        name: { ja: "席の予約（2名）", en: "Table for 2" },
+        duration_minutes: 60,
+        price: 0,
+        is_active: true,
+      },
+      {
+        name: { ja: "席の予約（4名）", en: "Table for 4" },
+        duration_minutes: 90,
+        price: 0,
+        is_active: true,
+      },
+      {
+        name: { ja: "ケーキ・ご予約商品の受取", en: "Cake / order pickup" },
+        duration_minutes: 15,
+        price: 0,
+        is_active: true,
+      },
+    ],
+    hours: CAFE_HOURS,
+  },
+  bar_izakaya: {
+    services: [
+      {
+        name: { ja: "カウンター席（2名）", en: "Counter seats (2)" },
+        duration_minutes: 120,
+        price: 0,
+        is_active: true,
+      },
+      {
+        name: { ja: "テーブル席（4名）", en: "Table (4 people)" },
+        duration_minutes: 120,
+        price: 0,
+        is_active: true,
+      },
+      {
+        name: { ja: "飲み放題コース", en: "All-you-can-drink course" },
+        duration_minutes: 120,
+        price: 4000,
+        is_active: true,
+      },
+    ],
+    hours: BAR_HOURS,
   },
   studio: {
     services: [
@@ -218,22 +332,92 @@ const PRESETS: Record<BusinessType, { services: PresetService[]; hours: PresetHo
         is_active: true,
       },
     ],
-    hours: [
-      { day_of_week: 0, is_open: true, open_time: "08:00", close_time: "20:00" },
-      { day_of_week: 1, is_open: true, open_time: "07:00", close_time: "22:00" },
-      { day_of_week: 2, is_open: true, open_time: "07:00", close_time: "22:00" },
-      { day_of_week: 3, is_open: true, open_time: "07:00", close_time: "22:00" },
-      { day_of_week: 4, is_open: true, open_time: "07:00", close_time: "22:00" },
-      { day_of_week: 5, is_open: true, open_time: "07:00", close_time: "22:00" },
-      { day_of_week: 6, is_open: true, open_time: "08:00", close_time: "18:00" },
+    hours: week("07:00", "22:00", [], {
+      0: { open: "08:00", close: "20:00" },
+      6: { open: "08:00", close: "18:00" },
+    }),
+  },
+  pet_care: {
+    services: [
+      {
+        name: { ja: "シャンプーコース", en: "Bath & shampoo" },
+        duration_minutes: 60,
+        price: 5500,
+        is_active: true,
+      },
+      {
+        name: { ja: "トリミング", en: "Full grooming" },
+        duration_minutes: 120,
+        price: 9900,
+        is_active: true,
+      },
+      {
+        name: { ja: "爪切り・耳掃除", en: "Nails & ears" },
+        duration_minutes: 30,
+        price: 2200,
+        is_active: true,
+      },
+      {
+        name: { ja: "健康チェック", en: "Health check" },
+        duration_minutes: 30,
+        price: 3300,
+        is_active: true,
+      },
     ],
+    hours: week("09:00", "18:00", [3]),
+  },
+  repair_service: {
+    services: [
+      {
+        name: { ja: "点検・見積り", en: "Inspection / quote" },
+        duration_minutes: 30,
+        price: 0,
+        is_active: true,
+      },
+      {
+        name: { ja: "標準修理", en: "Standard repair" },
+        duration_minutes: 90,
+        price: 8800,
+        is_active: true,
+      },
+      {
+        name: { ja: "出張対応", en: "On-site visit" },
+        duration_minutes: 120,
+        price: 13200,
+        is_active: true,
+      },
+    ],
+    hours: week("09:00", "18:00", [0]),
+  },
+  lessons: {
+    services: [
+      {
+        name: { ja: "体験レッスン", en: "Trial lesson" },
+        duration_minutes: 45,
+        price: 0,
+        is_active: true,
+      },
+      {
+        name: { ja: "個人レッスン", en: "Private lesson" },
+        duration_minutes: 60,
+        price: 5500,
+        is_active: true,
+      },
+      {
+        name: { ja: "グループレッスン", en: "Group lesson" },
+        duration_minutes: 60,
+        price: 3300,
+        is_active: true,
+      },
+    ],
+    hours: week("10:00", "21:00", [0]),
   },
   other: {
     services: [
       {
-        name: { ja: "標準サービス", en: "Standard service" },
+        name: { ja: "ご相談・ご予約", en: "Appointment" },
         duration_minutes: 60,
-        price: 5000,
+        price: 0,
         is_active: true,
       },
     ],
@@ -242,11 +426,18 @@ const PRESETS: Record<BusinessType, { services: PresetService[]; hours: PresetHo
 };
 
 export function presetServices(type: BusinessType): PresetService[] {
-  return PRESETS[type]?.services ?? [];
+  return PRESETS[type]?.services ?? PRESETS.other.services;
 }
 
 export function presetHours(type: BusinessType): PresetHour[] {
   return PRESETS[type]?.hours ?? DEFAULT_HOURS;
+}
+
+/** Businesses that book seats/tables rather than staff-delivered services. */
+const SEATING_TYPES: BusinessType[] = ["restaurant", "cafe", "bar_izakaya"];
+
+export function isSeatingBusiness(type: BusinessType | null | undefined) {
+  return !!type && SEATING_TYPES.includes(type);
 }
 
 export function useBusinessTypeLabel(key: BusinessType | undefined) {
