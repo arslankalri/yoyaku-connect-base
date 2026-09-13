@@ -204,12 +204,30 @@ function SkipRow({ onSkip, label }: { onSkip: () => void; label: string }) {
   );
 }
 
-function ProfileStep({ onSaved }: { onSaved: () => void }) {
+function ProfileStep({
+  business,
+  businessType,
+  onSaved,
+}: {
+  business?: Business | null | undefined;
+  businessType: BusinessType | null;
+  onSaved: () => void;
+}) {
   const { t } = useI18n();
+  const typeLabel = useBusinessTypeLabel(businessType ?? undefined);
   return (
     <div className="space-y-4">
-      <StepHeader title={t("setup.profile.title")} desc={t("setup.profile.desc")} />
-      <BusinessForm submitLabel={t("setup.next")} skipDefaultHours onSaved={() => onSaved()} />
+      <StepHeader
+        title={t("setup.profile.title")}
+        desc={typeLabel ? `${typeLabel} — ${t("setup.profile.desc")}` : t("setup.profile.desc")}
+      />
+      <BusinessForm
+        business={business ?? null}
+        submitLabel={t("setup.next")}
+        skipDefaultHours
+        businessType={businessType}
+        onSaved={() => onSaved()}
+      />
     </div>
   );
 }
@@ -221,7 +239,7 @@ function TypeStep({
   onSaved,
 }: {
   selected: BusinessType | null;
-  businessId: string;
+  businessId?: string | undefined;
   onSelect: (type: BusinessType) => void;
   onSaved: () => void;
 }) {
@@ -230,6 +248,12 @@ function TypeStep({
 
   async function save() {
     if (!selected) return;
+    // Before the business record exists the choice is carried into the next
+    // step and stored together with the profile.
+    if (!businessId) {
+      onSaved();
+      return;
+    }
     try {
       await updateType.mutateAsync({ id: businessId, type: selected });
       onSaved();
@@ -237,6 +261,7 @@ function TypeStep({
       toast.error(t("common.error"));
     }
   }
+
 
   return (
     <div className="space-y-4">
