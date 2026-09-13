@@ -17,13 +17,17 @@ import {
   useSetupProgress,
   useStaff,
   useUpdateBusinessType,
+  type Business,
 } from "@/lib/api";
 import {
   BUSINESS_TYPES,
+  isSeatingBusiness,
   presetHours,
   presetServices,
+  useBusinessTypeLabel,
   type BusinessType,
 } from "@/lib/business-presets";
+
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
