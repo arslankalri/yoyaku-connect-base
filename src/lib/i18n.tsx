@@ -574,7 +574,6 @@ const en: Dict = {
   "setup.services.titleSeating": "Set up your bookable tables and menus",
   "setup.services.descSeating":
     "Review the seating and course options. Duration is the expected length of the visit.",
-
   "setup.staff.title": "Add staff members",
   "setup.staff.desc": "Enter the names of staff who will serve customers.",
   "setup.done.title": "NAGI is ready",
