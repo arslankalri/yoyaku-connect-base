@@ -75,8 +75,10 @@ export function BusinessForm({
         address: form.address.trim() || null,
         website: form.website.trim() || null,
         timezone: form.timezone,
+        ...(businessType ? { business_type: businessType } : {}),
         skipDefaultHours,
       } as SaveBusinessInput);
+
       toast.success(t("business.saved"));
       onSaved?.(id);
     } catch (err) {
