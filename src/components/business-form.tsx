@@ -50,7 +50,6 @@ export function BusinessForm({
   });
   const [error, setError] = useState<string | null>(null);
 
-
   function field(key: keyof typeof form) {
     return {
       value: form[key],

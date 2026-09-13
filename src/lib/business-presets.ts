@@ -25,7 +25,11 @@ export type BusinessTypeOption = {
 export const BUSINESS_TYPES: BusinessTypeOption[] = [
   { key: "hair_salon", label: { ja: "美容室・ヘアサロン", en: "Hair salon" }, icon: "✂️" },
   { key: "barber", label: { ja: "理容室・バーバー", en: "Barbershop" }, icon: "💈" },
-  { key: "beauty_salon", label: { ja: "エステ・ネイルサロン", en: "Beauty / nail salon" }, icon: "💅" },
+  {
+    key: "beauty_salon",
+    label: { ja: "エステ・ネイルサロン", en: "Beauty / nail salon" },
+    icon: "💅",
+  },
   { key: "massage_spa", label: { ja: "マッサージ・整体・スパ", en: "Massage / spa" }, icon: "🧘" },
   { key: "clinic", label: { ja: "クリニック・整骨院", en: "Clinic" }, icon: "🏥" },
   { key: "dental", label: { ja: "歯科医院", en: "Dental clinic" }, icon: "🦷" },
@@ -34,7 +38,11 @@ export const BUSINESS_TYPES: BusinessTypeOption[] = [
   { key: "bar_izakaya", label: { ja: "居酒屋・バー", en: "Bar / izakaya" }, icon: "🍶" },
   { key: "studio", label: { ja: "ヨガ・フィットネススタジオ", en: "Fitness studio" }, icon: "🧘‍♀️" },
   { key: "pet_care", label: { ja: "ペットサロン・動物病院", en: "Pet care" }, icon: "🐾" },
-  { key: "repair_service", label: { ja: "修理・整備・出張サービス", en: "Repair / home service" }, icon: "🔧" },
+  {
+    key: "repair_service",
+    label: { ja: "修理・整備・出張サービス", en: "Repair / home service" },
+    icon: "🔧",
+  },
   { key: "lessons", label: { ja: "教室・スクール", en: "Lessons / school" }, icon: "🎓" },
   { key: "other", label: { ja: "その他", en: "Other" }, icon: "🏢" },
 ];

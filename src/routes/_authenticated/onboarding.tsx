@@ -152,11 +152,7 @@ function OnboardingPage() {
             />
           )}
           {step === "profile" && (
-            <ProfileStep
-              business={business}
-              businessType={selectedType}
-              onSaved={goNext}
-            />
+            <ProfileStep business={business} businessType={selectedType} onSaved={goNext} />
           )}
           {step === "hours" && business && (
             <HoursStep businessId={business.id} type={effectiveType} onSaved={goNext} />
@@ -187,7 +183,6 @@ function resumeStep(progress: ReturnType<typeof useSetupProgress>) {
   if (!progress.hasStaff) return 4;
   return 5;
 }
-
 
 function StepHeader({ title, desc }: { title: string; desc: string }) {
   return (
@@ -265,7 +260,6 @@ function TypeStep({
       toast.error(t("common.error"));
     }
   }
-
 
   return (
     <div className="space-y-4">
@@ -408,7 +402,9 @@ function ServicesStep({
   return (
     <div className="space-y-4">
       <StepHeader
-        title={isSeatingBusiness(type) ? t("setup.services.titleSeating") : t("setup.services.title")}
+        title={
+          isSeatingBusiness(type) ? t("setup.services.titleSeating") : t("setup.services.title")
+        }
         desc={isSeatingBusiness(type) ? t("setup.services.descSeating") : t("setup.services.desc")}
       />
 

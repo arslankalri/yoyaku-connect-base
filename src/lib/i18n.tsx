@@ -111,7 +111,8 @@ const ja: Dict = {
   "setup.profile.title": "店舗の基本情報",
   "setup.profile.desc": "NAGIがお客様に伝える店舗情報です。",
   "setup.type.title": "まず、どんな業種のお店ですか？",
-  "setup.type.desc": "サロン、飲食店、クリニックなど。選んだ業種に合わせて、この後の質問と候補が変わります。",
+  "setup.type.desc":
+    "サロン、飲食店、クリニックなど。選んだ業種に合わせて、この後の質問と候補が変わります。",
   "setup.type.presetHint": "おすすめ設定を読み込みます",
   "setup.hours.title": "営業時間を設定",
   "setup.hours.desc": "予約の空き状況に反映されます。",

@@ -78,7 +78,6 @@ export async function get_business_info(supabase: AuthedClient, businessId: stri
     website: data.website ?? null,
     timezone: data.timezone,
   };
-
 }
 
 export async function get_business_hours(supabase: AuthedClient, businessId: string) {
