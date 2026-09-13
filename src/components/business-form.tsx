@@ -30,11 +30,13 @@ export function BusinessForm({
   submitLabel,
   onSaved,
   skipDefaultHours,
+  businessType,
 }: {
   business?: Business | null | undefined;
   submitLabel: string;
   onSaved?: ((id: string) => void) | undefined;
   skipDefaultHours?: boolean;
+  businessType?: string | null | undefined;
 }) {
   const { t } = useI18n();
   const save = useSaveBusiness();
@@ -47,6 +49,7 @@ export function BusinessForm({
     timezone: business?.timezone ?? "Asia/Tokyo",
   });
   const [error, setError] = useState<string | null>(null);
+
 
   function field(key: keyof typeof form) {
     return {
