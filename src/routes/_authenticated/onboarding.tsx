@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-const STEPS = ["profile", "type", "hours", "services", "staff", "done"] as const;
+const STEPS = ["type", "profile", "hours", "services", "staff", "done"] as const;
 
 type Step = (typeof STEPS)[number];
 
