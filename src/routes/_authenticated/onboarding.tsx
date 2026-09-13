@@ -139,12 +139,18 @@ function OnboardingPage() {
         </div>
 
         <div className="glass-panel glow-border p-5 sm:p-8">
-          {step === "profile" && <ProfileStep onSaved={goNext} />}
-          {step === "type" && business && (
+          {step === "type" && (
             <TypeStep
               selected={selectedType}
-              businessId={business.id}
+              businessId={business?.id}
               onSelect={setSelectedType}
+              onSaved={goNext}
+            />
+          )}
+          {step === "profile" && (
+            <ProfileStep
+              business={business}
+              businessType={selectedType}
               onSaved={goNext}
             />
           )}
@@ -155,6 +161,7 @@ function OnboardingPage() {
             <ServicesStep businessId={business.id} type={effectiveType} onSaved={goNext} />
           )}
           {step === "staff" && business && <StaffStep businessId={business.id} onSaved={goNext} />}
+
           {step === "done" && (
             <DoneStep
               businessId={business?.id}
