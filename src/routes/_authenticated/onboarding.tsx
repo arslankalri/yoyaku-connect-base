@@ -176,13 +176,14 @@ function OnboardingPage() {
 }
 
 function resumeStep(progress: ReturnType<typeof useSetupProgress>) {
-  if (!progress.hasBusiness) return 0;
-  if (!progress.hasBusinessType) return 1;
+  if (!progress.hasBusinessType) return 0;
+  if (!progress.hasBusiness) return 1;
   if (!progress.hasHours) return 2;
   if (!progress.hasServices) return 3;
   if (!progress.hasStaff) return 4;
   return 5;
 }
+
 
 function StepHeader({ title, desc }: { title: string; desc: string }) {
   return (
