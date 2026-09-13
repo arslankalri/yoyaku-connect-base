@@ -407,7 +407,11 @@ function ServicesStep({
 
   return (
     <div className="space-y-4">
-      <StepHeader title={t("setup.services.title")} desc={t("setup.services.desc")} />
+      <StepHeader
+        title={isSeatingBusiness(type) ? t("setup.services.titleSeating") : t("setup.services.title")}
+        desc={isSeatingBusiness(type) ? t("setup.services.descSeating") : t("setup.services.desc")}
+      />
+
       <ul className="space-y-3">
         {list.map((row, idx) => (
           <li
