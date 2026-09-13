@@ -563,13 +563,18 @@ const en: Dict = {
   "setup.step.done": "Done",
   "setup.profile.title": "Business profile",
   "setup.profile.desc": "This is the information NAGI will share with customers.",
-  "setup.type.title": "What kind of business is this?",
-  "setup.type.desc": "We'll suggest opening hours and services based on your industry.",
+  "setup.type.title": "First, what kind of business is this?",
+  "setup.type.desc":
+    "Salon, restaurant, clinic and more. The rest of the setup adapts to what you pick.",
   "setup.type.presetHint": "Recommended presets included",
   "setup.hours.title": "Set opening hours",
   "setup.hours.desc": "These hours are used when NAGI checks availability.",
   "setup.services.title": "Register your services",
   "setup.services.desc": "Review and edit the suggested menu, prices, and durations.",
+  "setup.services.titleSeating": "Set up your bookable tables and menus",
+  "setup.services.descSeating":
+    "Review the seating and course options. Duration is the expected length of the visit.",
+
   "setup.staff.title": "Add staff members",
   "setup.staff.desc": "Enter the names of staff who will serve customers.",
   "setup.done.title": "NAGI is ready",
