@@ -30,11 +30,13 @@ export function BusinessForm({
   submitLabel,
   onSaved,
   skipDefaultHours,
+  businessType,
 }: {
   business?: Business | null | undefined;
   submitLabel: string;
   onSaved?: ((id: string) => void) | undefined;
   skipDefaultHours?: boolean;
+  businessType?: string | null | undefined;
 }) {
   const { t } = useI18n();
   const save = useSaveBusiness();
@@ -72,8 +74,10 @@ export function BusinessForm({
         address: form.address.trim() || null,
         website: form.website.trim() || null,
         timezone: form.timezone,
+        ...(businessType ? { business_type: businessType } : {}),
         skipDefaultHours,
       } as SaveBusinessInput);
+
       toast.success(t("business.saved"));
       onSaved?.(id);
     } catch (err) {

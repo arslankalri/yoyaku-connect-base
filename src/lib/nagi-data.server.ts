@@ -62,7 +62,7 @@ export async function getBusinessForUser(supabase: AuthedClient) {
 export async function get_business_info(supabase: AuthedClient, businessId: string) {
   const { data, error } = await supabase
     .from("businesses")
-    .select("name, phone, postal_code, address, website, timezone")
+    .select("name, phone, postal_code, address, website, timezone, business_type")
     .eq("id", businessId)
     .maybeSingle();
   if (error) throw error;
@@ -70,6 +70,7 @@ export async function get_business_info(supabase: AuthedClient, businessId: stri
   return {
     found: true as const,
     name: data.name,
+    business_type: data.business_type ?? null,
     phone: data.phone ?? null,
     address:
       [data.postal_code ? `〒${data.postal_code}` : null, data.address].filter(Boolean).join(" ") ||

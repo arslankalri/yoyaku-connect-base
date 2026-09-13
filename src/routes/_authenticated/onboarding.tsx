@@ -17,19 +17,23 @@ import {
   useSetupProgress,
   useStaff,
   useUpdateBusinessType,
+  type Business,
 } from "@/lib/api";
 import {
   BUSINESS_TYPES,
+  isSeatingBusiness,
   presetHours,
   presetServices,
+  useBusinessTypeLabel,
   type BusinessType,
 } from "@/lib/business-presets";
+
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-const STEPS = ["profile", "type", "hours", "services", "staff", "done"] as const;
+const STEPS = ["type", "profile", "hours", "services", "staff", "done"] as const;
 
 type Step = (typeof STEPS)[number];
 
@@ -139,14 +143,16 @@ function OnboardingPage() {
         </div>
 
         <div className="glass-panel glow-border p-5 sm:p-8">
-          {step === "profile" && <ProfileStep onSaved={goNext} />}
-          {step === "type" && business && (
+          {step === "type" && (
             <TypeStep
               selected={selectedType}
-              businessId={business.id}
+              businessId={business?.id}
               onSelect={setSelectedType}
               onSaved={goNext}
             />
+          )}
+          {step === "profile" && (
+            <ProfileStep business={business} businessType={selectedType} onSaved={goNext} />
           )}
           {step === "hours" && business && (
             <HoursStep businessId={business.id} type={effectiveType} onSaved={goNext} />
@@ -155,6 +161,7 @@ function OnboardingPage() {
             <ServicesStep businessId={business.id} type={effectiveType} onSaved={goNext} />
           )}
           {step === "staff" && business && <StaffStep businessId={business.id} onSaved={goNext} />}
+
           {step === "done" && (
             <DoneStep
               businessId={business?.id}
@@ -169,8 +176,8 @@ function OnboardingPage() {
 }
 
 function resumeStep(progress: ReturnType<typeof useSetupProgress>) {
-  if (!progress.hasBusiness) return 0;
-  if (!progress.hasBusinessType) return 1;
+  if (!progress.hasBusinessType) return 0;
+  if (!progress.hasBusiness) return 1;
   if (!progress.hasHours) return 2;
   if (!progress.hasServices) return 3;
   if (!progress.hasStaff) return 4;
@@ -196,12 +203,30 @@ function SkipRow({ onSkip, label }: { onSkip: () => void; label: string }) {
   );
 }
 
-function ProfileStep({ onSaved }: { onSaved: () => void }) {
+function ProfileStep({
+  business,
+  businessType,
+  onSaved,
+}: {
+  business?: Business | null | undefined;
+  businessType: BusinessType | null;
+  onSaved: () => void;
+}) {
   const { t } = useI18n();
+  const typeLabel = useBusinessTypeLabel(businessType ?? undefined);
   return (
     <div className="space-y-4">
-      <StepHeader title={t("setup.profile.title")} desc={t("setup.profile.desc")} />
-      <BusinessForm submitLabel={t("setup.next")} skipDefaultHours onSaved={() => onSaved()} />
+      <StepHeader
+        title={t("setup.profile.title")}
+        desc={typeLabel ? `${typeLabel} — ${t("setup.profile.desc")}` : t("setup.profile.desc")}
+      />
+      <BusinessForm
+        business={business ?? null}
+        submitLabel={t("setup.next")}
+        skipDefaultHours
+        businessType={businessType}
+        onSaved={() => onSaved()}
+      />
     </div>
   );
 }
@@ -213,7 +238,7 @@ function TypeStep({
   onSaved,
 }: {
   selected: BusinessType | null;
-  businessId: string;
+  businessId?: string | undefined;
   onSelect: (type: BusinessType) => void;
   onSaved: () => void;
 }) {
@@ -222,6 +247,12 @@ function TypeStep({
 
   async function save() {
     if (!selected) return;
+    // Before the business record exists the choice is carried into the next
+    // step and stored together with the profile.
+    if (!businessId) {
+      onSaved();
+      return;
+    }
     try {
       await updateType.mutateAsync({ id: businessId, type: selected });
       onSaved();
@@ -370,7 +401,13 @@ function ServicesStep({
 
   return (
     <div className="space-y-4">
-      <StepHeader title={t("setup.services.title")} desc={t("setup.services.desc")} />
+      <StepHeader
+        title={
+          isSeatingBusiness(type) ? t("setup.services.titleSeating") : t("setup.services.title")
+        }
+        desc={isSeatingBusiness(type) ? t("setup.services.descSeating") : t("setup.services.desc")}
+      />
+
       <ul className="space-y-3">
         {list.map((row, idx) => (
           <li
