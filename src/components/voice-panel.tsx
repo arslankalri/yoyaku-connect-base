@@ -155,7 +155,9 @@ export function VoicePanel({ businessId }: { businessId: string }) {
       <div className="space-y-3 rounded-xl border border-border/60 bg-muted/30 p-4 text-sm">
         <div className="flex items-center gap-2">
           <KeyRound className="size-4 text-muted-foreground" />
-          <p className="font-medium">{ja ? "通話サービスとの接続" : "Connect your calling service"}</p>
+          <p className="font-medium">
+            {ja ? "通話サービスとの接続" : "Connect your calling service"}
+          </p>
         </div>
         <p className="text-xs text-muted-foreground">
           {ja
@@ -169,7 +171,9 @@ export function VoicePanel({ businessId }: { businessId: string }) {
         </div>
 
         <div>
-          <p className="text-xs font-medium">{ja ? "接続キー（Secret）" : "Connection key (Secret)"}</p>
+          <p className="text-xs font-medium">
+            {ja ? "接続キー（Secret）" : "Connection key (Secret)"}
+          </p>
           {activeKey ? (
             <>
               <CopyRow value={activeKey} label={ja ? "コピーしました" : "Copied"} />
@@ -182,7 +186,9 @@ export function VoicePanel({ businessId }: { businessId: string }) {
                   onClick={() => {
                     createKey
                       .mutateAsync(undefined)
-                      .then(() => toast.success(ja ? "新しいキーを作成しました" : "New key created"))
+                      .then(() =>
+                        toast.success(ja ? "新しいキーを作成しました" : "New key created"),
+                      )
                       .catch(() =>
                         toast.error(ja ? "作成できませんでした" : "Could not create a key"),
                       );
