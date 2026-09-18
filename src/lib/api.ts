@@ -446,6 +446,68 @@ export function useSaveNagiSettings(businessId?: string) {
   });
 }
 
+export type BusinessApiKey = {
+  id: string;
+  business_id: string;
+  label: string;
+  api_key: string;
+  created_at: string;
+  last_used_at: string | null;
+  revoked_at: string | null;
+};
+
+/** Keys the voice agent (and any other external caller) uses for this business. */
+export function useBusinessApiKeys(businessId?: string) {
+  return useQuery({
+    queryKey: ["business_api_keys", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("business_api_keys")
+        .select("id, business_id, label, api_key, created_at, last_used_at, revoked_at")
+        .eq("business_id", businessId!)
+        .is("revoked_at", null)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as BusinessApiKey[];
+    },
+  });
+}
+
+export function useCreateBusinessApiKey(businessId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (label?: string) => {
+      if (!businessId) throw new Error("No business");
+      const bytes = new Uint8Array(24);
+      crypto.getRandomValues(bytes);
+      const key = `nagi_sk_${Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")}`;
+      const { data, error } = await supabase
+        .from("business_api_keys")
+        .insert({ business_id: businessId, api_key: key, label: label || "Voice agent" })
+        .select("id, business_id, label, api_key, created_at, last_used_at, revoked_at")
+        .single();
+      if (error) throw error;
+      return data as BusinessApiKey;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["business_api_keys"] }),
+  });
+}
+
+export function useRevokeBusinessApiKey() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("business_api_keys")
+        .update({ revoked_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["business_api_keys"] }),
+  });
+}
+
 export type Faq = {
   id: string;
   business_id: string;
