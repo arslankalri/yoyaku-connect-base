@@ -26,6 +26,7 @@ import {
   cancelAppointment,
   findAppointments,
   rescheduleAppointment,
+  staffIdByName,
   type CalendarLink,
 } from "@/lib/nagi-booking.server";
 import { createNagiSessionForBusiness } from "@/lib/nagi-brain.server";
