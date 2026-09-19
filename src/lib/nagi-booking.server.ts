@@ -33,7 +33,8 @@ async function googleBusy(calendar: CalendarLink, timeMin: string, timeMax: stri
     .map((e) => ({ start: new Date(e.start!).getTime(), end: new Date(e.end!).getTime() }));
 }
 
-/** Free start times on `date`, honouring opening hours, existing appointments and calendar events. */
+/** Free start times on `date`, honouring opening hours, existing appointments and calendar events.
+ * When `staffId` is given, the staff member's own working hours and bookings are used too. */
 export async function availabilityFor(
   supabase: AuthedClient,
   businessId: string,
@@ -41,6 +42,7 @@ export async function availabilityFor(
   calendar: CalendarLink,
   date: string,
   durationMinutes: number,
+  staffId?: string | null,
 ) {
   const dow = dayOfWeekInZone(date, timeZone);
   const { data: hours, error } = await supabase
@@ -54,22 +56,64 @@ export async function availabilityFor(
     return { date, day_of_week: dow, is_open: false as const, available_slots: [] as string[] };
   }
 
-  const open = hours.open_time.slice(0, 5);
-  const close = hours.close_time.slice(0, 5);
+  let open = hours.open_time.slice(0, 5);
+  let close = hours.close_time.slice(0, 5);
+
+  // When a specific staff member is requested, narrow the window to their shift.
+  if (staffId) {
+    const { data: shift, error: shiftError } = await supabase
+      .from("staff_working_hours")
+      .select("is_working, start_time, end_time")
+      .eq("staff_id", staffId)
+      .eq("day_of_week", dow)
+      .maybeSingle();
+    if (shiftError) throw shiftError;
+    if (shift) {
+      if (!shift.is_working) {
+        return {
+          date,
+          day_of_week: dow,
+          is_open: false as const,
+          reason: "staff_not_working" as const,
+          available_slots: [] as string[],
+        };
+      }
+      const start = shift.start_time.slice(0, 5);
+      const end = shift.end_time.slice(0, 5);
+      if (start > open) open = start;
+      if (end < close) close = end;
+      if (open >= close) {
+        return {
+          date,
+          day_of_week: dow,
+          is_open: false as const,
+          reason: "staff_not_working" as const,
+          available_slots: [] as string[],
+        };
+      }
+    }
+  }
+
   const dayStart = zonedToUtc(date, open, timeZone);
   const dayEnd = zonedToUtc(date, close, timeZone);
 
   const { data: booked, error: bookedError } = await supabase
     .from("appointments")
-    .select("starts_at, ends_at, status")
+    .select("starts_at, ends_at, status, staff_id")
     .eq("business_id", businessId)
     .in("status", ACTIVE_STATUSES as unknown as string[])
     .gte("starts_at", new Date(dayStart.getTime() - 12 * 3_600_000).toISOString())
     .lte("starts_at", dayEnd.toISOString());
   if (bookedError) throw bookedError;
 
+  // Without a chosen staff member every booking blocks the shop; with one, only
+  // that person's bookings (plus unassigned ones) block them.
+  const relevant = staffId
+    ? (booked ?? []).filter((a) => !a.staff_id || a.staff_id === staffId)
+    : (booked ?? []);
+
   const blocks = [
-    ...(booked ?? []).map((a) => ({
+    ...relevant.map((a) => ({
       start: new Date(a.starts_at).getTime(),
       end: new Date(a.ends_at).getTime(),
     })),
@@ -148,19 +192,51 @@ async function resolveIds(
     null;
 
   let staffId: string | null = null;
+  let staffProblem: "staff_not_found" | "staff_cannot_do_service" | null = null;
   if (staffName?.trim()) {
     const { data: staff } = await supabase
       .from("staff")
-      .select("id, name")
+      .select("id, name, staff_services(service_id)")
       .eq("business_id", businessId)
       .eq("is_active", true);
     const sNeedle = staffName.trim().toLowerCase();
-    staffId =
-      (staff ?? []).find((s) => s.name.toLowerCase() === sNeedle)?.id ??
-      (staff ?? []).find((s) => s.name.toLowerCase().includes(sNeedle))?.id ??
+    const match =
+      (staff ?? []).find((s) => s.name.toLowerCase() === sNeedle) ??
+      (staff ?? []).find((s) => s.name.toLowerCase().includes(sNeedle)) ??
       null;
+    if (!match) {
+      staffProblem = "staff_not_found";
+    } else {
+      const links = (match.staff_services ?? []).map((l) => l.service_id);
+      // Only enforce the link when this staff member has service links at all.
+      if (service && links.length > 0 && !links.includes(service.id)) {
+        staffProblem = "staff_cannot_do_service";
+      } else {
+        staffId = match.id;
+      }
+    }
   }
-  return { service, staffId };
+  return { service, staffId, staffProblem };
+}
+
+/** Active staff member id for a spoken name, or null when there is no match. */
+export async function staffIdByName(
+  supabase: AuthedClient,
+  businessId: string,
+  staffName: string,
+): Promise<string | null> {
+  const needle = staffName.trim().toLowerCase();
+  if (!needle) return null;
+  const { data } = await supabase
+    .from("staff")
+    .select("id, name")
+    .eq("business_id", businessId)
+    .eq("is_active", true);
+  return (
+    (data ?? []).find((s) => s.name.toLowerCase() === needle)?.id ??
+    (data ?? []).find((s) => s.name.toLowerCase().includes(needle))?.id ??
+    null
+  );
 }
 
 export type BookingInput = {
@@ -183,7 +259,24 @@ export async function bookAppointment(
   channel: string,
   input: BookingInput,
 ) {
-  const { service, staffId } = await resolveIds(supabase, businessId, input.service, input.staff);
+  const { service, staffId, staffProblem } = await resolveIds(
+    supabase,
+    businessId,
+    input.service,
+    input.staff,
+  );
+  if (staffProblem) {
+    const { data: staff } = await supabase
+      .from("staff")
+      .select("name")
+      .eq("business_id", businessId)
+      .eq("is_active", true);
+    return {
+      created: false as const,
+      reason: staffProblem,
+      available_staff: (staff ?? []).map((s) => s.name),
+    };
+  }
   const duration = Math.max(5, service?.duration_minutes ?? input.duration_minutes);
 
   const slots = await availabilityFor(
@@ -193,6 +286,7 @@ export async function bookAppointment(
     calendar,
     input.date,
     duration,
+    staffId,
   );
   if (!slots.is_open || !slots.available_slots.includes(input.time)) {
     return {
@@ -309,7 +403,7 @@ export async function rescheduleAppointment(
 ) {
   const { data: appt, error } = await supabase
     .from("appointments")
-    .select("id, starts_at, ends_at, external_calendar_event_id")
+    .select("id, starts_at, ends_at, staff_id, external_calendar_event_id")
     .eq("business_id", businessId)
     .eq("id", appointmentId)
     .maybeSingle();
@@ -319,7 +413,15 @@ export async function rescheduleAppointment(
   const duration = Math.round(
     (new Date(appt.ends_at).getTime() - new Date(appt.starts_at).getTime()) / 60_000,
   );
-  const slots = await availabilityFor(supabase, businessId, timeZone, calendar, date, duration);
+  const slots = await availabilityFor(
+    supabase,
+    businessId,
+    timeZone,
+    calendar,
+    date,
+    duration,
+    appt.staff_id,
+  );
   if (!slots.is_open || !slots.available_slots.includes(time)) {
     return {
       updated: false as const,
