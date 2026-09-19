@@ -56,22 +56,64 @@ export async function availabilityFor(
     return { date, day_of_week: dow, is_open: false as const, available_slots: [] as string[] };
   }
 
-  const open = hours.open_time.slice(0, 5);
-  const close = hours.close_time.slice(0, 5);
+  let open = hours.open_time.slice(0, 5);
+  let close = hours.close_time.slice(0, 5);
+
+  // When a specific staff member is requested, narrow the window to their shift.
+  if (staffId) {
+    const { data: shift, error: shiftError } = await supabase
+      .from("staff_working_hours")
+      .select("is_working, start_time, end_time")
+      .eq("staff_id", staffId)
+      .eq("day_of_week", dow)
+      .maybeSingle();
+    if (shiftError) throw shiftError;
+    if (shift) {
+      if (!shift.is_working) {
+        return {
+          date,
+          day_of_week: dow,
+          is_open: false as const,
+          reason: "staff_not_working" as const,
+          available_slots: [] as string[],
+        };
+      }
+      const start = shift.start_time.slice(0, 5);
+      const end = shift.end_time.slice(0, 5);
+      if (start > open) open = start;
+      if (end < close) close = end;
+      if (open >= close) {
+        return {
+          date,
+          day_of_week: dow,
+          is_open: false as const,
+          reason: "staff_not_working" as const,
+          available_slots: [] as string[],
+        };
+      }
+    }
+  }
+
   const dayStart = zonedToUtc(date, open, timeZone);
   const dayEnd = zonedToUtc(date, close, timeZone);
 
   const { data: booked, error: bookedError } = await supabase
     .from("appointments")
-    .select("starts_at, ends_at, status")
+    .select("starts_at, ends_at, status, staff_id")
     .eq("business_id", businessId)
     .in("status", ACTIVE_STATUSES as unknown as string[])
     .gte("starts_at", new Date(dayStart.getTime() - 12 * 3_600_000).toISOString())
     .lte("starts_at", dayEnd.toISOString());
   if (bookedError) throw bookedError;
 
+  // Without a chosen staff member every booking blocks the shop; with one, only
+  // that person's bookings (plus unassigned ones) block them.
+  const relevant = staffId
+    ? (booked ?? []).filter((a) => !a.staff_id || a.staff_id === staffId)
+    : (booked ?? []);
+
   const blocks = [
-    ...(booked ?? []).map((a) => ({
+    ...relevant.map((a) => ({
       start: new Date(a.starts_at).getTime(),
       end: new Date(a.ends_at).getTime(),
     })),
