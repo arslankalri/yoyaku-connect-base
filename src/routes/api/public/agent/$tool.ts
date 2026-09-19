@@ -28,7 +28,9 @@ export const Route = createFileRoute("/api/public/agent/$tool")({
     handlers: {
       POST: async ({ request, params }) => {
         try {
-          const ctx = await contextForApiKey(apiKeyFrom(request));
+          const key = apiKeyFrom(request);
+          if (!allowAgentRequest(callerIdentity(request, key))) return tooManyRequests();
+          const ctx = await contextForApiKey(key);
           const body = await request.json().catch(() => ({}));
           const args =
             body && typeof body === "object" && "arguments" in body
