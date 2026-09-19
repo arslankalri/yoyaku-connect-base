@@ -192,19 +192,31 @@ async function resolveIds(
     null;
 
   let staffId: string | null = null;
+  let staffProblem: "staff_not_found" | "staff_cannot_do_service" | null = null;
   if (staffName?.trim()) {
     const { data: staff } = await supabase
       .from("staff")
-      .select("id, name")
+      .select("id, name, staff_services(service_id)")
       .eq("business_id", businessId)
       .eq("is_active", true);
     const sNeedle = staffName.trim().toLowerCase();
-    staffId =
-      (staff ?? []).find((s) => s.name.toLowerCase() === sNeedle)?.id ??
-      (staff ?? []).find((s) => s.name.toLowerCase().includes(sNeedle))?.id ??
+    const match =
+      (staff ?? []).find((s) => s.name.toLowerCase() === sNeedle) ??
+      (staff ?? []).find((s) => s.name.toLowerCase().includes(sNeedle)) ??
       null;
+    if (!match) {
+      staffProblem = "staff_not_found";
+    } else {
+      const links = (match.staff_services ?? []).map((l) => l.service_id);
+      // Only enforce the link when this staff member has service links at all.
+      if (service && links.length > 0 && !links.includes(service.id)) {
+        staffProblem = "staff_cannot_do_service";
+      } else {
+        staffId = match.id;
+      }
+    }
   }
-  return { service, staffId };
+  return { service, staffId, staffProblem };
 }
 
 export type BookingInput = {
