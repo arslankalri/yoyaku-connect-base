@@ -33,7 +33,8 @@ async function googleBusy(calendar: CalendarLink, timeMin: string, timeMax: stri
     .map((e) => ({ start: new Date(e.start!).getTime(), end: new Date(e.end!).getTime() }));
 }
 
-/** Free start times on `date`, honouring opening hours, existing appointments and calendar events. */
+/** Free start times on `date`, honouring opening hours, existing appointments and calendar events.
+ * When `staffId` is given, the staff member's own working hours and bookings are used too. */
 export async function availabilityFor(
   supabase: AuthedClient,
   businessId: string,
@@ -41,6 +42,7 @@ export async function availabilityFor(
   calendar: CalendarLink,
   date: string,
   durationMinutes: number,
+  staffId?: string | null,
 ) {
   const dow = dayOfWeekInZone(date, timeZone);
   const { data: hours, error } = await supabase
