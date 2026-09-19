@@ -115,6 +115,9 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
     handlers: {
       POST: async ({ request }) => {
         const url = new URL(request.url);
+        if (!allowAgentRequest(callerIdentity(request, keyFrom(request, url)))) {
+          return tooManyRequests();
+        }
         try {
           const body = (await request.json().catch(() => ({}))) as { message?: VapiMessage };
           const message = body.message ?? {};
