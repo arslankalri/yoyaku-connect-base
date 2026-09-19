@@ -230,16 +230,23 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
     schema: z.object({
       date: dateField,
       duration_minutes: z.number().describe("Use the service duration in minutes"),
+      staff: z.string().optional().describe("Staff member name, when the caller asked for one"),
     }),
-    run: (ctx, args) =>
-      availabilityFor(
+    run: async (ctx, args) => {
+      const staffName = args["staff"] ? String(args["staff"]) : "";
+      const staffId = staffName
+        ? await staffIdByName(ctx.supabase, ctx.business.id, staffName)
+        : null;
+      return availabilityFor(
         ctx.supabase,
         ctx.business.id,
         ctx.business.timezone,
         ctx.calendar,
         String(args["date"]),
         Number(args["duration_minutes"] ?? 30),
-      ),
+        staffId,
+      );
+    },
   },
   create_appointment: {
     description:
