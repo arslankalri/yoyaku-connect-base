@@ -219,6 +219,26 @@ async function resolveIds(
   return { service, staffId, staffProblem };
 }
 
+/** Active staff member id for a spoken name, or null when there is no match. */
+export async function staffIdByName(
+  supabase: AuthedClient,
+  businessId: string,
+  staffName: string,
+): Promise<string | null> {
+  const needle = staffName.trim().toLowerCase();
+  if (!needle) return null;
+  const { data } = await supabase
+    .from("staff")
+    .select("id, name")
+    .eq("business_id", businessId)
+    .eq("is_active", true);
+  return (
+    (data ?? []).find((s) => s.name.toLowerCase() === needle)?.id ??
+    (data ?? []).find((s) => s.name.toLowerCase().includes(needle))?.id ??
+    null
+  );
+}
+
 export type BookingInput = {
   date: string;
   time: string;
