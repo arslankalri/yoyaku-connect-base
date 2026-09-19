@@ -239,7 +239,24 @@ export async function bookAppointment(
   channel: string,
   input: BookingInput,
 ) {
-  const { service, staffId } = await resolveIds(supabase, businessId, input.service, input.staff);
+  const { service, staffId, staffProblem } = await resolveIds(
+    supabase,
+    businessId,
+    input.service,
+    input.staff,
+  );
+  if (staffProblem) {
+    const { data: staff } = await supabase
+      .from("staff")
+      .select("name")
+      .eq("business_id", businessId)
+      .eq("is_active", true);
+    return {
+      created: false as const,
+      reason: staffProblem,
+      available_staff: (staff ?? []).map((s) => s.name),
+    };
+  }
   const duration = Math.max(5, service?.duration_minutes ?? input.duration_minutes);
 
   const slots = await availabilityFor(
@@ -249,6 +266,7 @@ export async function bookAppointment(
     calendar,
     input.date,
     duration,
+    staffId,
   );
   if (!slots.is_open || !slots.available_slots.includes(input.time)) {
     return {
