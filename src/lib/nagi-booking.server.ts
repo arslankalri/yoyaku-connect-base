@@ -383,7 +383,7 @@ export async function rescheduleAppointment(
 ) {
   const { data: appt, error } = await supabase
     .from("appointments")
-    .select("id, starts_at, ends_at, external_calendar_event_id")
+    .select("id, starts_at, ends_at, staff_id, external_calendar_event_id")
     .eq("business_id", businessId)
     .eq("id", appointmentId)
     .maybeSingle();
@@ -393,7 +393,15 @@ export async function rescheduleAppointment(
   const duration = Math.round(
     (new Date(appt.ends_at).getTime() - new Date(appt.starts_at).getTime()) / 60_000,
   );
-  const slots = await availabilityFor(supabase, businessId, timeZone, calendar, date, duration);
+  const slots = await availabilityFor(
+    supabase,
+    businessId,
+    timeZone,
+    calendar,
+    date,
+    duration,
+    appt.staff_id,
+  );
   if (!slots.is_open || !slots.available_slots.includes(time)) {
     return {
       updated: false as const,
