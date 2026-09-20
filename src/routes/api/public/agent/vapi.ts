@@ -1,10 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import {
-  allowAgentRequest,
-  callerIdentity,
-  tooManyRequests,
-} from "@/lib/agent-rate-limit.server";
+import { allowAgentRequest, callerIdentity, tooManyRequests } from "@/lib/agent-rate-limit.server";
 
 import {
   AgentError,
