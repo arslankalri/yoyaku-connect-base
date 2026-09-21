@@ -423,8 +423,9 @@ export async function saveCallLog(
     .maybeSingle();
 
   const transcript = (fields.transcript ?? "").trim()
-    ? fields.transcript
+    ? (fields.transcript ?? "")
     : (existing?.transcript ?? "");
+
 
   const { error } = await ctx.supabase.from("calls").upsert(
     {
