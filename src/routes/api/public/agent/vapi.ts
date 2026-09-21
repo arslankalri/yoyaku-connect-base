@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { allowAgentRequest, callerIdentity, tooManyRequests } from "@/lib/agent-rate-limit.server";
+import { extractToolCalls, sanitizeForLog } from "@/lib/vapi-protocol";
 
 import {
   AgentError,
@@ -26,17 +27,22 @@ import {
 
 type VapiMessage = {
   type?: string;
-  call?: { id?: string; customer?: { number?: string }; phoneNumber?: { number?: string } };
+  call?: {
+    id?: string;
+    customer?: { number?: string };
+    phoneNumber?: { number?: string };
+    phoneNumberId?: string;
+  };
   phoneNumber?: { number?: string };
   customer?: { number?: string };
-  toolCalls?: Array<{ id?: string; function?: { name?: string; arguments?: unknown } }>;
-  toolCallList?: Array<{ id?: string; function?: { name?: string; arguments?: unknown } }>;
+  toolCalls?: unknown;
+  toolCallList?: unknown;
   status?: string;
   endedReason?: string;
   durationSeconds?: number;
   summary?: string;
   transcript?: string;
-  artifact?: { transcript?: string };
+  artifact?: { transcript?: string; messages?: unknown };
 };
 
 function keyFrom(request: Request, url: URL) {
@@ -62,15 +68,13 @@ async function resolveContext(
   return byPhone;
 }
 
-function parseArgs(raw: unknown) {
-  if (typeof raw === "string") {
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return {};
-    }
-  }
-  return raw ?? {};
+/** Structured, secret-free server log for every Vapi interaction. */
+function log(event: string, fields: Record<string, unknown>) {
+  console.log(`[nagi-vapi] ${event}`, JSON.stringify(sanitizeForLog(fields)));
+}
+
+function transcriptOf(message: VapiMessage) {
+  return message.artifact?.transcript ?? message.transcript ?? "";
 }
 
 async function assistantConfig(ctx: AgentContext, origin: string, key: string) {
@@ -101,7 +105,7 @@ async function assistantConfig(ctx: AgentContext, origin: string, key: string) {
         server,
       })),
     },
-    serverMessages: ["tool-calls", "status-update", "end-of-call-report"],
+    serverMessages: ["tool-calls", "status-update", "transcript", "end-of-call-report"],
     server,
   };
 }
@@ -114,17 +118,45 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
         if (!allowAgentRequest(callerIdentity(request, keyFrom(request, url)))) {
           return tooManyRequests();
         }
+        let eventType = "unknown";
+        let callId = "";
         try {
-          const body = (await request.json().catch(() => ({}))) as { message?: VapiMessage };
-          const message = body.message ?? {};
-          const ctx = await resolveContext(request, url, message);
-          const callId = message.call?.id ?? "";
+          const raw = (await request.json().catch(() => ({}))) as {
+            message?: VapiMessage;
+          } & VapiMessage;
+          // Vapi normally wraps the event in `message`; accept a top-level event too.
+          const message: VapiMessage = raw.message ?? raw ?? {};
+          eventType = message.type ?? "unknown";
+          callId = message.call?.id ?? "";
           const caller = message.customer?.number ?? message.call?.customer?.number ?? null;
           const dialled = message.phoneNumber?.number ?? message.call?.phoneNumber?.number ?? null;
 
-          switch (message.type) {
+          const ctx = await resolveContext(request, url, message);
+          log("event", {
+            type: eventType,
+            call_id: callId,
+            business_id: ctx.business.id,
+            voice_enabled: ctx.voiceEnabled,
+          });
+
+          // Every event that carries a call id gets a call-history row, so the
+          // owner sees the call even when Vapi uses a statically configured
+          // assistant and never sends us `assistant-request`.
+          if (callId && eventType !== "assistant-request") {
+            await saveCallLog(ctx, callId, {
+              transcript: transcriptOf(message),
+              from_number: caller,
+              to_number: dialled,
+            }).catch((error) => log("call_log_failed", { call_id: callId, error: String(error) }));
+          }
+
+          switch (eventType) {
             case "assistant-request": {
               if (!ctx.voiceEnabled) {
+                log("assistant_request_disabled", {
+                  call_id: callId,
+                  business_id: ctx.business.id,
+                });
                 return Response.json({
                   error: "Phone reception is turned off for this business.",
                 });
@@ -132,30 +164,69 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
               const assistant = await assistantConfig(ctx, url.origin, keyFrom(request, url));
               if (callId) {
                 await saveCallLog(ctx, callId, {
-                  transcript: "",
                   status: "in_progress",
                   from_number: caller,
                   to_number: dialled,
                 });
               }
+              log("assistant_sent", {
+                call_id: callId,
+                business_id: ctx.business.id,
+                tools: assistant.model.tools.length,
+              });
               return Response.json({ assistant });
             }
 
-            case "tool-calls": {
-              const calls = message.toolCalls ?? message.toolCallList ?? [];
-              const results = [];
+            case "tool-calls":
+            case "function-call": {
+              const calls = extractToolCalls(message);
+              if (calls.length === 0) {
+                log("tool_calls_empty", { call_id: callId, business_id: ctx.business.id });
+                return Response.json({ results: [] });
+              }
+              const results: Array<{ toolCallId: string; result?: string; error?: string }> = [];
               for (const call of calls) {
-                const name = call.function?.name ?? "";
-                const args = parseArgs(call.function?.arguments) as Record<string, unknown>;
+                const args = { ...(call.arguments as Record<string, unknown>) };
                 if (callId && !args["call_id"]) args["call_id"] = callId;
                 if (caller && !args["caller_phone"]) args["caller_phone"] = caller;
+                log("tool_call", {
+                  call_id: callId,
+                  business_id: ctx.business.id,
+                  tool: call.name,
+                  tool_call_id: call.id,
+                  params: args,
+                });
                 try {
-                  const result = await runAgentTool(ctx, name, args);
+                  const result = await runAgentTool(ctx, call.name, args);
+                  log("tool_result", {
+                    call_id: callId,
+                    business_id: ctx.business.id,
+                    tool: call.name,
+                    tool_call_id: call.id,
+                    result,
+                  });
                   results.push({ toolCallId: call.id, result: JSON.stringify(result) });
                 } catch (error) {
-                  const detail = error instanceof Error ? error.message : "Tool failed";
-                  console.error("[nagi-vapi] tool failed", name, error);
-                  results.push({ toolCallId: call.id, error: detail });
+                  const detail =
+                    error instanceof AgentError
+                      ? error.message
+                      : error instanceof Error
+                        ? error.message
+                        : "Tool failed";
+                  log("tool_failed", {
+                    call_id: callId,
+                    business_id: ctx.business.id,
+                    tool: call.name,
+                    tool_call_id: call.id,
+                    reason: detail,
+                  });
+                  // Report the failure to Vapi as a normal tool result so the
+                  // assistant can say it truthfully — never as a success.
+                  results.push({
+                    toolCallId: call.id,
+                    result: JSON.stringify({ ok: false, error: detail }),
+                    error: detail,
+                  });
                 }
               }
               return Response.json({ results });
@@ -164,7 +235,7 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
             case "status-update": {
               if (callId) {
                 await saveCallLog(ctx, callId, {
-                  transcript: message.artifact?.transcript ?? message.transcript ?? "",
+                  transcript: transcriptOf(message),
                   status: message.status === "ended" ? "completed" : "in_progress",
                   from_number: caller,
                   to_number: dialled,
@@ -176,7 +247,7 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
             case "end-of-call-report": {
               if (callId) {
                 await saveCallLog(ctx, callId, {
-                  transcript: message.artifact?.transcript ?? message.transcript ?? "",
+                  transcript: transcriptOf(message),
                   summary: message.summary ?? null,
                   status: "completed",
                   from_number: caller,
@@ -184,6 +255,11 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
                   duration_seconds: message.durationSeconds
                     ? Math.round(message.durationSeconds)
                     : null,
+                });
+                log("call_completed", {
+                  call_id: callId,
+                  business_id: ctx.business.id,
+                  duration_seconds: message.durationSeconds ?? null,
                 });
               }
               return Response.json({ ok: true });
@@ -194,10 +270,11 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
           }
         } catch (error) {
           if (error instanceof AgentError) {
+            log("rejected", { type: eventType, call_id: callId, reason: error.message });
             return Response.json({ error: error.message }, { status: error.status });
           }
-          console.error("[nagi-vapi] webhook failed", error);
           const detail = error instanceof Error ? error.message : "Webhook failed";
+          log("failed", { type: eventType, call_id: callId, reason: detail });
           return Response.json({ error: detail }, { status: 500 });
         }
       },
