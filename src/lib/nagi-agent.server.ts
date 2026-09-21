@@ -30,6 +30,8 @@ import {
   type CalendarLink,
 } from "@/lib/nagi-booking.server";
 import { createNagiSessionForBusiness } from "@/lib/nagi-brain.server";
+import { sanitizeToolSchema } from "@/lib/vapi-protocol";
+
 
 export type AgentBusiness = {
   id: string;
@@ -458,8 +460,11 @@ export function toolDeclarations() {
   return Object.entries(AGENT_TOOLS).map(([name, tool]) => ({
     name,
     description: tool.description,
-    parameters: z.toJSONSchema(tool.schema, { io: "input" }),
+    // Vapi rejects an assistant whose tool parameters carry JSON-Schema meta
+    // keys such as `$schema`, so strip them down to the accepted subset.
+    parameters: sanitizeToolSchema(z.toJSONSchema(tool.schema, { io: "input" })),
   }));
+
 }
 
 export function defaultVoiceGreeting(businessName: string, custom: string) {
