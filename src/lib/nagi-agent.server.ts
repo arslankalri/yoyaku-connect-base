@@ -30,6 +30,8 @@ import {
   type CalendarLink,
 } from "@/lib/nagi-booking.server";
 import { createNagiSessionForBusiness } from "@/lib/nagi-brain.server";
+import { sanitizeToolSchema } from "@/lib/vapi-protocol";
+
 
 export type AgentBusiness = {
   id: string;
@@ -413,19 +415,35 @@ export async function saveCallLog(
     duration_seconds?: number | null;
   },
 ) {
+  // Read the existing row first so later events never blank out earlier data
+  // (an empty transcript on a status update used to wipe a saved transcript).
+  const { data: existing } = await ctx.supabase
+    .from("calls")
+    .select("id, transcript, summary, started_at, status")
+    .eq("business_id", ctx.business.id)
+    .eq("session_key", callId)
+    .maybeSingle();
+
+  const transcript = (fields.transcript ?? "").trim()
+    ? (fields.transcript ?? "")
+    : (existing?.transcript ?? "");
+
+
   const { error } = await ctx.supabase.from("calls").upsert(
     {
       business_id: ctx.business.id,
       channel: "voice",
       session_key: callId,
       direction: "inbound",
-      status: fields.status ?? "in_progress",
-      transcript: fields.transcript ?? "",
-      started_at: new Date().toISOString(),
-      ...(fields.summary !== undefined ? { summary: fields.summary } : {}),
-      ...(fields.from_number !== undefined ? { from_number: fields.from_number } : {}),
-      ...(fields.to_number !== undefined ? { to_number: fields.to_number } : {}),
-      ...(fields.duration_seconds !== undefined
+      status: fields.status ?? existing?.status ?? "in_progress",
+      transcript,
+      started_at: existing?.started_at ?? new Date().toISOString(),
+      ...(fields.summary !== undefined && fields.summary !== null
+        ? { summary: fields.summary }
+        : {}),
+      ...(fields.from_number ? { from_number: fields.from_number } : {}),
+      ...(fields.to_number ? { to_number: fields.to_number } : {}),
+      ...(fields.duration_seconds !== undefined && fields.duration_seconds !== null
         ? { duration_seconds: fields.duration_seconds }
         : {}),
     },
@@ -434,6 +452,7 @@ export async function saveCallLog(
   if (error) throw error;
 }
 
+
 /* --------------------------- voice agent settings -------------------------- */
 
 /** JSON-Schema shape of one tool, for providers that need declarations. */
@@ -441,8 +460,11 @@ export function toolDeclarations() {
   return Object.entries(AGENT_TOOLS).map(([name, tool]) => ({
     name,
     description: tool.description,
-    parameters: z.toJSONSchema(tool.schema, { io: "input" }),
+    // Vapi rejects an assistant whose tool parameters carry JSON-Schema meta
+    // keys such as `$schema`, so strip them down to the accepted subset.
+    parameters: sanitizeToolSchema(z.toJSONSchema(tool.schema, { io: "input" })),
   }));
+
 }
 
 export function defaultVoiceGreeting(businessName: string, custom: string) {
