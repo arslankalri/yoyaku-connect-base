@@ -54,7 +54,6 @@ export type StaffMember = {
 
 export const DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
-/** Trim "HH:MM:SS" from Postgres time values down to "HH:MM". */
 export function hhmm(value: string | null | undefined) {
   return (value ?? "").slice(0, 5);
 }
@@ -110,7 +109,6 @@ export function useSaveBusiness() {
       if (error) throw error;
 
       if (!skipDefaultHours) {
-        // Seed a sensible default week so hours are never empty.
         const rows = DAYS.map((day) => ({
           business_id: data.id,
           day_of_week: day,
@@ -149,10 +147,7 @@ export function useSetupProgress(businessId?: string) {
   const staffQuery = useStaff(businessId);
 
   const isLoading =
-    businessQuery.isLoading ||
-    hoursQuery.isLoading ||
-    servicesQuery.isLoading ||
-    staffQuery.isLoading;
+    businessQuery.isLoading || hoursQuery.isLoading || servicesQuery.isLoading || staffQuery.isLoading;
   const hasBusiness = !!businessQuery.data;
   const hasBusinessType = !!businessQuery.data?.business_type;
   const hasHours = (hoursQuery.data?.length ?? 0) > 0;
@@ -348,10 +343,6 @@ export function useDeleteStaff() {
   });
 }
 
-/* ------------------------------------------------------------------ */
-/* NAGI Control Center: settings, policies and FAQs                    */
-/* ------------------------------------------------------------------ */
-
 export const NAGI_CAPABILITIES = [
   "can_answer_faqs",
   "can_explain_services",
@@ -406,7 +397,6 @@ const NAGI_COLUMNS = [
   ...NAGI_HANDOFF_RULES,
 ].join(", ");
 
-/** Read the business's NAGI configuration, creating the default row on first use. */
 export function useNagiSettings(businessId?: string) {
   return useQuery({
     queryKey: ["nagi_settings", businessId],
@@ -456,7 +446,6 @@ export type BusinessApiKey = {
   revoked_at: string | null;
 };
 
-/** Keys the voice agent (and any other external caller) uses for this business. */
 export function useBusinessApiKeys(businessId?: string) {
   return useQuery({
     queryKey: ["business_api_keys", businessId],
@@ -571,10 +560,6 @@ export function useDeleteFaq() {
   });
 }
 
-/* ------------------------------------------------------------------ */
-/* Appointments, customers and conversations (live operational data)   */
-/* ------------------------------------------------------------------ */
-
 export type Appointment = {
   id: string;
   business_id: string;
@@ -630,7 +615,6 @@ export function useSaveAppointment(businessId?: string) {
   return useMutation({
     mutationFn: async (input: AppointmentInput) => {
       if (!businessId) throw new Error("No business");
-      // Reuse an existing customer with the same phone, otherwise create one.
       let customerId: string | null = null;
       const phone = input.customer_phone.trim();
       if (phone) {
@@ -778,6 +762,8 @@ export type Conversation = {
   started_at: string | null;
   created_at: string;
   duration_seconds: number | null;
+  from_number: string | null;
+  to_number: string | null;
 };
 
 export function useConversations(businessId?: string) {
@@ -788,7 +774,7 @@ export function useConversations(businessId?: string) {
       const { data, error } = await supabase
         .from("calls")
         .select(
-          "id, business_id, channel, session_key, direction, status, transcript, summary, started_at, created_at, duration_seconds",
+          "id, business_id, channel, session_key, direction, status, transcript, summary, started_at, created_at, duration_seconds, from_number, to_number",
         )
         .eq("business_id", businessId!)
         .order("created_at", { ascending: false })
@@ -810,23 +796,19 @@ export function useDeleteConversation() {
   });
 }
 
-/**
- * Live updates: subscribe to Postgres changes for this business and refresh the
- * matching React Query caches, so every page reflects new data immediately.
- */
 export function useRealtime(
   businessId: string | undefined,
   tables: Array<{ table: string; queryKey: string }>,
 ) {
   const qc = useQueryClient();
-  const signature = tables.map((t) => `${t.table}:${t.queryKey}`).join("|");
+  const signature = tables.map((t) => t.table + ":" + t.queryKey).join("|");
   useEffect(() => {
     if (!businessId) return;
-    const channel = supabase.channel(`nagi-live-${businessId}-${signature}`);
+    const channel = supabase.channel("nagi-live-" + businessId + "-" + signature);
     for (const { table, queryKey } of tables) {
       channel.on(
         "postgres_changes",
-        { event: "*", schema: "public", table, filter: `business_id=eq.${businessId}` },
+        { event: "*", schema: "public", table, filter: "business_id=eq." + businessId },
         () => {
           void qc.invalidateQueries({ queryKey: [queryKey] });
         },
@@ -836,7 +818,5 @@ export function useRealtime(
     return () => {
       void supabase.removeChannel(channel);
     };
-    // `signature` captures the table list identity, so we do not need `tables` in deps.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [businessId, signature, qc]);
 }
