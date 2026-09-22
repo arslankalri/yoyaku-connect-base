@@ -52,21 +52,24 @@ async function resolveContext(
   request: Request,
   url: URL,
   message: VapiMessage,
-): Promise<AgentContext> {
+): Promise<{ ctx: AgentContext; isWeb: boolean }> {
   const key = keyFrom(request, url);
 
   if (key.startsWith("web_")) {
     const session = parseWebCallToken(key);
     if (!session) throw new AgentError(401, "Expired or invalid web call session");
-    return contextForBusinessId(supabaseAdmin, session.businessId);
+    return {
+      ctx: await contextForBusinessId(supabaseAdmin, session.businessId),
+      isWeb: true,
+    };
   }
 
-  if (key) return contextForApiKey(key);
+  if (key) return { ctx: await contextForApiKey(key), isWeb: false };
 
   const dialled = message.phoneNumber?.number ?? message.call?.phoneNumber?.number ?? "";
   const byPhone = dialled ? await contextForPhoneNumber(dialled) : null;
   if (!byPhone) throw new AgentError(401, "Missing or invalid API key");
-  return byPhone;
+  return { ctx: byPhone, isWeb: false };
 }
 
 function log(event: string, fields: Record<string, unknown>) {
@@ -136,13 +139,14 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
           const caller = message.customer?.number ?? message.call?.customer?.number ?? null;
           const dialled = message.phoneNumber?.number ?? message.call?.phoneNumber?.number ?? null;
 
-          const ctx = await resolveContext(request, url, message);
+          const { ctx, isWeb } = await resolveContext(request, url, message);
 
           log("event", {
             type: eventType,
             call_id: callId,
             business_id: ctx.business.id,
             voice_enabled: ctx.voiceEnabled,
+            source: isWeb ? "web" : "phone",
           });
 
           if (callId && eventType !== "assistant-request") {
@@ -150,6 +154,8 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
               transcript: transcriptOf(message),
               from_number: caller,
               to_number: dialled,
+              channel: isWeb ? "web" : "voice",
+              direction: isWeb ? "web" : "inbound",
             }).catch((error) =>
               log("call_log_failed", { call_id: callId, error: String(error) }),
             );
@@ -168,6 +174,8 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
                   status: "in_progress",
                   from_number: caller,
                   to_number: dialled,
+                  channel: isWeb ? "web" : "voice",
+                  direction: isWeb ? "web" : "inbound",
                 });
               }
               return Response.json({ assistant });
@@ -213,6 +221,8 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
                   status: message.status === "ended" ? "completed" : "in_progress",
                   from_number: caller,
                   to_number: dialled,
+                  channel: isWeb ? "web" : "voice",
+                  direction: isWeb ? "web" : "inbound",
                 });
               }
               return Response.json({ ok: true });
@@ -226,6 +236,8 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
                   status: "completed",
                   from_number: caller,
                   to_number: dialled,
+                  channel: isWeb ? "web" : "voice",
+                  direction: isWeb ? "web" : "inbound",
                   duration_seconds:
                     message.durationSeconds !== undefined
                       ? Math.round(message.durationSeconds)
