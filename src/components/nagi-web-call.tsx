@@ -6,46 +6,22 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { createNagiWebCallClient, type NagiWebCallEvent, type NagiWebCallStatus } from "@/lib/vapi-web";
 
-type Props = {
-  className?: string;
+type Props = { className?: string };
+
+type WebCallConfig = {
+  publicKey: string;
+  assistant: Record<string, unknown>;
+  expiresAt: number;
 };
-
-function publicVapiKey() {
-  return (
-    import.meta.env.VITE_VAPI_PUBLIC_KEY ??
-    import.meta.env.VITE_VAPI_PUBLIC_API_KEY ??
-    ""
-  );
-}
-
-function assistantId() {
-  return import.meta.env.VITE_VAPI_WEB_ASSISTANT_ID ?? "";
-}
 
 export function NagiWebCall({ className }: Props) {
   const [status, setStatus] = useState<NagiWebCallStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [lastEvent, setLastEvent] = useState<string>("");
-
+  const [config, setConfig] = useState<WebCallConfig | null>(null);
   const clientRef = useRef<ReturnType<typeof createNagiWebCallClient> | null>(null);
 
   useEffect(() => {
-    const key = publicVapiKey();
-    const id = assistantId();
-    if (!key || !id) return;
-
-    clientRef.current = createNagiWebCallClient({
-      publicKey: key,
-      assistantId: id,
-      onStatus: setStatus,
-      onError: (value) => {
-        setError(value instanceof Error ? value.message : "Vapi web call failed");
-      },
-      onEvent: (event: NagiWebCallEvent) => {
-        setLastEvent(event.type);
-      },
-    });
-
     return () => {
       void clientRef.current?.stop().catch(() => undefined);
       clientRef.current = null;
@@ -55,35 +31,46 @@ export function NagiWebCall({ className }: Props) {
   async function start() {
     setError(null);
 
-    const key = publicVapiKey();
-    const id = assistantId();
-    if (!key || !id) {
-      setError("Set VITE_VAPI_PUBLIC_KEY and VITE_VAPI_WEB_ASSISTANT_ID first.");
-      return;
-    }
-
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) {
       setError("You must be logged in.");
       return;
     }
 
     try {
-      if (!clientRef.current) {
-        clientRef.current = createNagiWebCallClient({
-          publicKey: key,
-          assistantId: id,
-          onStatus: setStatus,
-          onError: (value) => {
-            setError(value instanceof Error ? value.message : "Vapi web call failed");
-          },
-          onEvent: (event) => setLastEvent(event.type),
-        });
+      const response = await fetch("/api/voice/web-config", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token },
+      });
+      const payload = (await response.json()) as Partial<WebCallConfig> & { error?: string };
+      if (!response.ok || !payload.publicKey || !payload.assistant) {
+        throw new Error(payload.error ?? "Unable to configure NAGI web calling");
       }
 
+      const nextConfig: WebCallConfig = {
+        publicKey: payload.publicKey,
+        assistant: payload.assistant,
+        expiresAt: payload.expiresAt ?? 0,
+      };
+      setConfig(nextConfig);
+
+      clientRef.current = createNagiWebCallClient({
+        publicKey: nextConfig.publicKey,
+        assistant: nextConfig.assistant,
+        onStatus: setStatus,
+        onError: (value) => {
+          setError(value instanceof Error ? value.message : "Vapi web call failed");
+        },
+        onEvent: (event: NagiWebCallEvent) => {
+          setLastEvent(event.type);
+        },
+      });
+
       await clientRef.current.start();
-    } catch {
-      // Detailed error is set by the client event handler.
+    } catch (value) {
+      setStatus("idle");
+      setError(value instanceof Error ? value.message : "Unable to start NAGI web call");
     }
   }
 
@@ -98,9 +85,7 @@ export function NagiWebCall({ className }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold">NAGI Web Call</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Browser microphone → Vapi → NAGI
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">Browser microphone → Vapi → NAGI</p>
         </div>
         <Badge variant={active ? "default" : "outline"}>{status}</Badge>
       </div>
@@ -119,15 +104,21 @@ export function NagiWebCall({ className }: Props) {
         )}
       </div>
 
-      {lastEvent && (
-        <p className="mt-3 text-[11px] text-muted-foreground">Last event: {lastEvent}</p>
-      )}
+      {config?.expiresAt ? (
+        <p className="mt-3 text-[11px] text-muted-foreground">
+          Secure session expires {new Date(config.expiresAt * 1000).toLocaleTimeString()}.
+        </p>
+      ) : null}
 
-      {error && (
+      {lastEvent ? (
+        <p className="mt-3 text-[11px] text-muted-foreground">Last event: {lastEvent}</p>
+      ) : null}
+
+      {error ? (
         <p className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
           {error}
         </p>
-      )}
+      ) : null}
     </section>
   );
 }
