@@ -395,8 +395,19 @@ export async function runAgentTool(ctx: AgentContext, name: string, args: unknow
   if (!tool) throw new AgentError(404, `Unknown tool: ${name}`);
   const parsed = tool.schema.safeParse(args ?? {});
   if (!parsed.success) {
-    throw new AgentError(400, `Invalid arguments for ${name}: ${parsed.error.message}`);
+    // Short, speakable reason: which fields are wrong, not the raw validator dump.
+    const fields = parsed.error.issues
+      .map((issue) => issue.path.join("."))
+      .filter(Boolean)
+      .join(", ");
+    throw new AgentError(
+      400,
+      fields
+        ? `Missing or invalid details for ${name}: ${fields}`
+        : `Invalid arguments for ${name}`,
+    );
   }
+
   return tool.run(ctx, (parsed.data ?? {}) as Record<string, unknown>);
 }
 
