@@ -4,30 +4,27 @@ import { createClient } from "@supabase/supabase-js";
 import {
   createUserClient,
   getBusinessForUser,
-  get_nagi_settings,
+  getNagiConfig,
 } from "@/lib/nagi-data.server";
 import {
   AgentError,
-  contextForApiKey,
+  contextForBusinessId,
   defaultVoiceGreeting,
-  runAgentTool,
   toolDeclarations,
   voiceSystemPrompt,
 } from "@/lib/nagi-agent.server";
+import { createWebCallToken } from "@/lib/vapi-web-session.server";
 
-type UserContext = {
-  accessToken: string;
-  userId: string;
-};
-
-async function authUser(request: Request): Promise<UserContext> {
+async function authenticatedAccessToken(request: Request) {
   const auth = request.headers.get("Authorization") ?? "";
   const accessToken = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
   if (!accessToken) throw new AgentError(401, "Not authenticated");
 
   const url = process.env["SUPABASE_URL"];
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
-  if (!url || !key) throw new AgentError(500, "Supabase server environment is not configured");
+  if (!url || !key) {
+    throw new AgentError(500, "Supabase server environment is not configured");
+  }
 
   const client = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -41,8 +38,7 @@ async function authUser(request: Request): Promise<UserContext> {
 
   const { data, error } = await client.auth.getUser(accessToken);
   if (error || !data.user) throw new AgentError(401, "Not authenticated");
-
-  return { accessToken, userId: data.user.id };
+  return accessToken;
 }
 
 export const Route = createFileRoute("/api/voice/web-config")({
@@ -50,13 +46,20 @@ export const Route = createFileRoute("/api/voice/web-config")({
     handlers: {
       POST: async ({ request }) => {
         try {
-          const { accessToken } = await authUser(request);
+          const accessToken = await authenticatedAccessToken(request);
           const supabase = createUserClient(accessToken);
           const business = await getBusinessForUser(supabase);
           if (!business) throw new AgentError(404, "No business found");
 
-          const settings = await get_nagi_settings(supabase, business.id);
-          if (!settings.voice_enabled) {
+          const config = await getNagiConfig(supabase, business.id);
+          const settings = await supabase
+            .from("nagi_settings")
+            .select("voice_enabled, voice_greeting")
+            .eq("business_id", business.id)
+            .maybeSingle();
+
+          if (settings.error) throw settings.error;
+          if (!settings.data?.voice_enabled) {
             throw new AgentError(409, "NAGI voice calling is turned off");
           }
 
@@ -64,37 +67,17 @@ export const Route = createFileRoute("/api/voice/web-config")({
             process.env["VAPI_PUBLIC_KEY"] ??
             process.env["VITE_VAPI_PUBLIC_KEY"] ??
             process.env["VAPI_PUBLIC_API_KEY"];
+          if (!publicKey) throw new AgentError(500, "Vapi public key is not configured");
 
-          if (!publicKey) {
-            throw new AgentError(500, "Vapi public key is not configured");
-          }
-
-          const server = {
-            url: new URL("/api/public/agent/vapi", request.url).toString(),
-            // Development prototype: the Vapi web call uses the business key
-            // only inside Vapi's server webhook configuration. The browser
-            // receives this object from an authenticated owner session.
-            secret: process.env["NAGI_WEB_VAPI_SECRET"] ?? "",
-          };
-
-          if (!server.secret) {
-            throw new AgentError(
-              500,
-              "NAGI_WEB_VAPI_SECRET is required for secure web tool calls",
-            );
-          }
-
-          const ctx = await import("@/lib/nagi-agent.server").then((m) =>
-            m.contextForApiKey(server.secret),
-          );
-
-          if (ctx.business.id !== business.id) {
-            throw new AgentError(403, "Web-call business mismatch");
-          }
+          const session = createWebCallToken(business.id);
+          const ctx = await contextForBusinessId(supabase, business.id);
 
           const assistant = {
             name: `NAGI Web — ${business.name}`,
-            firstMessage: defaultVoiceGreeting(business.name, settings.voice_greeting),
+            firstMessage: defaultVoiceGreeting(
+              business.name,
+              settings.data.voice_greeting ?? "",
+            ),
             firstMessageMode: "assistant-speaks-first",
             transcriber: {
               provider: "deepgram",
@@ -117,7 +100,10 @@ export const Route = createFileRoute("/api/voice/web-config")({
                   description: tool.description,
                   parameters: tool.parameters,
                 },
-                server,
+                server: {
+                  url: new URL("/api/public/agent/vapi", request.url).toString(),
+                  secret: session.token,
+                },
               })),
             },
             serverMessages: [
@@ -126,19 +112,28 @@ export const Route = createFileRoute("/api/voice/web-config")({
               "tool-calls",
               "end-of-call-report",
             ],
-            server,
+            server: {
+              url: new URL("/api/public/agent/vapi", request.url).toString(),
+              secret: session.token,
+            },
             metadata: {
               nagiBusinessId: business.id,
               source: "web",
+              voiceEnabled: config.voice_enabled,
             },
           };
 
-          return Response.json({ publicKey, assistant });
+          return Response.json({
+            publicKey,
+            assistant,
+            expiresAt: session.expiresAt,
+          });
         } catch (error) {
           if (error instanceof AgentError) {
             return Response.json({ error: error.message }, { status: error.status });
           }
-          const detail = error instanceof Error ? error.message : "Unable to configure web calling";
+          const detail =
+            error instanceof Error ? error.message : "Unable to configure web calling";
           return Response.json({ error: detail }, { status: 500 });
         }
       },
