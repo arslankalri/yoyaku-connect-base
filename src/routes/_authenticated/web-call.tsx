@@ -9,10 +9,10 @@ export const Route = createFileRoute("/_authenticated/web-call")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Web Call / ブラウザ通話 — NAGI AI" },
+      { title: "NAGI Web Call" },
       {
         name: "description",
-        content: "Talk to your NAGI AI receptionist directly from the browser.",
+        content: "Talk to your NAGI AI receptionist directly from your browser.",
       },
     ],
   }),
@@ -34,7 +34,7 @@ function WebCallPage() {
             <div>
               <h2 className="text-base font-semibold">Browser voice test</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Your microphone connects to Vapi, while NAGI remains the business brain and source of truth.
+                Browser microphone → Vapi → NAGI. NAGI remains the business brain and source of truth.
               </p>
             </div>
           </div>
