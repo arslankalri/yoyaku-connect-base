@@ -31,7 +31,7 @@ function formatDuration(seconds: number | null) {
   if (seconds === null || seconds < 0) return "—";
   const minutes = Math.floor(seconds / 60);
   const remainder = seconds % 60;
-  return minutes > 0 ? `${minutes}m ${remainder}s` : `${remainder}s`;
+  return minutes > 0 ? minutes + "m " + remainder + "s" : remainder + "s";
 }
 
 function CallsPage() {
@@ -77,6 +77,7 @@ function CallsPage() {
           {rows.map((conversation) => {
             const isOpen = expanded === conversation.id;
             const started = conversation.started_at ?? conversation.created_at;
+            const isWeb = conversation.channel === "web";
 
             return (
               <li key={conversation.id} className="glass-panel p-4">
@@ -84,17 +85,24 @@ function CallsPage() {
                   <div className="min-w-0 flex-1 space-y-2">
                     <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
                       <Badge variant="outline" className="gap-1.5">
-                        {conversation.channel === "voice" ? (
+                        {isWeb || conversation.channel === "voice" ? (
                           <PhoneCall className="size-3.5" />
                         ) : (
                           <MessagesSquare className="size-3.5" />
                         )}
-                        {t(
-                          `conv.channel.${conversation.channel === "voice" ? "voice" : "chat"}`,
-                        )}
+                        {isWeb
+                          ? "Web call"
+                          : t(
+                              "conv.channel." +
+                                (conversation.channel === "voice" ? "voice" : "chat"),
+                            )}
                       </Badge>
 
-                      <Badge variant={conversation.status === "completed" ? "secondary" : "outline"}>
+                      <Badge
+                        variant={
+                          conversation.status === "completed" ? "secondary" : "outline"
+                        }
+                      >
                         {conversation.status ?? "unknown"}
                       </Badge>
 
@@ -116,11 +124,11 @@ function CallsPage() {
                       </div>
                       <div>
                         <span className="font-medium text-foreground">From:</span>{" "}
-                        {conversation.from_number ?? "Web / browser"}
+                        {conversation.from_number ?? (isWeb ? "Browser" : "Unknown")}
                       </div>
                       <div>
                         <span className="font-medium text-foreground">To:</span>{" "}
-                        {conversation.to_number ?? "NAGI Web"}
+                        {conversation.to_number ?? (isWeb ? "NAGI Web" : "Unknown")}
                       </div>
                     </div>
 
@@ -172,7 +180,9 @@ function CallsPage() {
                       </div>
                       <div className="rounded-lg border border-border/70 bg-secondary/30 p-3">
                         <p className="text-muted-foreground">Duration</p>
-                        <p className="mt-1 font-medium">{formatDuration(conversation.duration_seconds)}</p>
+                        <p className="mt-1 font-medium">
+                          {formatDuration(conversation.duration_seconds)}
+                        </p>
                       </div>
                     </div>
 
