@@ -14,7 +14,7 @@ export type NagiWebCallEvent = {
 
 export type NagiWebCallClientOptions = {
   publicKey: string;
-  assistantId?: string;
+  assistantId: string;
   onStatus?: (status: NagiWebCallStatus) => void;
   onEvent?: (event: NagiWebCallEvent) => void;
   onError?: (error: unknown) => void;
@@ -46,10 +46,7 @@ export class NagiWebCallClient {
 
     this.vapi.on("error", (error: unknown) => {
       this.options.onError?.(error);
-      this.options.onEvent?.({
-        type: "error",
-        error,
-      });
+      this.options.onEvent?.({ type: "error", error });
     });
   }
 
@@ -59,17 +56,14 @@ export class NagiWebCallClient {
 
   async start(): Promise<void> {
     if (this.status === "connecting" || this.status === "active") return;
+    if (!this.options.assistantId) {
+      throw new Error("Missing Vapi assistant ID");
+    }
 
     this.setStatus("connecting");
 
     try {
-      if (this.options.assistantId) {
-        await this.vapi.start(this.options.assistantId);
-      } else {
-        // The assistant can be supplied by the server for NAGI deployments
-        // that use dynamic Assistant Requests.
-        await this.vapi.start();
-      }
+      await this.vapi.start(this.options.assistantId);
     } catch (error) {
       this.setStatus("idle");
       this.options.onError?.(error);
