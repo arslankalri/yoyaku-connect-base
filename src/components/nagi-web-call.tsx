@@ -18,7 +18,9 @@ export function NagiWebCall({ className }: Props) {
   const [status, setStatus] = useState<NagiWebCallStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [lastEvent, setLastEvent] = useState<string>("");
-  const [config, setConfig] = useState<WebCallConfig | null>(null);
+  const [liveTranscript, setLiveTranscript] = useState<string[]>([]);
+  const [callId, setCallId] = useState<string | null>(null);
+  const startedAtRef = useRef<number | null>(null);
   const clientRef = useRef<ReturnType<typeof createNagiWebCallClient> | null>(null);
 
   useEffect(() => {
@@ -28,8 +30,33 @@ export function NagiWebCall({ className }: Props) {
     };
   }, []);
 
+  function handleEvent(event: NagiWebCallEvent) {
+    setLastEvent(event.type);
+    if (event.type === "call-start-success" && typeof event.callId === "string") {
+      setCallId(event.callId);
+      startedAtRef.current = Date.now();
+    }
+    if (event.type === "message") {
+      const message = (event as Record<string, unknown>).message;
+      const role =
+        message && typeof message === "object" && "role" in message
+          ? String((message as Record<string, unknown>).role)
+          : "";
+      const content =
+        message && typeof message === "object" && "content" in message
+          ? String((message as Record<string, unknown>).content ?? "")
+          : "";
+      if (content && (role === "user" || role === "assistant")) {
+        setLiveTranscript((items) => [...items, role + ": " + content].slice(-40));
+      }
+    }
+  }
+
   async function start() {
     setError(null);
+    setLiveTranscript([]);
+    setCallId(null);
+    startedAtRef.current = Date.now();
 
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
@@ -53,7 +80,6 @@ export function NagiWebCall({ className }: Props) {
         assistant: payload.assistant,
         expiresAt: payload.expiresAt ?? 0,
       };
-      setConfig(nextConfig);
 
       clientRef.current = createNagiWebCallClient({
         publicKey: nextConfig.publicKey,
@@ -62,9 +88,7 @@ export function NagiWebCall({ className }: Props) {
         onError: (value) => {
           setError(value instanceof Error ? value.message : "Vapi web call failed");
         },
-        onEvent: (event: NagiWebCallEvent) => {
-          setLastEvent(event.type);
-        },
+        onEvent: handleEvent,
       });
 
       await clientRef.current.start();
@@ -79,6 +103,10 @@ export function NagiWebCall({ className }: Props) {
   }
 
   const active = status === "active" || status === "connecting";
+  const duration =
+    startedAtRef.current && active
+      ? Math.max(0, Math.floor((Date.now() - startedAtRef.current) / 1000))
+      : null;
 
   return (
     <section className={className ?? "glass-panel p-4"}>
@@ -104,21 +132,35 @@ export function NagiWebCall({ className }: Props) {
         )}
       </div>
 
-      {config?.expiresAt ? (
-        <p className="mt-3 text-[11px] text-muted-foreground">
-          Secure session expires {new Date(config.expiresAt * 1000).toLocaleTimeString()}.
+      {active && duration !== null && (
+        <p className="mt-3 text-xs text-muted-foreground">Live duration: {duration}s</p>
+      )}
+
+      {callId && (
+        <p className="mt-2 truncate font-mono text-[10px] text-muted-foreground">
+          Call ID: {callId}
         </p>
-      ) : null}
+      )}
 
-      {lastEvent ? (
-        <p className="mt-3 text-[11px] text-muted-foreground">Last event: {lastEvent}</p>
-      ) : null}
+      {lastEvent && (
+        <p className="mt-2 text-[11px] text-muted-foreground">Last event: {lastEvent}</p>
+      )}
 
-      {error ? (
+      {liveTranscript.length > 0 && (
+        <div className="mt-3 max-h-40 overflow-y-auto rounded-lg border border-border/70 bg-secondary/30 p-2 text-xs">
+          {liveTranscript.map((line, index) => (
+            <p key={index} className="mb-1 last:mb-0">
+              {line}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {error && (
         <p className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
           {error}
         </p>
-      ) : null}
+      )}
     </section>
   );
 }
