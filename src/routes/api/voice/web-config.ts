@@ -1,11 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 
-import {
-  createUserClient,
-  getBusinessForUser,
-  getNagiConfig,
-} from "@/lib/nagi-data.server";
+import { createUserClient, getBusinessForUser } from "@/lib/nagi-data.server";
 import {
   AgentError,
   contextForBusinessId,
@@ -31,7 +27,7 @@ async function authenticatedAccessToken(request: Request) {
     global: {
       headers: {
         apikey: key,
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: "Bearer " + accessToken,
       },
     },
   });
@@ -51,15 +47,14 @@ export const Route = createFileRoute("/api/voice/web-config")({
           const business = await getBusinessForUser(supabase);
           if (!business) throw new AgentError(404, "No business found");
 
-          const config = await getNagiConfig(supabase, business.id);
-          const settings = await supabase
+          const { data: settings, error } = await supabase
             .from("nagi_settings")
             .select("voice_enabled, voice_greeting")
             .eq("business_id", business.id)
             .maybeSingle();
 
-          if (settings.error) throw settings.error;
-          if (!settings.data?.voice_enabled) {
+          if (error) throw error;
+          if (!settings?.voice_enabled) {
             throw new AgentError(409, "NAGI voice calling is turned off");
           }
 
@@ -67,16 +62,23 @@ export const Route = createFileRoute("/api/voice/web-config")({
             process.env["VAPI_PUBLIC_KEY"] ??
             process.env["VITE_VAPI_PUBLIC_KEY"] ??
             process.env["VAPI_PUBLIC_API_KEY"];
-          if (!publicKey) throw new AgentError(500, "Vapi public key is not configured");
+
+          if (!publicKey) {
+            throw new AgentError(500, "Vapi public key is not configured");
+          }
 
           const session = createWebCallToken(business.id);
           const ctx = await contextForBusinessId(supabase, business.id);
+          const webhook = {
+            url: new URL("/api/public/agent/vapi", request.url).toString(),
+            secret: session.token,
+          };
 
           const assistant = {
-            name: `NAGI Web — ${business.name}`,
+            name: "NAGI Web — " + business.name,
             firstMessage: defaultVoiceGreeting(
               business.name,
-              settings.data.voice_greeting ?? "",
+              settings.voice_greeting ?? "",
             ),
             firstMessageMode: "assistant-speaks-first",
             transcriber: {
@@ -100,10 +102,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
                   description: tool.description,
                   parameters: tool.parameters,
                 },
-                server: {
-                  url: new URL("/api/public/agent/vapi", request.url).toString(),
-                  secret: session.token,
-                },
+                server: webhook,
               })),
             },
             serverMessages: [
@@ -112,14 +111,10 @@ export const Route = createFileRoute("/api/voice/web-config")({
               "tool-calls",
               "end-of-call-report",
             ],
-            server: {
-              url: new URL("/api/public/agent/vapi", request.url).toString(),
-              secret: session.token,
-            },
+            server: webhook,
             metadata: {
               nagiBusinessId: business.id,
               source: "web",
-              voiceEnabled: config.voice_enabled,
             },
           };
 
@@ -132,6 +127,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
           if (error instanceof AgentError) {
             return Response.json({ error: error.message }, { status: error.status });
           }
+
           const detail =
             error instanceof Error ? error.message : "Unable to configure web calling";
           return Response.json({ error: detail }, { status: 500 });
