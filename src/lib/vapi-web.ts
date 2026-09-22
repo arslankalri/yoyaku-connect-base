@@ -14,7 +14,7 @@ export type NagiWebCallEvent = {
 
 export type NagiWebCallClientOptions = {
   publicKey: string;
-  assistantId: string;
+  assistant: Record<string, unknown>;
   onStatus?: (status: NagiWebCallStatus) => void;
   onEvent?: (event: NagiWebCallEvent) => void;
   onError?: (error: unknown) => void;
@@ -40,8 +40,7 @@ export class NagiWebCallClient {
     });
 
     this.vapi.on("message", (message: unknown) => {
-      const event = (message ?? {}) as NagiWebCallEvent;
-      this.options.onEvent?.(event);
+      this.options.onEvent?.((message ?? {}) as NagiWebCallEvent);
     });
 
     this.vapi.on("error", (error: unknown) => {
@@ -56,14 +55,10 @@ export class NagiWebCallClient {
 
   async start(): Promise<void> {
     if (this.status === "connecting" || this.status === "active") return;
-    if (!this.options.assistantId) {
-      throw new Error("Missing Vapi assistant ID");
-    }
-
     this.setStatus("connecting");
 
     try {
-      await this.vapi.start(this.options.assistantId);
+      await this.vapi.start(this.options.assistant);
     } catch (error) {
       this.setStatus("idle");
       this.options.onError?.(error);
@@ -74,6 +69,7 @@ export class NagiWebCallClient {
   async stop(): Promise<void> {
     if (this.status !== "active" && this.status !== "connecting") return;
     this.setStatus("ending");
+
     try {
       await this.vapi.stop();
     } catch (error) {
