@@ -1,3 +1,5 @@
+import "@tanstack/react-start/client-only";
+
 import Vapi from "@vapi-ai/web";
 
 export type NagiWebCallStatus =
