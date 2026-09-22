@@ -3,10 +3,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { allowAgentRequest, callerIdentity, tooManyRequests } from "@/lib/agent-rate-limit.server";
 import { extractToolCalls, sanitizeForLog } from "@/lib/vapi-protocol";
 import { parseWebCallToken } from "@/lib/vapi-web-session.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 import {
   AgentError,
   contextForApiKey,
+  contextForBusinessId,
   contextForPhoneNumber,
   defaultVoiceGreeting,
   runAgentTool,
@@ -56,10 +58,7 @@ async function resolveContext(
   if (key.startsWith("web_")) {
     const session = parseWebCallToken(key);
     if (!session) throw new AgentError(401, "Expired or invalid web call session");
-    const { contextForBusinessId } = await import("@/lib/nagi-agent.server");
-    const adminModule = await import("@/integrations/supabase/client.server");
-    const supabase = adminModule.supabaseAdmin as never;
-    return contextForBusinessId(supabase, session.businessId);
+    return contextForBusinessId(supabaseAdmin, session.businessId);
   }
 
   if (key) return contextForApiKey(key);
