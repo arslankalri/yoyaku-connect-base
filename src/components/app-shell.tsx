@@ -31,6 +31,7 @@ type NavItem = { to: string; labelKey: string; icon: typeof LayoutDashboard };
 const mainNav: NavItem[] = [
   { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
   { to: "/ai-receptionist", labelKey: "nav.receptionist", icon: PhoneIncoming },
+  { to: "/web-call", labelKey: "nav.webCall", icon: PhoneCall },
   { to: "/appointments", labelKey: "nav.appointments", icon: ClipboardList },
   { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
   { to: "/customers", labelKey: "nav.customers", icon: Users },

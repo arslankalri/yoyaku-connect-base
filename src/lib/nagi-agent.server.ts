@@ -69,10 +69,10 @@ export function generateAgentKey() {
   const bytes = new Uint8Array(24);
   crypto.getRandomValues(bytes);
   const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-  return `nagi_sk_${hex}`;
+  return "nagi_sk_" + hex;
 }
 
-async function contextForBusinessId(
+export async function contextForBusinessId(
   supabase: AuthedClient,
   businessId: string,
 ): Promise<AgentContext> {
@@ -139,7 +139,7 @@ export async function contextForApiKey(apiKey: string): Promise<AgentContext> {
 
 /** Fallback tenant resolution: which business owns the dialled number. */
 export async function contextForPhoneNumber(number: string): Promise<AgentContext | null> {
-  const digits = (number ?? "").replace(/\D/g, "");
+  const digits = (number ?? "").replace(/D/g, "");
   if (!digits) return null;
   const supabase = await adminClient();
   const { data, error } = await supabase
@@ -149,7 +149,7 @@ export async function contextForPhoneNumber(number: string): Promise<AgentContex
     .not("voice_phone_number", "is", null);
   if (error) throw error;
   const match = (data ?? []).find(
-    (row) => (row.voice_phone_number ?? "").replace(/\D/g, "") === digits,
+    (row) => (row.voice_phone_number ?? "").replace(/D/g, "") === digits,
   );
   if (!match) return null;
   return contextForBusinessId(supabase, match.business_id);
@@ -161,7 +161,7 @@ const dateField = z.string().describe("Date as YYYY-MM-DD in the business timezo
 const timeField = z.string().describe("Time as 24h HH:MM in the business timezone");
 
 function requireCapability(allowed: boolean, what: string) {
-  if (!allowed) throw new AgentError(403, `${what} is turned off for this business`);
+  if (!allowed) throw new AgentError(403, what + " is turned off for this business");
 }
 
 export type AgentTool = {
@@ -207,10 +207,10 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
         .toLowerCase()
         .trim();
       if (!query) return { found: faqs.length > 0, faqs };
-      const words = query.split(/\s+|、|。/).filter((w) => w.length > 1);
+      const words = query.split(/s+|、|。/).filter((w) => w.length > 1);
       const scored = faqs
         .map((faq) => {
-          const haystack = `${faq.question} ${faq.answer}`.toLowerCase();
+          const haystack = (faq.question + " " + faq.answer).toLowerCase();
           const score = words.reduce((sum, w) => sum + (haystack.includes(w) ? 1 : 0), 0);
           return { faq, score };
         })
@@ -380,7 +380,7 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
       if (callId) {
         await ctx.supabase
           .from("calls")
-          .update({ summary: `[HANDOFF] ${reason}` })
+          .update({ summary: "[HANDOFF] " + reason })
           .eq("business_id", ctx.business.id)
           .eq("session_key", callId);
       }
@@ -392,26 +392,21 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
 /** Validate and run one tool by name. */
 export async function runAgentTool(ctx: AgentContext, name: string, args: unknown) {
   const tool = AGENT_TOOLS[name];
-  if (!tool) throw new AgentError(404, `Unknown tool: ${name}`);
+  if (!tool) throw new AgentError(404, "Unknown tool: " + name);
   const parsed = tool.schema.safeParse(args ?? {});
   if (!parsed.success) {
-    // Short, speakable reason: which fields are wrong, not the raw validator dump.
     const fields = parsed.error.issues
       .map((issue) => issue.path.join("."))
       .filter(Boolean)
       .join(", ");
     throw new AgentError(
       400,
-      fields
-        ? `Missing or invalid details for ${name}: ${fields}`
-        : `Invalid arguments for ${name}`,
+      fields ? "Missing or invalid details for " + name + ": " + fields : "Invalid arguments for " + name,
     );
   }
 
   return tool.run(ctx, (parsed.data ?? {}) as Record<string, unknown>);
 }
-
-/* ---------------------------- call transcripts ---------------------------- */
 
 export async function saveCallLog(
   ctx: AgentContext,
@@ -423,13 +418,13 @@ export async function saveCallLog(
     from_number?: string | null;
     to_number?: string | null;
     duration_seconds?: number | null;
+    channel?: string;
+    direction?: string;
   },
 ) {
-  // Read the existing row first so later events never blank out earlier data
-  // (an empty transcript on a status update used to wipe a saved transcript).
   const { data: existing } = await ctx.supabase
     .from("calls")
-    .select("id, transcript, summary, started_at, status")
+    .select("id, transcript, summary, started_at, status, channel, direction")
     .eq("business_id", ctx.business.id)
     .eq("session_key", callId)
     .maybeSingle();
@@ -441,15 +436,13 @@ export async function saveCallLog(
   const { error } = await ctx.supabase.from("calls").upsert(
     {
       business_id: ctx.business.id,
-      channel: "voice",
+      channel: fields.channel ?? existing?.channel ?? "voice",
       session_key: callId,
-      direction: "inbound",
+      direction: fields.direction ?? existing?.direction ?? "inbound",
       status: fields.status ?? existing?.status ?? "in_progress",
       transcript,
       started_at: existing?.started_at ?? new Date().toISOString(),
-      ...(fields.summary !== undefined && fields.summary !== null
-        ? { summary: fields.summary }
-        : {}),
+      ...(fields.summary !== undefined && fields.summary !== null ? { summary: fields.summary } : {}),
       ...(fields.from_number ? { from_number: fields.from_number } : {}),
       ...(fields.to_number ? { to_number: fields.to_number } : {}),
       ...(fields.duration_seconds !== undefined && fields.duration_seconds !== null
@@ -461,28 +454,19 @@ export async function saveCallLog(
   if (error) throw error;
 }
 
-/* --------------------------- voice agent settings -------------------------- */
-
-/** JSON-Schema shape of one tool, for providers that need declarations. */
 export function toolDeclarations() {
   return Object.entries(AGENT_TOOLS).map(([name, tool]) => ({
     name,
     description: tool.description,
-    // Vapi rejects an assistant whose tool parameters carry JSON-Schema meta
-    // keys such as `$schema`, so strip them down to the accepted subset.
     parameters: sanitizeToolSchema(z.toJSONSchema(tool.schema, { io: "input" })),
   }));
 }
 
 export function defaultVoiceGreeting(businessName: string, custom: string) {
   if (custom) return custom;
-  return `お電話ありがとうございます。${businessName}のAI受付、ナギです。ご用件をお伺いします。`;
+  return "お電話ありがとうございます。" + businessName + "のAI受付、ナギです。ご用件をお伺いします。";
 }
 
-/**
- * The receptionist instructions the voice provider should use. This is the exact
- * same prompt the in-app chat brain runs on, so phone and chat behave identically.
- */
 export async function voiceSystemPrompt(ctx: AgentContext) {
   const session = await createNagiSessionForBusiness(
     ctx.supabase,
