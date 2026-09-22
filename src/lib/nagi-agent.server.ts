@@ -32,7 +32,6 @@ import {
 import { createNagiSessionForBusiness } from "@/lib/nagi-brain.server";
 import { sanitizeToolSchema } from "@/lib/vapi-protocol";
 
-
 export type AgentBusiness = {
   id: string;
   owner_id: string;
@@ -396,8 +395,19 @@ export async function runAgentTool(ctx: AgentContext, name: string, args: unknow
   if (!tool) throw new AgentError(404, `Unknown tool: ${name}`);
   const parsed = tool.schema.safeParse(args ?? {});
   if (!parsed.success) {
-    throw new AgentError(400, `Invalid arguments for ${name}: ${parsed.error.message}`);
+    // Short, speakable reason: which fields are wrong, not the raw validator dump.
+    const fields = parsed.error.issues
+      .map((issue) => issue.path.join("."))
+      .filter(Boolean)
+      .join(", ");
+    throw new AgentError(
+      400,
+      fields
+        ? `Missing or invalid details for ${name}: ${fields}`
+        : `Invalid arguments for ${name}`,
+    );
   }
+
   return tool.run(ctx, (parsed.data ?? {}) as Record<string, unknown>);
 }
 
@@ -428,7 +438,6 @@ export async function saveCallLog(
     ? (fields.transcript ?? "")
     : (existing?.transcript ?? "");
 
-
   const { error } = await ctx.supabase.from("calls").upsert(
     {
       business_id: ctx.business.id,
@@ -452,7 +461,6 @@ export async function saveCallLog(
   if (error) throw error;
 }
 
-
 /* --------------------------- voice agent settings -------------------------- */
 
 /** JSON-Schema shape of one tool, for providers that need declarations. */
@@ -464,7 +472,6 @@ export function toolDeclarations() {
     // keys such as `$schema`, so strip them down to the accepted subset.
     parameters: sanitizeToolSchema(z.toJSONSchema(tool.schema, { io: "input" })),
   }));
-
 }
 
 export function defaultVoiceGreeting(businessName: string, custom: string) {

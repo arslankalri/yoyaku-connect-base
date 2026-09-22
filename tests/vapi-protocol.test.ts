@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 
 import {
   extractToolCalls,
   parseToolArguments,
   sanitizeForLog,
   sanitizeToolSchema,
-} from "@/lib/vapi-protocol";
+} from "../src/lib/vapi-protocol";
 
 describe("extractToolCalls", () => {
   it("reads the toolCallList shape (flat name/arguments)", () => {
@@ -23,7 +23,10 @@ describe("extractToolCalls", () => {
   it("reads the toolCalls shape with a nested function and JSON string arguments", () => {
     const calls = extractToolCalls({
       toolCalls: [
-        { id: "call_2", function: { name: "check_availability", arguments: '{"date":"2026-10-02"}' } },
+        {
+          id: "call_2",
+          function: { name: "check_availability", arguments: '{"date":"2026-10-02"}' },
+        },
       ],
     });
     expect(calls[0]).toEqual({
@@ -74,12 +77,13 @@ describe("sanitizeToolSchema", () => {
 
 describe("sanitizeForLog", () => {
   it("redacts secrets and clips long strings", () => {
-    const out = sanitizeForLog({ secret: "nagi_sk_123", api_key: "x", note: "a".repeat(200) }) as Record<
-      string,
-      string
-    >;
+    const out = sanitizeForLog({
+      secret: "nagi_sk_123",
+      api_key: "x",
+      note: "a".repeat(200),
+    }) as Record<string, string>;
     expect(out["secret"]).toBe("[redacted]");
     expect(out["api_key"]).toBe("[redacted]");
-    expect(out["note"].endsWith("…")).toBe(true);
+    expect(String(out["note"]).endsWith("…")).toBe(true);
   });
 });

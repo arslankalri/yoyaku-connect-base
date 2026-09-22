@@ -84,7 +84,13 @@ export function sanitizeForLog(value: unknown, depth = 0): unknown {
   return out;
 }
 
-const SCHEMA_KEYS_TO_DROP = new Set(["$schema", "$id", "$defs", "definitions", "additionalProperties"]);
+const SCHEMA_KEYS_TO_DROP = new Set([
+  "$schema",
+  "$id",
+  "$defs",
+  "definitions",
+  "additionalProperties",
+]);
 
 /**
  * Vapi validates tool `parameters` against the OpenAI JSON-Schema subset and
