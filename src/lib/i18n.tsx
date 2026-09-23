@@ -898,6 +898,7 @@ const en: Dict = {
   "conv.empty": "No conversations yet. They are recorded when NAGI answers a customer.",
   "conv.channel.chat": "Chat",
   "conv.channel.voice": "Call",
+  "conv.channel.web": "Web call",
   "conv.transcript": "Transcript",
   "conv.summary": "Summary",
   "conv.when": "When",
