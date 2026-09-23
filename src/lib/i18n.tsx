@@ -442,6 +442,7 @@ const ja: Dict = {
   "conv.empty": "会話履歴はまだありません。AI受付でNAGIが応対すると記録されます。",
   "conv.channel.chat": "チャット",
   "conv.channel.voice": "通話",
+  "conv.channel.web": "ブラウザ通話",
   "conv.transcript": "会話内容",
   "conv.summary": "概要",
   "conv.when": "日時",
