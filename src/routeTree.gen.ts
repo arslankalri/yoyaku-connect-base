@@ -31,6 +31,7 @@ import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedWebCallRouteImport } from './routes/_authenticated/web-call'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as ApiVoiceWebConfigRouteImport } from './routes/api/voice/web-config'
 import { Route as OauthGoogleCalendarReturnRouteImport } from './routes/oauth/google-calendar/return'
 import { Route as ApiPublicAgentToolRouteImport } from './routes/api/public/agent/$tool'
 import { Route as ApiPublicAgentVapiRouteImport } from './routes/api/public/agent/vapi'
@@ -150,6 +151,11 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiVoiceWebConfigRoute = ApiVoiceWebConfigRouteImport.update({
+  id: '/api/voice/web-config',
+  path: '/api/voice/web-config',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OauthGoogleCalendarReturnRoute =
   OauthGoogleCalendarReturnRouteImport.update({
     id: '/oauth/google-calendar/return',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/web-call': typeof AuthenticatedWebCallRoute
   '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/voice/web-config': typeof ApiVoiceWebConfigRoute
   '/oauth/google-calendar/return': typeof OauthGoogleCalendarReturnRoute
   '/api/public/agent/$tool': typeof ApiPublicAgentToolRoute
   '/api/public/agent/vapi': typeof ApiPublicAgentVapiRoute
@@ -230,8 +237,10 @@ export interface FileRoutesByTo {
   '/services': typeof AuthenticatedServicesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/staff': typeof AuthenticatedStaffRoute
+  '/web-call': typeof AuthenticatedWebCallRoute
   '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/voice/web-config': typeof ApiVoiceWebConfigRoute
   '/oauth/google-calendar/return': typeof OauthGoogleCalendarReturnRoute
   '/api/public/agent/$tool': typeof ApiPublicAgentToolRoute
   '/api/public/agent/vapi': typeof ApiPublicAgentVapiRoute
@@ -263,6 +272,7 @@ export interface FileRoutesById {
   '/_authenticated/web-call': typeof AuthenticatedWebCallRoute
   '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/voice/web-config': typeof ApiVoiceWebConfigRoute
   '/oauth/google-calendar/return': typeof OauthGoogleCalendarReturnRoute
   '/api/public/agent/$tool': typeof ApiPublicAgentToolRoute
   '/api/public/agent/vapi': typeof ApiPublicAgentVapiRoute
@@ -294,6 +304,7 @@ export interface FileRouteTypes {
     | '/web-call'
     | '/api/chat'
     | '/.lovable/oauth/consent'
+    | '/api/voice/web-config'
     | '/oauth/google-calendar/return'
     | '/api/public/agent/$tool'
     | '/api/public/agent/vapi'
@@ -320,8 +331,10 @@ export interface FileRouteTypes {
     | '/services'
     | '/settings'
     | '/staff'
+    | '/web-call'
     | '/api/chat'
     | '/.lovable/oauth/consent'
+    | '/api/voice/web-config'
     | '/oauth/google-calendar/return'
     | '/api/public/agent/$tool'
     | '/api/public/agent/vapi'
@@ -352,6 +365,7 @@ export interface FileRouteTypes {
     | '/_authenticated/web-call'
     | '/api/chat'
     | '/.lovable/oauth/consent'
+    | '/api/voice/web-config'
     | '/oauth/google-calendar/return'
     | '/api/public/agent/$tool'
     | '/api/public/agent/vapi'
@@ -370,6 +384,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  ApiVoiceWebConfigRoute: typeof ApiVoiceWebConfigRoute
   OauthGoogleCalendarReturnRoute: typeof OauthGoogleCalendarReturnRoute
   ApiPublicAgentToolRoute: typeof ApiPublicAgentToolRoute
   ApiPublicAgentVapiRoute: typeof ApiPublicAgentVapiRoute
@@ -534,6 +549,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/voice/web-config': {
+      id: '/api/voice/web-config'
+      path: '/api/voice/web-config'
+      fullPath: '/api/voice/web-config'
+      preLoaderRoute: typeof ApiVoiceWebConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/oauth/google-calendar/return': {
       id: '/oauth/google-calendar/return'
       path: '/oauth/google-calendar/return'
@@ -625,6 +647,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  ApiVoiceWebConfigRoute: ApiVoiceWebConfigRoute,
   OauthGoogleCalendarReturnRoute: OauthGoogleCalendarReturnRoute,
   ApiPublicAgentToolRoute: ApiPublicAgentToolRoute,
   ApiPublicAgentVapiRoute: ApiPublicAgentVapiRoute,
