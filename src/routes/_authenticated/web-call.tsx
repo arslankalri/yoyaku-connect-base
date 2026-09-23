@@ -34,7 +34,8 @@ function WebCallPage() {
             <div>
               <h2 className="text-base font-semibold">Browser voice test</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Browser microphone → Vapi → NAGI. NAGI remains the business brain and source of truth.
+                Browser microphone → Vapi → NAGI. NAGI remains the business brain and source of
+                truth.
               </p>
             </div>
           </div>

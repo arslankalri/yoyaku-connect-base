@@ -76,10 +76,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
 
           const assistant = {
             name: "NAGI Web — " + business.name,
-            firstMessage: defaultVoiceGreeting(
-              business.name,
-              settings.voice_greeting ?? "",
-            ),
+            firstMessage: defaultVoiceGreeting(business.name, settings.voice_greeting ?? ""),
             firstMessageMode: "assistant-speaks-first",
             transcriber: {
               provider: "deepgram",
@@ -105,12 +102,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
                 server: webhook,
               })),
             },
-            serverMessages: [
-              "status-update",
-              "transcript",
-              "tool-calls",
-              "end-of-call-report",
-            ],
+            serverMessages: ["status-update", "transcript", "tool-calls", "end-of-call-report"],
             server: webhook,
             metadata: {
               nagiBusinessId: business.id,
@@ -128,8 +120,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
             return Response.json({ error: error.message }, { status: error.status });
           }
 
-          const detail =
-            error instanceof Error ? error.message : "Unable to configure web calling";
+          const detail = error instanceof Error ? error.message : "Unable to configure web calling";
           return Response.json({ error: detail }, { status: 500 });
         }
       },

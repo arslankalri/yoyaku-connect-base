@@ -4,7 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { createNagiWebCallClient, type NagiWebCallEvent, type NagiWebCallStatus } from "@/lib/vapi-web";
+import {
+  createNagiWebCallClient,
+  type NagiWebCallEvent,
+  type NagiWebCallStatus,
+} from "@/lib/vapi-web";
 
 type Props = { className?: string };
 

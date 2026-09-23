@@ -401,7 +401,9 @@ export async function runAgentTool(ctx: AgentContext, name: string, args: unknow
       .join(", ");
     throw new AgentError(
       400,
-      fields ? "Missing or invalid details for " + name + ": " + fields : "Invalid arguments for " + name,
+      fields
+        ? "Missing or invalid details for " + name + ": " + fields
+        : "Invalid arguments for " + name,
     );
   }
 
@@ -442,7 +444,9 @@ export async function saveCallLog(
       status: fields.status ?? existing?.status ?? "in_progress",
       transcript,
       started_at: existing?.started_at ?? new Date().toISOString(),
-      ...(fields.summary !== undefined && fields.summary !== null ? { summary: fields.summary } : {}),
+      ...(fields.summary !== undefined && fields.summary !== null
+        ? { summary: fields.summary }
+        : {}),
       ...(fields.from_number ? { from_number: fields.from_number } : {}),
       ...(fields.to_number ? { to_number: fields.to_number } : {}),
       ...(fields.duration_seconds !== undefined && fields.duration_seconds !== null
@@ -464,7 +468,9 @@ export function toolDeclarations() {
 
 export function defaultVoiceGreeting(businessName: string, custom: string) {
   if (custom) return custom;
-  return "お電話ありがとうございます。" + businessName + "のAI受付、ナギです。ご用件をお伺いします。";
+  return (
+    "お電話ありがとうございます。" + businessName + "のAI受付、ナギです。ご用件をお伺いします。"
+  );
 }
 
 export async function voiceSystemPrompt(ctx: AgentContext) {

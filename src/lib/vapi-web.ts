@@ -1,9 +1,4 @@
-export type NagiWebCallStatus =
-  | "idle"
-  | "connecting"
-  | "active"
-  | "ending"
-  | "ended";
+export type NagiWebCallStatus = "idle" | "connecting" | "active" | "ending" | "ended";
 
 export type NagiWebCallEvent = {
   type: string;
@@ -84,9 +79,7 @@ export class NagiWebCallClient {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((track) => track.stop());
     } catch {
-      throw new Error(
-        "Microphone permission is required. Allow microphone access and try again.",
-      );
+      throw new Error("Microphone permission is required. Allow microphone access and try again.");
     }
   }
 
@@ -94,9 +87,7 @@ export class NagiWebCallClient {
     if (this.vapi) return this.vapi;
 
     const module = await import("@vapi-ai/web");
-    const Vapi = (module.default ?? module) as unknown as new (
-      key: string,
-    ) => VapiInstance;
+    const Vapi = (module.default ?? module) as unknown as new (key: string) => VapiInstance;
     const vapi = new Vapi(this.options.publicKey);
 
     vapi.on("call-start", () => {

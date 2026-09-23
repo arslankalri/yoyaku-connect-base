@@ -99,9 +99,7 @@ function CallsPage() {
                       </Badge>
 
                       <Badge
-                        variant={
-                          conversation.status === "completed" ? "secondary" : "outline"
-                        }
+                        variant={conversation.status === "completed" ? "secondary" : "outline"}
                       >
                         {conversation.status ?? "unknown"}
                       </Badge>
