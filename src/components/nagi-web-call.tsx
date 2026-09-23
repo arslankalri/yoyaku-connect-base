@@ -4,7 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { createNagiWebCallClient, type NagiWebCallEvent, type NagiWebCallStatus } from "@/lib/vapi-web";
+import {
+  createNagiWebCallClient,
+  type NagiWebCallEvent,
+  type NagiWebCallStatus,
+} from "@/lib/vapi-web";
 
 type Props = { className?: string };
 
@@ -32,19 +36,19 @@ export function NagiWebCall({ className }: Props) {
 
   function handleEvent(event: NagiWebCallEvent) {
     setLastEvent(event.type);
-    if (event.type === "call-start-success" && typeof event.callId === "string") {
-      setCallId(event.callId);
+    if (event.type === "call-start-success" && typeof event["callId"] === "string") {
+      setCallId(event["callId"]);
       startedAtRef.current = Date.now();
     }
     if (event.type === "message") {
-      const message = (event as Record<string, unknown>).message;
+      const message = (event as Record<string, unknown>)["message"];
       const role =
         message && typeof message === "object" && "role" in message
-          ? String((message as Record<string, unknown>).role)
+          ? String((message as Record<string, unknown>)["role"])
           : "";
       const content =
         message && typeof message === "object" && "content" in message
-          ? String((message as Record<string, unknown>).content ?? "")
+          ? String((message as Record<string, unknown>)["content"] ?? "")
           : "";
       if (content && (role === "user" || role === "assistant")) {
         setLiveTranscript((items) => [...items, role + ": " + content].slice(-40));

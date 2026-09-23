@@ -156,9 +156,7 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
               to_number: dialled,
               channel: isWeb ? "web" : "voice",
               direction: isWeb ? "web" : "inbound",
-            }).catch((error) =>
-              log("call_log_failed", { call_id: callId, error: String(error) }),
-            );
+            }).catch((error) => log("call_log_failed", { call_id: callId, error: String(error) }));
           }
 
           switch (eventType) {

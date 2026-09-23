@@ -54,17 +54,19 @@ export const Route = createFileRoute("/api/voice/web-config")({
             .maybeSingle();
 
           if (error) throw error;
-          if (!settings?.voice_enabled) {
-            throw new AgentError(409, "NAGI voice calling is turned off");
-          }
 
+          // Browser testing does not require a phone number or the inbound
+          // phone toggle — voice_enabled only gates real inbound calls.
           const publicKey =
             process.env["VAPI_PUBLIC_KEY"] ??
             process.env["VITE_VAPI_PUBLIC_KEY"] ??
             process.env["VAPI_PUBLIC_API_KEY"];
 
           if (!publicKey) {
-            throw new AgentError(500, "Vapi public key is not configured");
+            throw new AgentError(
+              503,
+              "Setup needed: add your Vapi public API key as VAPI_PUBLIC_KEY in Project Settings → Secrets to use browser voice testing. Never use a private Vapi key.",
+            );
           }
 
           const session = createWebCallToken(business.id);
@@ -76,10 +78,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
 
           const assistant = {
             name: "NAGI Web — " + business.name,
-            firstMessage: defaultVoiceGreeting(
-              business.name,
-              settings.voice_greeting ?? "",
-            ),
+            firstMessage: defaultVoiceGreeting(business.name, settings?.voice_greeting ?? ""),
             firstMessageMode: "assistant-speaks-first",
             transcriber: {
               provider: "deepgram",
@@ -105,12 +104,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
                 server: webhook,
               })),
             },
-            serverMessages: [
-              "status-update",
-              "transcript",
-              "tool-calls",
-              "end-of-call-report",
-            ],
+            serverMessages: ["status-update", "transcript", "tool-calls", "end-of-call-report"],
             server: webhook,
             metadata: {
               nagiBusinessId: business.id,
@@ -128,8 +122,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
             return Response.json({ error: error.message }, { status: error.status });
           }
 
-          const detail =
-            error instanceof Error ? error.message : "Unable to configure web calling";
+          const detail = error instanceof Error ? error.message : "Unable to configure web calling";
           return Response.json({ error: detail }, { status: 500 });
         }
       },

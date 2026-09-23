@@ -147,7 +147,10 @@ export function useSetupProgress(businessId?: string) {
   const staffQuery = useStaff(businessId);
 
   const isLoading =
-    businessQuery.isLoading || hoursQuery.isLoading || servicesQuery.isLoading || staffQuery.isLoading;
+    businessQuery.isLoading ||
+    hoursQuery.isLoading ||
+    servicesQuery.isLoading ||
+    staffQuery.isLoading;
   const hasBusiness = !!businessQuery.data;
   const hasBusinessType = !!businessQuery.data?.business_type;
   const hasHours = (hoursQuery.data?.length ?? 0) > 0;
