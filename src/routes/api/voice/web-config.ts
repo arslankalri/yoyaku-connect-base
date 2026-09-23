@@ -78,7 +78,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
 
           const assistant = {
             name: "NAGI Web — " + business.name,
-            firstMessage: defaultVoiceGreeting(business.name, settings.voice_greeting ?? ""),
+            firstMessage: defaultVoiceGreeting(business.name, settings?.voice_greeting ?? ""),
             firstMessageMode: "assistant-speaks-first",
             transcriber: {
               provider: "deepgram",
