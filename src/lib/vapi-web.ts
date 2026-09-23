@@ -54,7 +54,7 @@ export class NagiWebCallClient {
       const result = await vapi.start(this.options.assistant);
       const callId =
         result && typeof result === "object" && "id" in result
-          ? String((result as Record<string, unknown>).id)
+          ? String((result as Record<string, unknown>)["id"])
           : undefined;
       this.options.onEvent?.({ type: "call-start-success", callId });
     } catch (error) {
