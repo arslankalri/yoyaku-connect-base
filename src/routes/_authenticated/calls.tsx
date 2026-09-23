@@ -91,7 +91,7 @@ function CallsPage() {
                           <MessagesSquare className="size-3.5" />
                         )}
                         {isWeb
-                          ? "Web call"
+                          ? t("conv.channel.web")
                           : t(
                               "conv.channel." +
                                 (conversation.channel === "voice" ? "voice" : "chat"),
