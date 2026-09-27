@@ -355,19 +355,57 @@ export async function bookAppointment(
   };
 }
 
-/** Find a customer's upcoming appointments by phone number. */
+const digits = (v: string | null | undefined) => (v ?? "").replace(/\D/g, "");
+const normName = (v: string | null | undefined) =>
+  (v ?? "").toLowerCase().replace(/[\s\u3000・.様さん]/g, "");
+
+function nameMatches(stored: string, given: string) {
+  const a = normName(stored);
+  const b = normName(given);
+  return !!a && !!b && (a === b || a.includes(b) || b.includes(a));
+}
+
+/** The booking's phone must match before anyone may change or cancel it. */
+async function verifyBookingOwner(
+  supabase: AuthedClient,
+  businessId: string,
+  appointmentId: string,
+  phone: string,
+) {
+  const { data } = await supabase
+    .from("appointments")
+    .select("id, customers(phone)")
+    .eq("business_id", businessId)
+    .eq("id", appointmentId)
+    .maybeSingle();
+  if (!data) return "not_found" as const;
+  const stored = digits((data.customers as { phone: string | null } | null)?.phone);
+  if (!stored || stored !== digits(phone)) return "verification_failed" as const;
+  return null;
+}
+
+/** Find a customer's upcoming appointments. Requires BOTH the booking phone number
+ * and the name on the booking, so nobody can look up someone else's reservation. */
 export async function findAppointments(
   supabase: AuthedClient,
   businessId: string,
   timeZone: string,
   phone: string,
+  name: string,
 ) {
-  const { data: customers } = await supabase
+  const wanted = digits(phone);
+  if (wanted.length < 6 || !name.trim())
+    return { found: false as const, reason: "verification_required", appointments: [] };
+  const { data: all } = await supabase
     .from("customers")
-    .select("id, name")
+    .select("id, name, phone")
     .eq("business_id", businessId)
-    .eq("phone", phone.trim());
-  if (!customers || customers.length === 0) return { found: false as const, appointments: [] };
+    .not("phone", "is", null);
+  const customers = (all ?? []).filter(
+    (c) => digits(c.phone) === wanted && nameMatches(c.name, name),
+  );
+  if (customers.length === 0)
+    return { found: false as const, reason: "verification_failed", appointments: [] };
 
   const ids = customers.map((c) => c.id);
   const { data, error } = await supabase
@@ -400,7 +438,10 @@ export async function rescheduleAppointment(
   appointmentId: string,
   date: string,
   time: string,
+  phone: string,
 ) {
+  const denied = await verifyBookingOwner(supabase, businessId, appointmentId, phone);
+  if (denied) return { updated: false as const, reason: denied };
   const { data: appt, error } = await supabase
     .from("appointments")
     .select("id, starts_at, ends_at, staff_id, external_calendar_event_id")
@@ -457,7 +498,10 @@ export async function cancelAppointment(
   businessId: string,
   calendar: CalendarLink,
   appointmentId: string,
+  phone: string,
 ) {
+  const denied = await verifyBookingOwner(supabase, businessId, appointmentId, phone);
+  if (denied) return { cancelled: false as const, reason: denied };
   const { data: appt, error } = await supabase
     .from("appointments")
     .select("id, external_calendar_event_id")

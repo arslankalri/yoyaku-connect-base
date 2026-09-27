@@ -240,10 +240,10 @@ function buildBookingTools(
       ? {
           find_appointments: tool({
             description:
-              "Find the customer's upcoming appointments by their phone number. Use before changing or cancelling a booking.",
-            inputSchema: z.object({ customer_phone: z.string() }),
-            execute: async ({ customer_phone }) =>
-              findAppointments(supabase, businessId, timezone, customer_phone),
+              "Find the customer's upcoming appointments. Requires the phone number AND the name used when booking (identity check). Use before changing or cancelling a booking.",
+            inputSchema: z.object({ customer_phone: z.string(), customer_name: z.string() }),
+            execute: async ({ customer_phone, customer_name }) =>
+              findAppointments(supabase, businessId, timezone, customer_phone, customer_name),
           }),
         }
       : {};
@@ -255,10 +255,11 @@ function buildBookingTools(
             "Move an existing appointment to a new date/time. Call find_appointments first and confirm with the customer.",
           inputSchema: z.object({
             appointment_id: z.string(),
+            customer_phone: z.string(),
             date: dateSchema,
             time: timeSchema,
           }),
-          execute: async ({ appointment_id, date, time }) =>
+          execute: async ({ appointment_id, customer_phone, date, time }) =>
             rescheduleAppointment(
               supabase,
               businessId,
@@ -267,6 +268,7 @@ function buildBookingTools(
               appointment_id,
               date,
               time,
+              customer_phone,
             ),
         }),
       }
@@ -277,9 +279,9 @@ function buildBookingTools(
         cancel_appointment: tool({
           description:
             "Cancel an existing appointment. Call find_appointments first and confirm with the customer.",
-          inputSchema: z.object({ appointment_id: z.string() }),
-          execute: async ({ appointment_id }) =>
-            cancelAppointment(supabase, businessId, calendar, appointment_id),
+          inputSchema: z.object({ appointment_id: z.string(), customer_phone: z.string() }),
+          execute: async ({ appointment_id, customer_phone }) =>
+            cancelAppointment(supabase, businessId, calendar, appointment_id, customer_phone),
         }),
       }
     : {};
@@ -397,7 +399,8 @@ APPOINTMENTS — REAL BOOKINGS
 - Never offer a time that is not in available_slots, and never invent availability without calling the tool.
 - Once a time is agreed, collect the customer's name and phone number (one question at a time), then read back service, date, time and ask for explicit confirmation (「この内容で予約してもよろしいですか？」).
 - Only after the customer clearly confirms, call book_appointment. When it returns created:true, put the token ${NAGI_TOKENS.bookingConfirmed} on the FIRST line and briefly confirm date, time and service. If it returns created:false, apologise and offer the returned available_slots. Never claim a booking exists unless the tool succeeded.
-- To change or cancel, first call find_appointments with the customer's phone number, confirm which appointment, quote the relevant policy with get_policies, then call reschedule_appointment or cancel_appointment. After a successful cancellation put ${NAGI_TOKENS.bookingCancelled} on the FIRST line.
+- IDENTITY CHECK: to change or cancel, you MUST first ask for BOTH the phone number and the name used when booking, then call find_appointments with both. If it returns verification_failed or verification_required, politely say you could not confirm the reservation and ask them to re-check the details — never reveal whether a booking exists, whose it is, or any of its details. Never change or cancel based on an appointment id, date or name alone. Pass the same phone number to reschedule_appointment / cancel_appointment.
+- To change or cancel, after verification confirm which appointment, quote the relevant policy with get_policies, then call reschedule_appointment or cancel_appointment. After a successful cancellation put ${NAGI_TOKENS.bookingCancelled} on the FIRST line.
 - If a booking/change/cancel capability is DISABLED above, do not perform it and explain that staff will handle it.`;
 }
 
