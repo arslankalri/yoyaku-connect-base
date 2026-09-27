@@ -285,19 +285,27 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
     },
   },
   find_appointments: {
-    description: "Find a caller's upcoming appointments by phone number.",
-    schema: z.object({ customer_phone: z.string() }),
+    description:
+      "Find a caller's upcoming appointments. Identity check: requires BOTH the phone number and the name used when booking. Never reveal details if verification fails.",
+    schema: z.object({ customer_phone: z.string(), customer_name: z.string() }),
     run: (ctx, args) =>
       findAppointments(
         ctx.supabase,
         ctx.business.id,
         ctx.business.timezone,
         String(args["customer_phone"] ?? ""),
+        String(args["customer_name"] ?? ""),
       ),
   },
   modify_appointment: {
-    description: "Move an existing appointment to a new date and time.",
-    schema: z.object({ appointment_id: z.string(), date: dateField, time: timeField }),
+    description:
+      "Move an existing appointment to a new date and time. Requires the booking phone number (verified).",
+    schema: z.object({
+      appointment_id: z.string(),
+      customer_phone: z.string(),
+      date: dateField,
+      time: timeField,
+    }),
     run: (ctx, args) => {
       requireCapability(ctx.config.can_change_appointments, "Changing appointments");
       return rescheduleAppointment(
@@ -308,12 +316,13 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
         String(args["appointment_id"]),
         String(args["date"]),
         String(args["time"]),
+        String(args["customer_phone"] ?? ""),
       );
     },
   },
   cancel_appointment: {
-    description: "Cancel an existing appointment.",
-    schema: z.object({ appointment_id: z.string() }),
+    description: "Cancel an existing appointment. Requires the booking phone number (verified).",
+    schema: z.object({ appointment_id: z.string(), customer_phone: z.string() }),
     run: (ctx, args) => {
       requireCapability(ctx.config.can_cancel_appointments, "Cancelling appointments");
       return cancelAppointment(
@@ -321,6 +330,7 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
         ctx.business.id,
         ctx.calendar,
         String(args["appointment_id"]),
+        String(args["customer_phone"] ?? ""),
       );
     },
   },
