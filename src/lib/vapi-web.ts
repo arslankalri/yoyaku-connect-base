@@ -87,7 +87,13 @@ export class NagiWebCallClient {
     if (this.vapi) return this.vapi;
 
     const module = await import("@vapi-ai/web");
-    const Vapi = (module.default ?? module) as unknown as new (key: string) => VapiInstance;
+    // The package is CommonJS; depending on the bundler the class may be nested under default.default.
+    let candidate: unknown = module;
+    for (let i = 0; i < 3 && typeof candidate !== "function"; i++) {
+      candidate = (candidate as { default?: unknown })?.default;
+    }
+    if (typeof candidate !== "function") throw new Error("Voice library failed to load. Please refresh and try again.");
+    const Vapi = candidate as new (key: string) => VapiInstance;
     const vapi = new Vapi(this.options.publicKey);
 
     vapi.on("call-start", () => {
