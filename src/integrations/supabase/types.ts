@@ -50,6 +50,7 @@ export type Database = {
           external_calendar_event_id: string | null
           id: string
           notes: string | null
+          party_size: number
           service_id: string | null
           source: string
           staff_id: string | null
@@ -65,6 +66,7 @@ export type Database = {
           external_calendar_event_id?: string | null
           id?: string
           notes?: string | null
+          party_size?: number
           service_id?: string | null
           source?: string
           staff_id?: string | null
@@ -80,6 +82,7 @@ export type Database = {
           external_calendar_event_id?: string | null
           id?: string
           notes?: string | null
+          party_size?: number
           service_id?: string | null
           source?: string
           staff_id?: string | null
@@ -209,6 +212,7 @@ export type Database = {
           owner_id: string
           phone: string | null
           postal_code: string | null
+          seat_capacity: number | null
           timezone: string
           updated_at: string
           website: string | null
@@ -224,6 +228,7 @@ export type Database = {
           owner_id: string
           phone?: string | null
           postal_code?: string | null
+          seat_capacity?: number | null
           timezone?: string
           updated_at?: string
           website?: string | null
@@ -239,6 +244,7 @@ export type Database = {
           owner_id?: string
           phone?: string | null
           postal_code?: string | null
+          seat_capacity?: number | null
           timezone?: string
           updated_at?: string
           website?: string | null
