@@ -13,6 +13,7 @@ export type Business = {
   website: string | null;
   timezone: string;
   business_type: string | null;
+  seat_capacity: number | null;
 };
 
 export type BusinessHour = {
@@ -64,7 +65,7 @@ export function useBusiness() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("id, owner_id, name, phone, postal_code, address, website, timezone, business_type")
+        .select("id, owner_id, name, phone, postal_code, address, website, timezone, business_type, seat_capacity")
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle();
@@ -83,6 +84,7 @@ export type SaveBusinessInput = {
   website?: string | null;
   timezone?: string;
   business_type?: string | null;
+  seat_capacity?: number | null;
   skipDefaultHours?: boolean;
 };
 
@@ -574,6 +576,7 @@ export type Appointment = {
   status: string;
   source: string;
   notes: string | null;
+  party_size: number;
   external_calendar_event_id: string | null;
   customers: { id: string; name: string; phone: string | null } | null;
   services: { id: string; name: string; price: number; duration_minutes: number } | null;
@@ -581,7 +584,7 @@ export type Appointment = {
 };
 
 const APPOINTMENT_SELECT =
-  "id, business_id, customer_id, staff_id, service_id, starts_at, ends_at, status, source, notes, external_calendar_event_id, customers(id, name, phone), services(id, name, price, duration_minutes), staff(id, name)";
+  "id, business_id, customer_id, staff_id, service_id, starts_at, ends_at, status, source, notes, party_size, external_calendar_event_id, customers(id, name, phone), services(id, name, price, duration_minutes), staff(id, name)";
 
 export function useAppointments(businessId?: string, range?: { from: string; to: string }) {
   return useQuery({
@@ -611,6 +614,7 @@ export type AppointmentInput = {
   ends_at: string;
   status: string;
   notes: string | null;
+  party_size: number;
 };
 
 export function useSaveAppointment(businessId?: string) {
@@ -652,6 +656,7 @@ export function useSaveAppointment(businessId?: string) {
         ends_at: input.ends_at,
         status: input.status,
         notes: input.notes,
+        party_size: Math.max(1, Math.floor(input.party_size || 1)),
       };
       if (input.id) {
         const { error } = await supabase.from("appointments").update(row).eq("id", input.id);

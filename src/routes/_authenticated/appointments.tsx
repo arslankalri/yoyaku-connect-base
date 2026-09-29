@@ -81,6 +81,7 @@ type FormState = {
   duration: string;
   status: string;
   notes: string;
+  party_size: string;
 };
 
 function localDateInput(d: Date) {
@@ -104,6 +105,7 @@ function emptyForm(): FormState {
     duration: "60",
     status: "confirmed",
     notes: "",
+    party_size: "1",
   };
 }
 
@@ -188,6 +190,7 @@ function AppointmentsPage() {
       duration: String(minutes),
       status: appointment.status,
       notes: appointment.notes ?? "",
+      party_size: String(appointment.party_size ?? 1),
     });
     setOpen(true);
   }
@@ -211,6 +214,7 @@ function AppointmentsPage() {
         ends_at: new Date(start.getTime() + minutes * 60_000).toISOString(),
         status: form.status,
         notes: form.notes.trim() || null,
+        party_size: Math.max(1, Number(form.party_size) || 1),
       });
       toast.success(t("appt.saved"));
       setOpen(false);
@@ -297,6 +301,9 @@ function AppointmentsPage() {
                       <p className="text-xs text-muted-foreground">
                         {appointment.services?.name ?? t("appt.noService")}
                         {appointment.staff?.name ? ` · ${appointment.staff.name}` : ""}
+                        {(appointment.party_size ?? 1) > 1
+                          ? ` · ${t("appt.partySize")}: ${appointment.party_size}`
+                          : ""}
                       </p>
                       {appointment.notes && (
                         <p className="text-xs text-muted-foreground">{appointment.notes}</p>
@@ -504,6 +511,17 @@ function AppointmentsPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="appt_party">{t("appt.partySize")}</Label>
+              <Input
+                id="appt_party"
+                type="number"
+                min={1}
+                max={100}
+                value={form.party_size}
+                onChange={(e) => setForm({ ...form, party_size: e.target.value })}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="appt_notes">{t("appt.notes")}</Label>
