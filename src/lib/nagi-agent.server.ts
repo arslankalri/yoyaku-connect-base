@@ -233,6 +233,10 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
       date: dateField,
       duration_minutes: z.number().describe("Use the service duration in minutes"),
       staff: z.string().optional().describe("Staff member name, when the caller asked for one"),
+      party_size: z
+        .number()
+        .optional()
+        .describe("Number of guests (人数). Ask for it at restaurants, cafes and bars."),
     }),
     run: async (ctx, args) => {
       const staffName = args["staff"] ? String(args["staff"]) : "";
@@ -247,6 +251,7 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
         String(args["date"]),
         Number(args["duration_minutes"] ?? 30),
         staffId,
+        Number(args["party_size"] ?? 1) || 1,
       );
     },
   },
@@ -262,6 +267,7 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
       customer_phone: z.string(),
       staff: z.string().optional(),
       notes: z.string().optional(),
+      party_size: z.number().optional().describe("Number of guests (人数)"),
     }),
     run: (ctx, args) => {
       requireCapability(ctx.config.can_accept_appointments, "Booking");
@@ -280,6 +286,7 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
           customer_phone: String(args["customer_phone"] ?? ""),
           staff: args["staff"] ? String(args["staff"]) : undefined,
           notes: args["notes"] ? String(args["notes"]) : undefined,
+          party_size: Number(args["party_size"] ?? 1) || 1,
         },
       );
     },

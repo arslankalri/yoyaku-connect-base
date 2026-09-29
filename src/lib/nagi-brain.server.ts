@@ -208,9 +208,24 @@ function buildBookingTools(
         duration_minutes: z
           .number()
           .describe("Appointment length in minutes (use the service duration)"),
+        party_size: z
+          .number()
+          .int()
+          .min(1)
+          .optional()
+          .describe("Number of guests (人数). Ask for it at restaurants, cafes and bars."),
       }),
-      execute: async ({ date, duration_minutes }) =>
-        availabilityFor(supabase, businessId, timezone, calendar, date, duration_minutes),
+      execute: async ({ date, duration_minutes, party_size }) =>
+        availabilityFor(
+          supabase,
+          businessId,
+          timezone,
+          calendar,
+          date,
+          duration_minutes,
+          null,
+          party_size ?? 1,
+        ),
     }),
   };
 
@@ -228,6 +243,7 @@ function buildBookingTools(
             customer_phone: z.string(),
             staff: z.string().optional(),
             notes: z.string().optional(),
+            party_size: z.number().int().min(1).optional().describe("Number of guests (人数)"),
           }),
           execute: async (input) =>
             bookAppointment(supabase, businessId, timezone, calendar, channel, input),

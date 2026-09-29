@@ -43,7 +43,25 @@ export async function availabilityFor(
   date: string,
   durationMinutes: number,
   staffId?: string | null,
+  partySize = 1,
 ) {
+  const guests = Math.max(1, Math.floor(partySize || 1));
+  const { data: biz } = await supabase
+    .from("businesses")
+    .select("seat_capacity")
+    .eq("id", businessId)
+    .maybeSingle();
+  const capacity = biz?.seat_capacity ?? null;
+  if (capacity && guests > capacity) {
+    return {
+      date,
+      day_of_week: dayOfWeekInZone(date, timeZone),
+      is_open: false as const,
+      reason: "party_too_large" as const,
+      max_party_size: capacity,
+      available_slots: [] as string[],
+    };
+  }
   const dow = dayOfWeekInZone(date, timeZone);
   const { data: hours, error } = await supabase
     .from("business_hours")
@@ -99,7 +117,7 @@ export async function availabilityFor(
 
   const { data: booked, error: bookedError } = await supabase
     .from("appointments")
-    .select("starts_at, ends_at, status, staff_id")
+    .select("starts_at, ends_at, status, staff_id, party_size")
     .eq("business_id", businessId)
     .in("status", ACTIVE_STATUSES as unknown as string[])
     .gte("starts_at", new Date(dayStart.getTime() - 12 * 3_600_000).toISOString())
@@ -112,13 +130,12 @@ export async function availabilityFor(
     ? (booked ?? []).filter((a) => !a.staff_id || a.staff_id === staffId)
     : (booked ?? []);
 
-  const blocks = [
-    ...relevant.map((a) => ({
-      start: new Date(a.starts_at).getTime(),
-      end: new Date(a.ends_at).getTime(),
-    })),
-    ...(await googleBusy(calendar, dayStart.toISOString(), dayEnd.toISOString())),
-  ];
+  const bookings = relevant.map((a) => ({
+    start: new Date(a.starts_at).getTime(),
+    end: new Date(a.ends_at).getTime(),
+    guests: a.party_size ?? 1,
+  }));
+  const calendarBlocks = await googleBusy(calendar, dayStart.toISOString(), dayEnd.toISOString());
 
   const step = 30 * 60_000;
   const duration = Math.max(5, durationMinutes) * 60_000;
@@ -126,7 +143,13 @@ export async function availabilityFor(
   const slots: string[] = [];
   for (let t = dayStart.getTime(); t + duration <= dayEnd.getTime(); t += step) {
     if (t < now) continue;
-    if (blocks.some((b) => t < b.end && t + duration > b.start)) continue;
+    const overlaps = (b: { start: number; end: number }) => t < b.end && t + duration > b.start;
+    if (calendarBlocks.some(overlaps)) continue;
+    if (capacity) {
+      // Seating businesses: allow overlapping bookings while total guests fit.
+      const seated = bookings.filter(overlaps).reduce((sum, b) => sum + b.guests, 0);
+      if (seated + guests > capacity) continue;
+    } else if (bookings.some(overlaps)) continue;
     slots.push(utcToZonedTime(new Date(t), timeZone));
   }
 
@@ -138,6 +161,8 @@ export async function availabilityFor(
     close_time: close,
     timezone: timeZone,
     duration_minutes: durationMinutes,
+    party_size: guests,
+    seat_capacity: capacity,
     available_slots: slots,
   };
 }
@@ -248,6 +273,7 @@ export type BookingInput = {
   customer_phone: string;
   staff?: string | undefined;
   notes?: string | undefined;
+  party_size?: number | undefined;
 };
 
 /** Create a real appointment row (and calendar event when connected). */
@@ -287,10 +313,14 @@ export async function bookAppointment(
     input.date,
     duration,
     staffId,
+    input.party_size ?? 1,
   );
   if (!slots.is_open || !slots.available_slots.includes(input.time)) {
     return {
       created: false as const,
+      ...("reason" in slots && slots.reason === "party_too_large"
+        ? { max_party_size: slots.max_party_size }
+        : {}),
       reason: "slot_unavailable",
       available_slots: slots.available_slots,
     };
@@ -314,6 +344,7 @@ export async function bookAppointment(
         `Customer: ${input.customer_name}`,
         `Phone: ${input.customer_phone}`,
         input.staff ? `Staff: ${input.staff}` : null,
+        (input.party_size ?? 1) > 1 ? `Party size: ${input.party_size}` : null,
         input.notes ? `Notes: ${input.notes}` : null,
         "Booked by NAGI AI receptionist.",
       ]
@@ -339,6 +370,7 @@ export async function bookAppointment(
       source: channel === "voice" ? "nagi_voice" : "nagi_chat",
       external_calendar_event_id: eventId,
       notes: input.notes ?? null,
+      party_size: Math.max(1, Math.floor(input.party_size ?? 1)),
     })
     .select("id")
     .single();
@@ -350,6 +382,7 @@ export async function bookAppointment(
     date: input.date,
     time: input.time,
     duration_minutes: duration,
+    party_size: Math.max(1, Math.floor(input.party_size ?? 1)),
     service: service?.name ?? input.service,
     calendar_synced: !!eventId,
   };
@@ -444,7 +477,7 @@ export async function rescheduleAppointment(
   if (denied) return { updated: false as const, reason: denied };
   const { data: appt, error } = await supabase
     .from("appointments")
-    .select("id, starts_at, ends_at, staff_id, external_calendar_event_id")
+    .select("id, starts_at, ends_at, staff_id, party_size, external_calendar_event_id")
     .eq("business_id", businessId)
     .eq("id", appointmentId)
     .maybeSingle();
@@ -462,6 +495,7 @@ export async function rescheduleAppointment(
     date,
     duration,
     appt.staff_id,
+    appt.party_size ?? 1,
   );
   if (!slots.is_open || !slots.available_slots.includes(time)) {
     return {
