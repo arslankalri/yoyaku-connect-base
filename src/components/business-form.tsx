@@ -47,6 +47,7 @@ export function BusinessForm({
     address: business?.address ?? "",
     website: business?.website ?? "",
     timezone: business?.timezone ?? "Asia/Tokyo",
+    seat_capacity: business?.seat_capacity ? String(business.seat_capacity) : "",
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -74,6 +75,8 @@ export function BusinessForm({
         address: form.address.trim() || null,
         website: form.website.trim() || null,
         timezone: form.timezone,
+        seat_capacity:
+          Number(form.seat_capacity) > 0 ? Math.floor(Number(form.seat_capacity)) : null,
         ...(businessType ? { business_type: businessType } : {}),
         skipDefaultHours,
       } as SaveBusinessInput);
@@ -127,6 +130,17 @@ export function BusinessForm({
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="seat_capacity">{t("business.seatCapacity")}</Label>
+          <Input
+            id="seat_capacity"
+            type="number"
+            min={1}
+            inputMode="numeric"
+            {...field("seat_capacity")}
+          />
+          <p className="text-xs text-muted-foreground">{t("business.seatCapacityHint")}</p>
         </div>
       </div>
 
