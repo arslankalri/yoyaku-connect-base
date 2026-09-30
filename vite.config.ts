@@ -21,6 +21,7 @@ export default defineConfig({
         // swaps the bare Node name for an empty stub. "events/" forces the npm package.
         name: "nagi-browser-events",
         transform(code, id) {
+          if (id.includes("vapi-ai")) console.log("VDBG", this.environment?.name, id);
           if (!id.includes("@vapi-ai/web") || !code.includes('require("events")')) return null;
           return { code: code.replaceAll('require("events")', 'require("events/")'), map: null };
         },
