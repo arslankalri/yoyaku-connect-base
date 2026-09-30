@@ -1,5 +1,4 @@
 // @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-import { fileURLToPath } from "node:url";
 // or the app will break with duplicate plugins:
 //   - TanStack devtools (dev-only, first), tanstackStart, viteReact, tailwindcss, tsConfigPaths,
 //     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
@@ -18,18 +17,14 @@ export default defineConfig({
     plugins: [
       mcpPlugin(),
       {
+        // @vapi-ai/web does `class extends require("events")`; the browser build
+        // swaps the bare Node name for an empty stub. "events/" forces the npm package.
         name: "nagi-browser-events",
-        enforce: "pre",
-        resolveId(id) {
-          if (id === "events") console.log("EVTDBG", this.environment?.name);
-          if (id === "events" && this.environment?.name === "client") {
-            return fileURLToPath(new URL("./node_modules/events/events.js", import.meta.url));
-          }
-          return null;
+        transform(code, id) {
+          if (!id.includes("@vapi-ai/web") || !code.includes('require("events")')) return null;
+          return { code: code.replaceAll('require("events")', 'require("events/")'), map: null };
         },
       },
     ],
-    // @vapi-ai/web does `class extends require("events")`. The production client
-    // build stubs Node's `events` as `{}`, so point it at the real npm package.
   },
 });
