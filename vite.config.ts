@@ -1,4 +1,5 @@
 // @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
+import { fileURLToPath } from "node:url";
 // or the app will break with duplicate plugins:
 //   - TanStack devtools (dev-only, first), tanstackStart, viteReact, tailwindcss, tsConfigPaths,
 //     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
@@ -18,7 +19,7 @@ export default defineConfig({
     // @vapi-ai/web does `class extends require("events")`. The production client
     // build stubs Node's `events` as `{}`, so point it at the real npm package.
     resolve: {
-      alias: [{ find: /^events$/, replacement: "events/events.js" }],
+      alias: [{ find: /^events$/, replacement: fileURLToPath(new URL("./node_modules/events/events.js", import.meta.url)) }],
     },
   },
 });
