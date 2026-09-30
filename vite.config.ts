@@ -21,6 +21,7 @@ export default defineConfig({
         name: "nagi-browser-events",
         enforce: "pre",
         resolveId(id) {
+          if (id === "events") console.log("EVTDBG", this.environment?.name);
           if (id === "events" && this.environment?.name === "client") {
             return fileURLToPath(new URL("./node_modules/events/events.js", import.meta.url));
           }
