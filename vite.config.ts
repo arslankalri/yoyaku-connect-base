@@ -15,11 +15,20 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    plugins: [mcpPlugin()],
+    plugins: [
+      mcpPlugin(),
+      {
+        name: "nagi-browser-events",
+        enforce: "pre",
+        resolveId(id) {
+          if (id === "events" && this.environment?.name === "client") {
+            return fileURLToPath(new URL("./node_modules/events/events.js", import.meta.url));
+          }
+          return null;
+        },
+      },
+    ],
     // @vapi-ai/web does `class extends require("events")`. The production client
     // build stubs Node's `events` as `{}`, so point it at the real npm package.
-    resolve: {
-      alias: [{ find: /^events$/, replacement: fileURLToPath(new URL("./node_modules/events/events.js", import.meta.url)) }],
-    },
   },
 });
