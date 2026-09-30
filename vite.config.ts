@@ -6,6 +6,9 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { fileURLToPath } from "node:url";
+
+const eventsPath = fileURLToPath(new URL("./node_modules/events/events.js", import.meta.url));
 
 export default defineConfig({
   tanstackStart: {
@@ -14,6 +17,17 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    plugins: [mcpPlugin()],
+    plugins: [
+      mcpPlugin(),
+      {
+        // @vapi-ai/web does `class extends require("events")`; the browser build
+        // swaps the bare Node name for an empty stub. Point it at the real npm package file.
+        name: "nagi-browser-events",
+        transform(code, id) {
+          if (!id.includes("@vapi-ai/web") || !code.includes('require("events")')) return null;
+          return { code: code.replaceAll('require("events")', `require(${JSON.stringify(eventsPath)})`), map: null };
+        },
+      },
+    ],
   },
 });
