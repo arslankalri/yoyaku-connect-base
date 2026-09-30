@@ -15,5 +15,10 @@ export default defineConfig({
   },
   vite: {
     plugins: [mcpPlugin()],
+    // @vapi-ai/web does `class extends require("events")`. The production client
+    // build stubs Node's `events` as `{}`, so point it at the real npm package.
+    resolve: {
+      alias: [{ find: /^events$/, replacement: "events/events.js" }],
+    },
   },
 });
