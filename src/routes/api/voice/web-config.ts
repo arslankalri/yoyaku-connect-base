@@ -49,7 +49,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
 
           const { data: settings, error } = await supabase
             .from("nagi_settings")
-            .select("voice_enabled, voice_greeting")
+            .select("voice_enabled, voice_greeting, vapi_assistant_id")
             .eq("business_id", business.id)
             .maybeSingle();
 
@@ -75,12 +75,51 @@ export const Route = createFileRoute("/api/voice/web-config")({
             // Vapi must reach a public URL: preview/localhost origins are not reachable, so use the live site.
             url: new URL(
               "/api/public/agent/vapi",
-              /localhost|127\.0\.0\.1|id-preview--|lovableproject\.com/.test(new URL(request.url).host)
+              /localhost|127\.0\.0\.1|id-preview--|lovableproject\.com/.test(
+                new URL(request.url).host,
+              )
                 ? "https://yoyaku-connect-base.lovable.app"
                 : request.url,
             ).toString(),
             secret: session.token,
           };
+
+          const tools = toolDeclarations().map((tool) => ({
+            type: "function",
+            function: {
+              name: tool.name,
+              description: tool.description,
+              parameters: tool.parameters,
+            },
+            server: webhook,
+          }));
+          const serverMessages = [
+            "status-update",
+            "transcript",
+            "tool-calls",
+            "end-of-call-report",
+          ];
+          const metadata = {
+            nagiBusinessId: business.id,
+            source: "web",
+          };
+
+          // When the owner linked their own Vapi assistant, start it by ID and
+          // attach NAGI's tools/server as overrides so booking still runs through NAGI.
+          const assistantId = settings?.vapi_assistant_id?.trim();
+          if (assistantId) {
+            return Response.json({
+              publicKey,
+              assistantId,
+              assistantOverrides: {
+                model: { tools },
+                server: webhook,
+                serverMessages,
+                metadata,
+              },
+              expiresAt: session.expiresAt,
+            });
+          }
 
           const assistant = {
             name: "NAGI Web — " + business.name,
@@ -100,22 +139,11 @@ export const Route = createFileRoute("/api/voice/web-config")({
               model: "gpt-4o",
               temperature: 0.4,
               messages: [{ role: "system", content: await voiceSystemPrompt(ctx) }],
-              tools: toolDeclarations().map((tool) => ({
-                type: "function",
-                function: {
-                  name: tool.name,
-                  description: tool.description,
-                  parameters: tool.parameters,
-                },
-                server: webhook,
-              })),
+              tools,
             },
-            serverMessages: ["status-update", "transcript", "tool-calls", "end-of-call-report"],
+            serverMessages,
             server: webhook,
-            metadata: {
-              nagiBusinessId: business.id,
-              source: "web",
-            },
+            metadata,
           };
 
           return Response.json({

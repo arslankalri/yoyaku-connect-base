@@ -65,7 +65,9 @@ export function useBusiness() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("id, owner_id, name, phone, postal_code, address, website, timezone, business_type, seat_capacity")
+        .select(
+          "id, owner_id, name, phone, postal_code, address, website, timezone, business_type, seat_capacity",
+        )
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle();
@@ -382,6 +384,7 @@ export type NagiSettings = {
   voice_enabled: boolean;
   voice_phone_number: string | null;
   voice_greeting: string;
+  vapi_assistant_id: string | null;
 } & Record<(typeof NAGI_CAPABILITIES)[number], boolean> &
   Record<(typeof NAGI_HANDOFF_RULES)[number], boolean>;
 
@@ -398,6 +401,7 @@ const NAGI_COLUMNS = [
   "voice_enabled",
   "voice_phone_number",
   "voice_greeting",
+  "vapi_assistant_id",
   ...NAGI_CAPABILITIES,
   ...NAGI_HANDOFF_RULES,
 ].join(", ");

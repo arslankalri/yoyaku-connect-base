@@ -399,7 +399,8 @@ const ja: Dict = {
   "appt.notes": "メモ",
   "appt.partySize": "人数",
   "business.seatCapacity": "同時に受け入れ可能な人数（席数）",
-  "business.seatCapacityHint": "飲食店など向け。空欄の場合は1つの時間帯に1件の予約のみ受け付けます。",
+  "business.seatCapacityHint":
+    "飲食店など向け。空欄の場合は1つの時間帯に1件の予約のみ受け付けます。",
   "appt.source": "受付経路",
   "appt.source.manual": "手動",
   "appt.source.nagi_chat": "NAGI チャット",
@@ -858,7 +859,8 @@ const en: Dict = {
   "appt.notes": "Notes",
   "appt.partySize": "Party size",
   "business.seatCapacity": "Guests you can seat at once",
-  "business.seatCapacityHint": "For restaurants and similar. Leave empty to allow one booking per time slot.",
+  "business.seatCapacityHint":
+    "For restaurants and similar. Leave empty to allow one booking per time slot.",
   "appt.source": "Source",
   "appt.source.manual": "Manual",
   "appt.source.nagi_chat": "NAGI chat",
