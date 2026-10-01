@@ -14,7 +14,9 @@ type Props = { className?: string };
 
 type WebCallConfig = {
   publicKey: string;
-  assistant: Record<string, unknown>;
+  assistant?: Record<string, unknown>;
+  assistantId?: string;
+  assistantOverrides?: Record<string, unknown>;
   expiresAt: number;
 };
 
@@ -75,19 +77,15 @@ export function NagiWebCall({ className }: Props) {
         headers: { Authorization: "Bearer " + token },
       });
       const payload = (await response.json()) as Partial<WebCallConfig> & { error?: string };
-      if (!response.ok || !payload.publicKey || !payload.assistant) {
+      const assistantTarget = payload.assistant ?? payload.assistantId;
+      if (!response.ok || !payload.publicKey || !assistantTarget) {
         throw new Error(payload.error ?? "Unable to configure NAGI web calling");
       }
 
-      const nextConfig: WebCallConfig = {
-        publicKey: payload.publicKey,
-        assistant: payload.assistant,
-        expiresAt: payload.expiresAt ?? 0,
-      };
-
       clientRef.current = createNagiWebCallClient({
-        publicKey: nextConfig.publicKey,
-        assistant: nextConfig.assistant,
+        publicKey: payload.publicKey,
+        assistant: assistantTarget,
+        assistantOverrides: payload.assistantOverrides,
         onStatus: setStatus,
         onError: (value) => {
           setError(value instanceof Error ? value.message : "Vapi web call failed");
