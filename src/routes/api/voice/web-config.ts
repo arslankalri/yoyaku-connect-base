@@ -75,7 +75,9 @@ export const Route = createFileRoute("/api/voice/web-config")({
             // Vapi must reach a public URL: preview/localhost origins are not reachable, so use the live site.
             url: new URL(
               "/api/public/agent/vapi",
-              /localhost|127\.0\.0\.1|id-preview--|lovableproject\.com/.test(new URL(request.url).host)
+              /localhost|127\.0\.0\.1|id-preview--|lovableproject\.com/.test(
+                new URL(request.url).host,
+              )
                 ? "https://yoyaku-connect-base.lovable.app"
                 : request.url,
             ).toString(),
@@ -91,7 +93,12 @@ export const Route = createFileRoute("/api/voice/web-config")({
             },
             server: webhook,
           }));
-          const serverMessages = ["status-update", "transcript", "tool-calls", "end-of-call-report"];
+          const serverMessages = [
+            "status-update",
+            "transcript",
+            "tool-calls",
+            "end-of-call-report",
+          ];
           const metadata = {
             nagiBusinessId: business.id,
             source: "web",

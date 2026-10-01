@@ -95,7 +95,8 @@ export class NagiWebCallClient {
     for (let i = 0; i < 3 && typeof candidate !== "function"; i++) {
       candidate = (candidate as { default?: unknown })?.default;
     }
-    if (typeof candidate !== "function") throw new Error("Voice library failed to load. Please refresh and try again.");
+    if (typeof candidate !== "function")
+      throw new Error("Voice library failed to load. Please refresh and try again.");
     const Vapi = candidate as new (key: string) => VapiInstance;
     const vapi = new Vapi(this.options.publicKey);
 

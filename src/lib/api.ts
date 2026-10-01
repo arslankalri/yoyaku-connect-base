@@ -65,7 +65,9 @@ export function useBusiness() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("id, owner_id, name, phone, postal_code, address, website, timezone, business_type, seat_capacity")
+        .select(
+          "id, owner_id, name, phone, postal_code, address, website, timezone, business_type, seat_capacity",
+        )
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle();
