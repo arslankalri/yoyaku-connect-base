@@ -7,7 +7,10 @@ export type NagiWebCallEvent = {
 
 export type NagiWebCallClientOptions = {
   publicKey: string;
-  assistant: Record<string, unknown>;
+  /** Inline transient assistant config, or a Vapi assistant ID string. */
+  assistant: Record<string, unknown> | string;
+  /** Optional overrides applied when starting by assistant ID (e.g. NAGI tools + server). */
+  assistantOverrides?: Record<string, unknown>;
   onStatus?: (status: NagiWebCallStatus) => void;
   onEvent?: (event: NagiWebCallEvent) => void;
   onError?: (error: unknown) => void;
@@ -15,7 +18,7 @@ export type NagiWebCallClientOptions = {
 
 type VapiInstance = {
   on: (event: string, handler: (payload?: unknown) => void) => void;
-  start: (assistant: unknown) => Promise<unknown>;
+  start: (assistant: unknown, overrides?: unknown) => Promise<unknown>;
   stop: () => void;
 };
 
@@ -46,7 +49,7 @@ export class NagiWebCallClient {
     try {
       await this.ensureMicrophone();
       const vapi = await this.ensureClient();
-      const result = await vapi.start(this.options.assistant);
+      const result = await vapi.start(this.options.assistant, this.options.assistantOverrides);
       const callId =
         result && typeof result === "object" && "id" in result
           ? String((result as Record<string, unknown>)["id"])

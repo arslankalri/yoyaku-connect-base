@@ -382,6 +382,7 @@ export type NagiSettings = {
   voice_enabled: boolean;
   voice_phone_number: string | null;
   voice_greeting: string;
+  vapi_assistant_id: string | null;
 } & Record<(typeof NAGI_CAPABILITIES)[number], boolean> &
   Record<(typeof NAGI_HANDOFF_RULES)[number], boolean>;
 
@@ -398,6 +399,7 @@ const NAGI_COLUMNS = [
   "voice_enabled",
   "voice_phone_number",
   "voice_greeting",
+  "vapi_assistant_id",
   ...NAGI_CAPABILITIES,
   ...NAGI_HANDOFF_RULES,
 ].join(", ");
