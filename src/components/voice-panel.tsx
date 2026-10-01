@@ -52,12 +52,14 @@ export function VoicePanel({ businessId }: { businessId: string }) {
   const [enabled, setEnabled] = useState(false);
   const [number, setNumber] = useState("");
   const [greeting, setGreeting] = useState("");
+  const [assistantId, setAssistantId] = useState("");
 
   useEffect(() => {
     if (!settings.data) return;
     setEnabled(settings.data.voice_enabled);
     setNumber(settings.data.voice_phone_number ?? "");
     setGreeting(settings.data.voice_greeting ?? "");
+    setAssistantId(settings.data.vapi_assistant_id ?? "");
   }, [settings.data]);
 
   if (settings.isLoading) return <LoadingPanel />;
@@ -73,6 +75,7 @@ export function VoicePanel({ businessId }: { businessId: string }) {
         voice_enabled: enabled,
         voice_phone_number: number.trim() || null,
         voice_greeting: greeting,
+        vapi_assistant_id: assistantId.trim() || null,
       });
       toast.success(ja ? "保存しました" : "Saved");
     } catch {
@@ -145,6 +148,23 @@ export function VoicePanel({ businessId }: { businessId: string }) {
           {ja
             ? "空欄の場合は店名を使った案内を自動で読み上げます。"
             : "Left empty, NAGI greets callers using your shop name."}
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="vapi-assistant-id">
+          {ja ? "Vapi アシスタントID（任意）" : "Vapi assistant ID (optional)"}
+        </Label>
+        <Input
+          id="vapi-assistant-id"
+          value={assistantId}
+          onChange={(e) => setAssistantId(e.target.value)}
+          placeholder="e.g. 3fa85f64-..."
+        />
+        <p className="text-xs text-muted-foreground">
+          {ja
+            ? "Vapi ダッシュボードで作成したアシスタントのIDを貼ると、ブラウザ通話テストがそのアシスタントの声・設定で始まります。予約などの操作は引き続きナギが行います。空欄ならナギ標準の設定を使います。"
+            : "Paste the ID of an assistant you created in the Vapi dashboard and browser test calls will use that assistant's voice and style. Bookings and business actions still run through NAGI. Leave empty to use NAGI's built-in setup."}
         </p>
       </div>
 
