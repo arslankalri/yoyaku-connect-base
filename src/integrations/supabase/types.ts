@@ -428,6 +428,7 @@ export type Database = {
           reservation_policy: string
           tone: string
           updated_at: string
+          vapi_assistant_id: string | null
           voice_enabled: boolean
           voice_greeting: string
           voice_phone_number: string | null
@@ -457,6 +458,7 @@ export type Database = {
           reservation_policy?: string
           tone?: string
           updated_at?: string
+          vapi_assistant_id?: string | null
           voice_enabled?: boolean
           voice_greeting?: string
           voice_phone_number?: string | null
@@ -486,6 +488,7 @@ export type Database = {
           reservation_policy?: string
           tone?: string
           updated_at?: string
+          vapi_assistant_id?: string | null
           voice_enabled?: boolean
           voice_greeting?: string
           voice_phone_number?: string | null

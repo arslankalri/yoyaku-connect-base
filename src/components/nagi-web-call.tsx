@@ -85,7 +85,7 @@ export function NagiWebCall({ className }: Props) {
       clientRef.current = createNagiWebCallClient({
         publicKey: payload.publicKey,
         assistant: assistantTarget,
-        assistantOverrides: payload.assistantOverrides,
+        ...(payload.assistantOverrides ? { assistantOverrides: payload.assistantOverrides } : {}),
         onStatus: setStatus,
         onError: (value) => {
           setError(value instanceof Error ? value.message : "Vapi web call failed");
