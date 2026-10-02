@@ -25,7 +25,18 @@ export function SmartImport({
   const [website, setWebsite] = useState("");
   const [maps, setMaps] = useState("");
   const [busy, setBusy] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
   const [result, setResult] = useState<Result | null>(null);
+
+  async function addFiles(files: FileList | null) {
+    if (!files) return;
+    const out: string[] = [];
+    for (const f of Array.from(files).slice(0, 4 - images.length)) {
+      if (!f.type.startsWith("image/")) continue;
+      out.push(await shrink(f));
+    }
+    setImages((p) => [...p, ...out].slice(0, 4));
+  }
 
   async function go() {
     setBusy(true);
@@ -35,6 +46,7 @@ export function SmartImport({
         data: {
           ...(website.trim() ? { websiteUrl: website.trim() } : {}),
           ...(maps.trim() ? { mapsUrl: maps.trim() } : {}),
+          ...(images.length ? { images } : {}),
           businessType: businessType ?? null,
         },
       });
@@ -58,19 +70,23 @@ export function SmartImport({
     }
   }
 
+  const ready = website.trim() || maps.trim() || images.length > 0;
+
   return (
     <div className="rounded-lg border border-ai-indigo/40 bg-ai-indigo/5 p-4 space-y-3">
       <div>
         <p className="font-semibold">✨ {ja ? "スマート自動入力" : "Smart auto-fill"}</p>
         <p className="text-xs text-muted-foreground">
           {ja
-            ? "ホームページやGoogleマップのURLを貼るだけで、店舗情報・営業時間・メニュー・よくある質問をAIが自動で入力します。"
-            : "Paste your website or Google Maps link and AI fills in your details, hours, menu and FAQs."}
+            ? "ホームページ・ホットペッパー・食べログ・GoogleマップのURL、またはメニューやチラシの写真から、AIが店舗情報・営業時間・メニュー・よくある質問を自動入力します。"
+            : "Paste your website, Hot Pepper, Tabelog or Google Maps link — or upload menu/flyer photos — and AI fills in your details, hours, menu and FAQs."}
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <Label className="text-xs">{ja ? "ホームページURL" : "Website URL"}</Label>
+          <Label className="text-xs">
+            {ja ? "ホームページ / ホットペッパー / 食べログ URL" : "Website / Hot Pepper / Tabelog URL"}
+          </Label>
           <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://..." />
         </div>
         <div>
@@ -78,7 +94,38 @@ export function SmartImport({
           <Input value={maps} onChange={(e) => setMaps(e.target.value)} placeholder="https://maps.app.goo.gl/..." />
         </div>
       </div>
-      <Button onClick={go} disabled={busy || (!website.trim() && !maps.trim())}>
+      <div className="space-y-2">
+        <Label className="text-xs">
+          {ja ? "メニュー・料金表・チラシ・ショップカードの写真（最大4枚）" : "Menu, price list, flyer or shop card photos (up to 4)"}
+        </Label>
+        <Input
+          type="file"
+          accept="image/*"
+          multiple
+          disabled={images.length >= 4}
+          onChange={(e) => {
+            void addFiles(e.target.files);
+            e.target.value = "";
+          }}
+        />
+        {images.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {images.map((src, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setImages((p) => p.filter((_, j) => j !== i))}
+                className="relative h-16 w-16 overflow-hidden rounded border"
+                title={ja ? "削除" : "Remove"}
+              >
+                <img src={src} alt="" className="h-full w-full object-cover" />
+                <span className="absolute right-0 top-0 bg-background/80 px-1 text-xs">×</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <Button onClick={go} disabled={busy || !ready}>
         {busy ? (ja ? "読み込み中…（最大1分）" : "Reading… (up to a minute)") : ja ? "自動入力する" : "Auto-fill"}
       </Button>
       {result && (

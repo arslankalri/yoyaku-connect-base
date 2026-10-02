@@ -14,6 +14,7 @@ export const importBusinessFromWeb = createServerFn({ method: "POST" })
       .object({
         websiteUrl: z.string().max(500).optional(),
         mapsUrl: z.string().max(1000).optional(),
+        images: z.array(z.string().max(3_000_000)).max(4).optional(),
         businessType: z.string().max(40).nullable().optional(),
       })
       .parse(d),
@@ -23,7 +24,7 @@ export const importBusinessFromWeb = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     let info;
     try {
-      info = await extractBusiness({ websiteUrl: data.websiteUrl, mapsUrl: data.mapsUrl });
+      info = await extractBusiness({ websiteUrl: data.websiteUrl, mapsUrl: data.mapsUrl, images: data.images });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "";
       return { ok: false as const, error: msg === "INVALID_URL" || msg === "UNREACHABLE" ? msg : "FAILED" };
