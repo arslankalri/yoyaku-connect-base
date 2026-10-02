@@ -73,13 +73,37 @@ function toText(html: string) {
   return `TITLE: ${title}\nDESCRIPTION: ${meta(html, "description") || meta(html, "og:description")}\n${ld ? `STRUCTURED DATA:\n${ld.slice(0, 8000)}\n` : ""}${body}`;
 }
 
+/** Known Japanese portals: their menu/coupon/access pages hold the most accurate structured data. */
+function portalPages(u: URL): string[] {
+  const h = u.hostname;
+  const root = (re: RegExp) => re.exec(u.pathname)?.[0];
+  if (/beauty\.hotpepper\.jp$/.test(h)) {
+    const r = root(/^\/(kr\/)?sln[A-Z0-9]+\//i);
+    return r ? ["coupon/", "menu/", "staff/"].map((p) => new URL(r + p, u).toString()) : [];
+  }
+  if (/hotpepper\.jp$/.test(h)) {
+    const r = root(/^\/str[A-Z0-9]+\//i);
+    return r ? ["food/", "course/", "map/"].map((p) => new URL(r + p, u).toString()) : [];
+  }
+  if (/tabelog\.com$/.test(h)) {
+    const r = root(/^\/[a-z]+\/A\d+\/A\d+\/\d+\//);
+    return r ? ["dtlmenu/", "dtlmenu/drink/", "party/"].map((p) => new URL(r + p, u).toString()) : [];
+  }
+  if (/gnavi\.co\.jp$/.test(h)) {
+    const r = root(/^\/[a-z0-9]+\//);
+    return r ? ["menu/", "map/"].map((p) => new URL(r + p, u).toString()) : [];
+  }
+  return [];
+}
+
 async function readWebsite(start: URL) {
   const first = await fetchHtml(start);
   if (!first) return "";
   const parts = [`=== PAGE ${first.finalUrl} ===\n${toText(first.html).slice(0, 14000)}`];
   const base = new URL(first.finalUrl);
-  const links = new Set<string>();
-  for (const m of first.html.matchAll(/<a[^>]+href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+  const links = new Set<string>(portalPages(base));
+  const limit = links.size > 0 ? links.size : 4;
+  for (const m of links.size > 0 ? [] : first.html.matchAll(/<a[^>]+href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
     try {
       const u = new URL(m[1]!, base);
       if (u.hostname !== base.hostname || u.toString() === base.toString()) continue;
@@ -87,7 +111,7 @@ async function readWebsite(start: URL) {
     } catch {
       /* ignore bad link */
     }
-    if (links.size >= 4) break;
+    if (links.size >= limit) break;
   }
   const pages = await Promise.all([...links].map((l) => fetchHtml(new URL(l))));
   pages.forEach((p, i) => {
@@ -128,24 +152,34 @@ FAQs: 5-12 helpful Q&A written in Japanese that customers phone about (parking, 
 export async function extractBusiness(input: {
   websiteUrl?: string | undefined;
   mapsUrl?: string | undefined;
+  images?: string[] | undefined;
 }): Promise<ImportedBusiness> {
   const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new Error("AI is not configured.");
   const site = input.websiteUrl ? safeUrl(input.websiteUrl) : null;
   const maps = input.mapsUrl ? safeUrl(input.mapsUrl) : null;
-  if (!site && !maps) throw new Error("INVALID_URL");
+  const images = (input.images ?? []).filter((d) => /^data:image\/(png|jpe?g|webp);base64,/.test(d));
+  if (!site && !maps && images.length === 0) throw new Error("INVALID_URL");
 
   const [siteText, mapsText] = await Promise.all([
     site ? readWebsite(site) : Promise.resolve(""),
     maps ? readMaps(maps) : Promise.resolve(""),
   ]);
-  if (!siteText && !mapsText) throw new Error("UNREACHABLE");
+  if (!siteText && !mapsText && images.length === 0) throw new Error("UNREACHABLE");
 
   const gateway = createLovableAiGatewayProvider(key);
+  const text0 = `GOOGLE MAPS:\n${mapsText || "(none)"}\n\nWEBSITE:\n${siteText || "(none)"}${
+    images.length ? `\n\nPHOTOS: ${images.length} attached (menus, price boards, flyers or shop cards) — read every price, hour and policy in them.` : ""
+  }`;
   const result = streamText({
     model: gateway(NAGI_MODEL),
     system: PROMPT,
-    prompt: `GOOGLE MAPS:\n${mapsText || "(none)"}\n\nWEBSITE:\n${siteText || "(none)"}`,
+    messages: [
+      {
+        role: "user",
+        content: [{ type: "text", text: text0 }, ...images.map((d) => ({ type: "image" as const, image: d }))],
+      },
+    ],
   });
   const text = await result.text;
   const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
