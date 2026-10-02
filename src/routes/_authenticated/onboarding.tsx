@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { BusinessForm } from "@/components/business-form";
 import { BusinessHoursForm } from "@/components/business-hours-form";
+import { SmartImport } from "@/components/smart-import";
 import { ErrorPanel } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -220,7 +221,9 @@ function ProfileStep({
         title={t("setup.profile.title")}
         desc={typeLabel ? `${typeLabel} — ${t("setup.profile.desc")}` : t("setup.profile.desc")}
       />
+      <SmartImport businessType={businessType} />
       <BusinessForm
+        key={`${business?.id ?? "new"}-${business?.name ?? ""}-${business?.address ?? ""}`}
         business={business ?? null}
         submitLabel={t("setup.next")}
         skipDefaultHours
