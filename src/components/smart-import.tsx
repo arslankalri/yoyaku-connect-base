@@ -53,10 +53,16 @@ export function SmartImport({
       if (!r.ok) {
         toast.error(
           r.error === "INVALID_URL"
-            ? ja ? "URLが正しくありません" : "That link doesn't look valid."
+            ? ja
+              ? "URLが正しくありません"
+              : "That link doesn't look valid."
             : r.error === "UNREACHABLE"
-              ? ja ? "ページを読み込めませんでした" : "Couldn't open that page."
-              : ja ? "情報を取得できませんでした" : "Couldn't read business info.",
+              ? ja
+                ? "ページを読み込めませんでした"
+                : "Couldn't open that page."
+              : ja
+                ? "情報を取得できませんでした"
+                : "Couldn't read business info.",
         );
         return;
       }
@@ -85,18 +91,30 @@ export function SmartImport({
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <Label className="text-xs">
-            {ja ? "ホームページ / ホットペッパー / 食べログ URL" : "Website / Hot Pepper / Tabelog URL"}
+            {ja
+              ? "ホームページ / ホットペッパー / 食べログ URL"
+              : "Website / Hot Pepper / Tabelog URL"}
           </Label>
-          <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://..." />
+          <Input
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            placeholder="https://..."
+          />
         </div>
         <div>
           <Label className="text-xs">{ja ? "GoogleマップURL" : "Google Maps link"}</Label>
-          <Input value={maps} onChange={(e) => setMaps(e.target.value)} placeholder="https://maps.app.goo.gl/..." />
+          <Input
+            value={maps}
+            onChange={(e) => setMaps(e.target.value)}
+            placeholder="https://maps.app.goo.gl/..."
+          />
         </div>
       </div>
       <div className="space-y-2">
         <Label className="text-xs">
-          {ja ? "メニュー・料金表・チラシ・ショップカードの写真（最大4枚）" : "Menu, price list, flyer or shop card photos (up to 4)"}
+          {ja
+            ? "メニュー・料金表・チラシ・ショップカードの写真（最大4枚）"
+            : "Menu, price list, flyer or shop card photos (up to 4)"}
         </Label>
         <Input
           type="file"
@@ -126,17 +144,25 @@ export function SmartImport({
         )}
       </div>
       <Button onClick={go} disabled={busy || !ready}>
-        {busy ? (ja ? "読み込み中…（最大1分）" : "Reading… (up to a minute)") : ja ? "自動入力する" : "Auto-fill"}
+        {busy
+          ? ja
+            ? "読み込み中…（最大1分）"
+            : "Reading… (up to a minute)"
+          : ja
+            ? "自動入力する"
+            : "Auto-fill"}
       </Button>
       {result && (
         <div className="text-sm space-y-1">
           <p className="text-success">
-            ✓ {result.name}: {ja ? "営業日" : "open days"} {result.hours} / {ja ? "メニュー" : "services"}{" "}
-            {result.services} / FAQ {result.faqs}
+            ✓ {result.name}: {ja ? "営業日" : "open days"} {result.hours} /{" "}
+            {ja ? "メニュー" : "services"} {result.services} / FAQ {result.faqs}
           </p>
           {result.missing.length > 0 && (
             <p className="text-muted-foreground">
-              {ja ? "見つからなかった情報（次の画面で入力してください）：" : "Not found — please fill in next: "}
+              {ja
+                ? "見つからなかった情報（次の画面で入力してください）："
+                : "Not found — please fill in next: "}
               {result.missing.join("、")}
             </p>
           )}

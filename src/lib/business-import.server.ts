@@ -87,7 +87,9 @@ function portalPages(u: URL): string[] {
   }
   if (/tabelog\.com$/.test(h)) {
     const r = root(/^\/[a-z]+\/A\d+\/A\d+\/\d+\//);
-    return r ? ["dtlmenu/", "dtlmenu/drink/", "party/"].map((p) => new URL(r + p, u).toString()) : [];
+    return r
+      ? ["dtlmenu/", "dtlmenu/drink/", "party/"].map((p) => new URL(r + p, u).toString())
+      : [];
   }
   if (/gnavi\.co\.jp$/.test(h)) {
     const r = root(/^\/[a-z0-9]+\//);
@@ -103,7 +105,9 @@ async function readWebsite(start: URL) {
   const base = new URL(first.finalUrl);
   const links = new Set<string>(portalPages(base));
   const limit = links.size > 0 ? links.size : 4;
-  for (const m of links.size > 0 ? [] : first.html.matchAll(/<a[^>]+href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+  for (const m of links.size > 0
+    ? []
+    : first.html.matchAll(/<a[^>]+href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
     try {
       const u = new URL(m[1]!, base);
       if (u.hostname !== base.hostname || u.toString() === base.toString()) continue;
@@ -158,7 +162,9 @@ export async function extractBusiness(input: {
   if (!key) throw new Error("AI is not configured.");
   const site = input.websiteUrl ? safeUrl(input.websiteUrl) : null;
   const maps = input.mapsUrl ? safeUrl(input.mapsUrl) : null;
-  const images = (input.images ?? []).filter((d) => /^data:image\/(png|jpe?g|webp);base64,/.test(d));
+  const images = (input.images ?? []).filter((d) =>
+    /^data:image\/(png|jpe?g|webp);base64,/.test(d),
+  );
   if (!site && !maps && images.length === 0) throw new Error("INVALID_URL");
 
   const [siteText, mapsText] = await Promise.all([
@@ -169,7 +175,9 @@ export async function extractBusiness(input: {
 
   const gateway = createLovableAiGatewayProvider(key);
   const text0 = `GOOGLE MAPS:\n${mapsText || "(none)"}\n\nWEBSITE:\n${siteText || "(none)"}${
-    images.length ? `\n\nPHOTOS: ${images.length} attached (menus, price boards, flyers or shop cards) — read every price, hour and policy in them.` : ""
+    images.length
+      ? `\n\nPHOTOS: ${images.length} attached (menus, price boards, flyers or shop cards) — read every price, hour and policy in them.`
+      : ""
   }`;
   const result = streamText({
     model: gateway(NAGI_MODEL),
@@ -177,14 +185,18 @@ export async function extractBusiness(input: {
     messages: [
       {
         role: "user",
-        content: [{ type: "text", text: text0 }, ...images.map((d) => ({ type: "image" as const, image: d }))],
+        content: [
+          { type: "text", text: text0 },
+          ...images.map((d) => ({ type: "image" as const, image: d })),
+        ],
       },
     ],
   });
   const text = await result.text;
   const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
   const raw = JSON.parse(json) as Partial<ImportedBusiness>;
-  const time = (s: unknown) => (typeof s === "string" && /^\d{1,2}:\d{2}$/.test(s) ? s.padStart(5, "0") : null);
+  const time = (s: unknown) =>
+    typeof s === "string" && /^\d{1,2}:\d{2}$/.test(s) ? s.padStart(5, "0") : null;
   return {
     name: raw.name || null,
     phone: raw.phone || null,
@@ -208,9 +220,7 @@ export async function extractBusiness(input: {
         duration_minutes: Math.max(5, Math.round(Number(s.duration_minutes) || 60)),
         price: Math.max(0, Math.round(Number(s.price) || 0)),
       })),
-    faqs: (raw.faqs ?? [])
-      .filter((f) => f.question?.trim() && f.answer?.trim())
-      .slice(0, 15),
+    faqs: (raw.faqs ?? []).filter((f) => f.question?.trim() && f.answer?.trim()).slice(0, 15),
     missing: (raw.missing ?? []).filter((m) => typeof m === "string").slice(0, 10),
   };
 }

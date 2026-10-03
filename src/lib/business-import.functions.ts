@@ -24,10 +24,17 @@ export const importBusinessFromWeb = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     let info;
     try {
-      info = await extractBusiness({ websiteUrl: data.websiteUrl, mapsUrl: data.mapsUrl, images: data.images });
+      info = await extractBusiness({
+        websiteUrl: data.websiteUrl,
+        mapsUrl: data.mapsUrl,
+        images: data.images,
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "";
-      return { ok: false as const, error: msg === "INVALID_URL" || msg === "UNREACHABLE" ? msg : "FAILED" };
+      return {
+        ok: false as const,
+        error: msg === "INVALID_URL" || msg === "UNREACHABLE" ? msg : "FAILED",
+      };
     }
 
     const { data: existing } = await supabase
