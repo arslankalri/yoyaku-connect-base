@@ -9,7 +9,14 @@ import { Label } from "@/components/ui/label";
 import { importBusinessFromWeb } from "@/lib/business-import.functions";
 import { useI18n } from "@/lib/i18n";
 
-type Result = { name: string; hours: number; services: number; faqs: number; missing: string[] };
+type Result = {
+  name: string;
+  hours: number;
+  services: number;
+  updatedServices?: number;
+  faqs: number;
+  missing: string[];
+};
 
 export function SmartImport({
   businessType,
@@ -156,7 +163,8 @@ export function SmartImport({
         <div className="text-sm space-y-1">
           <p className="text-success">
             ✓ {result.name}: {ja ? "営業日" : "open days"} {result.hours} /{" "}
-            {ja ? "メニュー" : "services"} {result.services} / FAQ {result.faqs}
+            {ja ? "メニュー追加" : "services added"} {result.services} /{" "}
+            {ja ? "料金更新" : "prices updated"} {result.updatedServices ?? 0} / FAQ {result.faqs}
           </p>
           {result.missing.length > 0 && (
             <p className="text-muted-foreground">

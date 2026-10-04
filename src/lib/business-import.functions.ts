@@ -22,9 +22,18 @@ export const importBusinessFromWeb = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { extractBusiness } = await import("./business-import.server");
     const { supabase, userId } = context;
+    const { data: owned } = await supabase
+      .from("businesses")
+      .select("id")
+      .eq("owner_id", userId)
+      .maybeSingle();
+    const { data: knownServices } = owned
+      ? await supabase.from("services").select("name").eq("business_id", owned.id)
+      : { data: [] };
     let info;
     try {
       info = await extractBusiness({
+        existingServices: (knownServices ?? []).map((s) => s.name),
         websiteUrl: data.websiteUrl,
         mapsUrl: data.mapsUrl,
         images: data.images,
@@ -77,14 +86,35 @@ export const importBusinessFromWeb = createServerFn({ method: "POST" })
 
     const { data: curServices } = await supabase
       .from("services")
-      .select("name")
+      .select("id, name")
       .eq("business_id", businessId);
-    const haveS = new Set((curServices ?? []).map((s) => s.name));
-    const newServices = info.services.filter((s) => !haveS.has(s.name));
+    const byName = new Map((curServices ?? []).map((s) => [s.name, s.id]));
+    let updatedServices = 0;
+    const newServices: typeof info.services = [];
+    const touched = new Set<string>();
+    for (const s of info.services) {
+      const id = byName.get(s.name) ?? (s.existing ? byName.get(s.existing) : undefined);
+      if (id) {
+        if (touched.has(id)) continue;
+        touched.add(id);
+        const { error } = await supabase
+          .from("services")
+          .update({ price: s.price, duration_minutes: s.duration_minutes })
+          .eq("id", id)
+          .eq("business_id", businessId);
+        if (!error) updatedServices++;
+      } else newServices.push(s);
+    }
     if (newServices.length > 0) {
-      await supabase
-        .from("services")
-        .insert(newServices.map((s) => ({ ...s, business_id: businessId!, is_active: true })));
+      await supabase.from("services").insert(
+        newServices.map((s) => ({
+          name: s.name,
+          price: s.price,
+          duration_minutes: s.duration_minutes,
+          business_id: businessId!,
+          is_active: true,
+        })),
+      );
     }
 
     const { data: curFaqs } = await supabase
@@ -110,6 +140,7 @@ export const importBusinessFromWeb = createServerFn({ method: "POST" })
       name: patch.name,
       hours: hoursSaved,
       services: newServices.length,
+      updatedServices,
       faqs: newFaqs.length,
       missing: info.missing,
     };
