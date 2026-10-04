@@ -16,7 +16,7 @@ export type ImportedBusiness = {
   business_type: string | null;
   seat_capacity: number | null;
   hours: { day_of_week: number; is_open: boolean; open_time: string; close_time: string }[];
-  services: { name: string; duration_minutes: number; price: number }[];
+  services: { name: string; duration_minutes: number; price: number; existing: string | null }[];
   faqs: { question: string; answer: string }[];
   missing: string[];
 };
@@ -145,11 +145,12 @@ Return ONLY a JSON object (no markdown) with this exact shape:
 "business_type":one of ["hair_salon","barber","beauty_salon","massage_spa","clinic","dental","restaurant","cafe","bar_izakaya","studio","pet_care","repair_service","other"]|null,
 "seat_capacity":number|null,
 "hours":[{"day_of_week":0-6 (0=Sunday),"is_open":boolean,"open_time":"HH:MM","close_time":"HH:MM"}],
-"services":[{"name":string,"duration_minutes":number,"price":number}],
+"services":[{"name":string,"duration_minutes":number,"price":number,"existing":string|null}],
 "faqs":[{"question":string,"answer":string}],
 "missing":[string]}
 Rules: Use only facts present in the source text — never invent. If hours are unknown return []. Include all 7 days when hours are known (closed days is_open=false, times "09:00"/"18:00").
 Services: menu items / courses with prices in yen as integers; estimate duration_minutes only if stated, else 60 (30 for cafes/restaurants). Max 30 services.
+If a service is the same item as one in EXISTING SERVICES (same treatment in another language or wording, e.g. "カット" = "Cut", "カラー" = "Colour"), set "existing" to that exact existing name; otherwise null. Never match different items (e.g. "カット＋カラー" is not "Cut").
 FAQs: 5-12 helpful Q&A written in Japanese that customers phone about (parking, payment methods, access/nearest station, cancellation policy, reservations, kids/pets, etc.) — only from facts in the text.
 "missing": short Japanese labels for important things not found (e.g. "営業時間","電話番号","料金","キャンセルポリシー","駐車場").`;
 
@@ -157,6 +158,7 @@ export async function extractBusiness(input: {
   websiteUrl?: string | undefined;
   mapsUrl?: string | undefined;
   images?: string[] | undefined;
+  existingServices?: string[] | undefined;
 }): Promise<ImportedBusiness> {
   const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new Error("AI is not configured.");
@@ -174,7 +176,8 @@ export async function extractBusiness(input: {
   if (!siteText && !mapsText && images.length === 0) throw new Error("UNREACHABLE");
 
   const gateway = createLovableAiGatewayProvider(key);
-  const text0 = `GOOGLE MAPS:\n${mapsText || "(none)"}\n\nWEBSITE:\n${siteText || "(none)"}${
+  const existing = input.existingServices ?? [];
+  const text0 = `EXISTING SERVICES:\n${existing.length ? existing.map((n) => `- ${n}`).join("\n") : "(none)"}\n\nGOOGLE MAPS:\n${mapsText || "(none)"}\n\nWEBSITE:\n${siteText || "(none)"}${
     images.length
       ? `\n\nPHOTOS: ${images.length} attached (menus, price boards, flyers or shop cards) — read every price, hour and policy in them.`
       : ""
@@ -219,6 +222,8 @@ export async function extractBusiness(input: {
         name: s.name.trim().slice(0, 120),
         duration_minutes: Math.max(5, Math.round(Number(s.duration_minutes) || 60)),
         price: Math.max(0, Math.round(Number(s.price) || 0)),
+        existing:
+          typeof s.existing === "string" && existing.includes(s.existing) ? s.existing : null,
       })),
     faqs: (raw.faqs ?? []).filter((f) => f.question?.trim() && f.answer?.trim()).slice(0, 15),
     missing: (raw.missing ?? []).filter((m) => typeof m === "string").slice(0, 10),
