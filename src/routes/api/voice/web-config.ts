@@ -9,6 +9,7 @@ import {
   toolDeclarations,
   voiceSystemPrompt,
 } from "@/lib/nagi-agent.server";
+import { WEB_CALL_TURN_TAKING, webVoicePrompt } from "@/lib/vapi-web-conversation";
 import { createWebCallToken } from "@/lib/vapi-web-session.server";
 
 async function authenticatedAccessToken(request: Request) {
@@ -103,6 +104,7 @@ export const Route = createFileRoute("/api/voice/web-config")({
             nagiBusinessId: business.id,
             source: "web",
           };
+          const systemPrompt = webVoicePrompt(await voiceSystemPrompt(ctx));
 
           // When the owner linked their own Vapi assistant, start it by ID and
           // attach NAGI's tools/server as overrides so booking still runs through NAGI.
@@ -118,9 +120,10 @@ export const Route = createFileRoute("/api/voice/web-config")({
                   provider: "openai",
                   model: "gpt-4o",
                   temperature: 0.4,
-                  messages: [{ role: "system", content: await voiceSystemPrompt(ctx) }],
+                  messages: [{ role: "system", content: systemPrompt }],
                   tools,
                 },
+                ...WEB_CALL_TURN_TAKING,
                 server: webhook,
                 serverMessages,
                 metadata,
@@ -135,8 +138,9 @@ export const Route = createFileRoute("/api/voice/web-config")({
             firstMessageMode: "assistant-speaks-first",
             transcriber: {
               provider: "deepgram",
-              model: "nova-2",
-              language: "ja",
+              model: "nova-3",
+              language: "multi",
+              smartFormat: true,
             },
             voice: {
               provider: "azure",
@@ -146,9 +150,10 @@ export const Route = createFileRoute("/api/voice/web-config")({
               provider: "openai",
               model: "gpt-4o",
               temperature: 0.4,
-              messages: [{ role: "system", content: await voiceSystemPrompt(ctx) }],
+              messages: [{ role: "system", content: systemPrompt }],
               tools,
             },
+            ...WEB_CALL_TURN_TAKING,
             serverMessages,
             server: webhook,
             metadata,

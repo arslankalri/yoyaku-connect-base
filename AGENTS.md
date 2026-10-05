@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep Vapi web-call turn-taking configuration centralized in `vapi-web-conversation.ts` so linked and transient assistants stay behaviorally consistent.
