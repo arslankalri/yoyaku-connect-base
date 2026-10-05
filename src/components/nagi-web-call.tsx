@@ -88,7 +88,8 @@ export function NagiWebCall({ className }: Props) {
         ...(payload.assistantOverrides ? { assistantOverrides: payload.assistantOverrides } : {}),
         onStatus: setStatus,
         onError: (value) => {
-          setError(value instanceof Error ? value.message : "Vapi web call failed");
+          setStatus("idle");
+          setError(describeError(value));
         },
         onEvent: handleEvent,
       });

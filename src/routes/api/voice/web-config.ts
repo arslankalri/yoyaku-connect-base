@@ -112,7 +112,15 @@ export const Route = createFileRoute("/api/voice/web-config")({
               publicKey,
               assistantId,
               assistantOverrides: {
-                model: { tools },
+                // Vapi requires provider + model whenever model is overridden; the
+                // linked assistant keeps its own voice/transcriber, NAGI supplies brain + tools.
+                model: {
+                  provider: "openai",
+                  model: "gpt-4o",
+                  temperature: 0.4,
+                  messages: [{ role: "system", content: await voiceSystemPrompt(ctx) }],
+                  tools,
+                },
                 server: webhook,
                 serverMessages,
                 metadata,
