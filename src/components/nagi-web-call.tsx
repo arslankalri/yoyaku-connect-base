@@ -167,3 +167,16 @@ export function NagiWebCall({ className }: Props) {
     </section>
   );
 }
+
+/** Vapi errors arrive as plain objects; surface their message instead of a generic text. */
+function describeError(value: unknown): string {
+  if (value instanceof Error) return value.message;
+  const v = value as {
+    error?: { message?: unknown; error?: { message?: unknown } };
+    message?: unknown;
+  };
+  const msg = v?.error?.message ?? v?.error?.error?.message ?? v?.message;
+  if (Array.isArray(msg)) return msg.join(" ");
+  if (typeof msg === "string" && msg) return msg;
+  return "Vapi web call failed";
+}
