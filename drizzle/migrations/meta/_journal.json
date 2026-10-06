@@ -71,6 +71,13 @@
       "when": 1790650966242,
       "tag": "0009_add_party_size_capacity",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791287622115,
+      "tag": "0010_notifications",
+      "breakpoints": true
     }
   ]
 }

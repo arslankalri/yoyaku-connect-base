@@ -503,6 +503,70 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          appointment_id: string | null
+          business_id: string
+          call_id: string | null
+          created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          detail: string | null
+          id: string
+          kind: string
+          read_at: string | null
+          starts_at: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          business_id: string
+          call_id?: string | null
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          detail?: string | null
+          id?: string
+          kind: string
+          read_at?: string | null
+          starts_at?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          business_id?: string
+          call_id?: string | null
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          detail?: string | null
+          id?: string
+          kind?: string
+          read_at?: string | null
+          starts_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
