@@ -1,6 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
+  Bell,
   CalendarDays,
   ClipboardList,
   HelpCircle,
@@ -22,6 +23,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
+import { useBusiness, useNotifications, useRealtime } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -36,6 +38,7 @@ const mainNav: NavItem[] = [
   { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
   { to: "/calls", labelKey: "nav.calls", icon: PhoneCall },
+  { to: "/notifications", labelKey: "nav.notifications", icon: Bell },
 ];
 
 const setupNav: NavItem[] = [
@@ -218,6 +221,7 @@ export function AppShell({
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <NotificationBell />
             <LanguageToggle />
           </div>
         </header>
@@ -234,5 +238,25 @@ export function AppShell({
         </main>
       </div>
     </div>
+  );
+}
+
+function NotificationBell() {
+  const { t } = useI18n();
+  const business = useBusiness().data;
+  const notifications = useNotifications(business?.id);
+  useRealtime(business?.id, [{ table: "notifications", queryKey: "notifications" }]);
+  const unread = (notifications.data ?? []).filter((n) => !n.read_at).length;
+  return (
+    <Button asChild variant="ghost" size="icon" className="relative">
+      <Link to="/notifications" aria-label={t("nav.notifications")}>
+        <Bell className="size-5" />
+        {unread > 0 && (
+          <span className="absolute -right-0.5 -top-0.5 grid min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-4 text-destructive-foreground">
+            {unread > 9 ? "9+" : unread}
+          </span>
+        )}
+      </Link>
+    </Button>
   );
 }

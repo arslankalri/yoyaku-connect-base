@@ -384,7 +384,7 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
   },
   transfer_to_human: {
     description:
-      "Flag that a staff member must follow up. Records the reason on the call so the owner sees it.",
+      "Notify the shop owner that a staff member must follow up (e.g. caller cannot verify a booking, asks for a human, complaint). ALWAYS call this before telling the caller staff will help. Put the caller's name, what they need, and any details in reason; include caller_phone if known.",
     schema: z.object({
       reason: z.string().optional(),
       caller_phone: z.string().optional(),
@@ -394,14 +394,26 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
       requireCapability(ctx.config.can_transfer_to_staff, "Transferring to staff");
       const callId = args["call_id"] ? String(args["call_id"]) : null;
       const reason = String(args["reason"] ?? "Staff follow-up requested");
+      let callRowId: string | null = null;
       if (callId) {
-        await ctx.supabase
+        const { data: callRow } = await ctx.supabase
           .from("calls")
           .update({ summary: "[HANDOFF] " + reason })
           .eq("business_id", ctx.business.id)
-          .eq("session_key", callId);
+          .eq("session_key", callId)
+          .select("id")
+          .maybeSingle();
+        callRowId = callRow?.id ?? null;
       }
-      return { handoff: true as const, message: "A staff member will follow up." };
+      const { error } = await ctx.supabase.from("notifications").insert({
+        business_id: ctx.business.id,
+        kind: "staff_followup",
+        detail: reason,
+        customer_phone: args["caller_phone"] ? String(args["caller_phone"]) : null,
+        call_id: callRowId,
+      });
+      if (error) throw error;
+      return { handoff: true as const, message: "A staff member has been notified and will follow up." };
     },
   },
 };
