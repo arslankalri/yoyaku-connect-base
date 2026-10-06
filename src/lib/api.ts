@@ -832,3 +832,51 @@ export function useRealtime(
     };
   }, [businessId, signature, qc]);
 }
+
+export type NagiNotification = {
+  id: string;
+  business_id: string;
+  kind: string;
+  customer_name: string | null;
+  customer_phone: string | null;
+  starts_at: string | null;
+  detail: string | null;
+  call_id: string | null;
+  appointment_id: string | null;
+  read_at: string | null;
+  created_at: string;
+};
+
+export function useNotifications(businessId?: string) {
+  return useQuery({
+    queryKey: ["notifications", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("business_id", businessId!)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as NagiNotification[];
+    },
+  });
+}
+
+export function useMarkNotificationsRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { businessId: string; id?: string }) => {
+      let q = supabase
+        .from("notifications")
+        .update({ read_at: new Date().toISOString() })
+        .eq("business_id", input.businessId)
+        .is("read_at", null);
+      if (input.id) q = q.eq("id", input.id);
+      const { error } = await q;
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+}
