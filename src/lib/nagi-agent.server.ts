@@ -384,7 +384,7 @@ export const AGENT_TOOLS: Record<string, AgentTool> = {
   },
   transfer_to_human: {
     description:
-      "Flag that a staff member must follow up. Records the reason on the call so the owner sees it.",
+      "Notify the shop owner that a staff member must follow up (e.g. caller cannot verify a booking, asks for a human, complaint). ALWAYS call this before telling the caller staff will help. Put the caller's name, what they need, and any details in reason; include caller_phone if known.",
     schema: z.object({
       reason: z.string().optional(),
       caller_phone: z.string().optional(),
