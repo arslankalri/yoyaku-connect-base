@@ -816,7 +816,9 @@ export function useRealtime(
   const signature = tables.map((t) => t.table + ":" + t.queryKey).join("|");
   useEffect(() => {
     if (!businessId) return;
-    const channel = supabase.channel("nagi-live-" + businessId + "-" + signature);
+    const channel = supabase.channel(
+      "nagi-live-" + businessId + "-" + signature + "-" + Math.random().toString(36).slice(2),
+    );
     for (const { table, queryKey } of tables) {
       channel.on(
         "postgres_changes",
