@@ -126,6 +126,11 @@ const ja: Dict = {
   "setup.type.desc":
     "サロン、飲食店、クリニックなど。選んだ業種に合わせて、この後の質問と候補が変わります。",
   "setup.type.presetHint": "おすすめ設定を読み込みます",
+  "setup.other.label": "どのようなお仕事ですか？",
+  "setup.other.placeholder": "例：中古車の買取・販売。試乗や査定のご予約を受け付けています。",
+  "setup.other.hint": "AIが内容を分析し、メニューやよくある質問の下書きを自動で作成します。",
+  "setup.other.analyzing": "AIがお店の内容を分析しています…",
+  "setup.other.done": "お店に合わせたメニューとよくある質問を作成しました",
   "setup.hours.title": "営業時間を設定",
   "setup.hours.desc": "予約の空き状況に反映されます。",
   "setup.services.title": "サービスを登録",
@@ -597,6 +602,11 @@ const en: Dict = {
   "setup.type.desc":
     "Salon, restaurant, clinic and more. The rest of the setup adapts to what you pick.",
   "setup.type.presetHint": "Recommended presets included",
+  "setup.other.label": "What does your business actually do?",
+  "setup.other.placeholder": "e.g. We buy and sell used cars. Customers book test drives and trade-in appraisals.",
+  "setup.other.hint": "AI will analyse this and draft fitting services and FAQs for you.",
+  "setup.other.analyzing": "AI is analysing your business…",
+  "setup.other.done": "Services and FAQs drafted for your business",
   "setup.hours.title": "Set opening hours",
   "setup.hours.desc": "These hours are used when NAGI checks availability.",
   "setup.services.title": "Register your services",
