@@ -33,6 +33,9 @@ import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Textarea } from "@/components/ui/textarea";
+import { analyzeCustomBusiness } from "@/lib/custom-business.functions";
 
 const STEPS = ["type", "profile", "hours", "services", "staff", "done"] as const;
 
@@ -71,6 +74,27 @@ function OnboardingPage() {
     (business?.business_type as BusinessType) ?? null,
   );
   const [stepIndex, setStepIndex] = useState<number | null>(null);
+  const [customDesc, setCustomDesc] = useState("");
+  const [pendingDesc, setPendingDesc] = useState<string | null>(null);
+  const analyzeFn = useServerFn(analyzeCustomBusiness);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (business?.business_description) setCustomDesc((d) => d || business.business_description!);
+  }, [business?.business_description]);
+
+  async function runAnalysis(description: string) {
+    const id = toast.loading(t("setup.other.analyzing"));
+    try {
+      const res = await analyzeFn({ data: { description } });
+      if (res.ok) {
+        toast.success(t("setup.other.done"), { id });
+        await queryClient.invalidateQueries();
+      } else toast.error(t("common.error"), { id });
+    } catch {
+      toast.error(t("common.error"), { id });
+    }
+  }
 
   useEffect(() => {
     if (business?.business_type) setSelectedType(business.business_type as BusinessType);
@@ -149,11 +173,30 @@ function OnboardingPage() {
               selected={selectedType}
               businessId={business?.id}
               onSelect={setSelectedType}
-              onSaved={goNext}
+              description={customDesc}
+              onDescription={setCustomDesc}
+              onSaved={async () => {
+                const d = customDesc.trim();
+                if (selectedType === "other" && d.length >= 2) {
+                  if (business?.id) await runAnalysis(d);
+                  else setPendingDesc(d);
+                }
+                goNext();
+              }}
             />
           )}
           {step === "profile" && (
-            <ProfileStep business={business} businessType={selectedType} onSaved={goNext} />
+            <ProfileStep
+              business={business}
+              businessType={selectedType}
+              onSaved={async () => {
+                if (pendingDesc) {
+                  setPendingDesc(null);
+                  await runAnalysis(pendingDesc);
+                }
+                goNext();
+              }}
+            />
           )}
           {step === "hours" && business && (
             <HoursStep businessId={business.id} type={effectiveType} onSaved={goNext} />
@@ -238,12 +281,16 @@ function TypeStep({
   selected,
   businessId,
   onSelect,
+  description,
+  onDescription,
   onSaved,
 }: {
   selected: BusinessType | null;
   businessId?: string | undefined;
   onSelect: (type: BusinessType) => void;
-  onSaved: () => void;
+  description: string;
+  onDescription: (v: string) => void;
+  onSaved: () => void | Promise<void>;
 }) {
   const { t, language } = useI18n();
   const updateType = useUpdateBusinessType();
@@ -253,12 +300,12 @@ function TypeStep({
     // Before the business record exists the choice is carried into the next
     // step and stored together with the profile.
     if (!businessId) {
-      onSaved();
+      await onSaved();
       return;
     }
     try {
       await updateType.mutateAsync({ id: businessId, type: selected });
-      onSaved();
+      await onSaved();
     } catch {
       toast.error(t("common.error"));
     }
@@ -291,8 +338,28 @@ function TypeStep({
           </Card>
         ))}
       </div>
+      {selected === "other" && (
+        <div className="space-y-2 rounded-lg border border-ai-indigo/30 bg-ai-indigo/5 p-4">
+          <Label htmlFor="biz-desc">{t("setup.other.label")}</Label>
+          <Textarea
+            id="biz-desc"
+            rows={3}
+            maxLength={1000}
+            value={description}
+            onChange={(e) => onDescription(e.target.value)}
+            placeholder={t("setup.other.placeholder")}
+          />
+          <p className="text-xs text-muted-foreground">{t("setup.other.hint")}</p>
+        </div>
+      )}
       <div className="flex gap-2 pt-2">
-        <Button onClick={save} disabled={!selected || updateType.isPending} className="ml-auto">
+        <Button
+          onClick={save}
+          disabled={
+            !selected ||
+            updateType.isPending ||
+            (selected === "other" && description.trim().length < 2)
+          } className="ml-auto">
           {updateType.isPending ? t("common.saving") : t("setup.next")}
         </Button>
       </div>
