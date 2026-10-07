@@ -518,7 +518,7 @@ export async function voiceSystemPrompt(ctx: AgentContext) {
 }
 
 const HANDOFF_PROMISE =
-  /(staff|team member|colleague|someone from (the|our) (shop|team)|human)[^.\n]{0,60}(assist|help|follow|contact|call you|get back|reach)|(assist|help|contact|call)[^.\n]{0,40}(staff|team member)|スタッフ|担当者|担当の者|店員|折り返し/i;
+  /(staff|team member|colleague|someone from (the|our) (shop|team)|human)[^\n]{0,60}(assist|help|follow|contact|call you|get back|reach)|(assist|help|contact|call)[^\n]{0,40}(staff|team member)|スタッフ|担当者|担当の者|店員|折り返し/i;
 
 /**
  * Safety net: if the assistant promised a staff follow-up during the call but never
