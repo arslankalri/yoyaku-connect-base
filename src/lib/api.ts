@@ -10,6 +10,7 @@ export type Business = {
   phone: string | null;
   postal_code: string | null;
   address: string | null;
+  business_description?: string | null;
   website: string | null;
   timezone: string;
   business_type: string | null;
