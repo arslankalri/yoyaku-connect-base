@@ -13,6 +13,7 @@ import {
   defaultVoiceGreeting,
   runAgentTool,
   saveCallLog,
+  ensureStaffFollowup,
   toolDeclarations,
   voiceSystemPrompt,
   type AgentContext,
@@ -241,6 +242,11 @@ export const Route = createFileRoute("/api/public/agent/vapi")({
                       ? Math.round(message.durationSeconds)
                       : null,
                 });
+                try {
+                  await ensureStaffFollowup(ctx, callId, transcriptOf(message) ?? null, caller ?? null);
+                } catch (e) {
+                  log("followup_failed", { call_id: callId, reason: e instanceof Error ? e.message : "unknown" });
+                }
               }
               return Response.json({ ok: true });
             }

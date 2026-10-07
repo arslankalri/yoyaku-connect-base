@@ -516,3 +516,53 @@ export async function voiceSystemPrompt(ctx: AgentContext) {
   );
   return session.system;
 }
+
+const HANDOFF_PROMISE =
+  /(staff|team member|colleague|someone from (the|our) (shop|team)|human)[^.\n]{0,60}(assist|help|follow|contact|call you|get back|reach)|(assist|help|contact|call)[^.\n]{0,40}(staff|team member)|スタッフ|担当者|担当の者|店員|折り返し/i;
+
+/**
+ * Safety net: if the assistant promised a staff follow-up during the call but never
+ * called transfer_to_human, create the staff_followup notification at call end.
+ */
+export async function ensureStaffFollowup(
+  ctx: AgentContext,
+  sessionKey: string,
+  transcript: string | null,
+  caller: string | null,
+) {
+  if (!transcript || !ctx.config.can_transfer_to_staff) return;
+  const lines = transcript.split("\n").map((l) => l.trim()).filter(Boolean);
+  const aiLines = lines.filter((l) => /^(AI|assistant|bot)\s*:/i.test(l));
+  if (!aiLines.some((l) => HANDOFF_PROMISE.test(l))) return;
+
+  const { data: callRow } = await ctx.supabase
+    .from("calls")
+    .select("id")
+    .eq("business_id", ctx.business.id)
+    .eq("session_key", sessionKey)
+    .maybeSingle();
+  const callRowId = callRow?.id ?? null;
+  if (callRowId) {
+    const { data: existing } = await ctx.supabase
+      .from("notifications")
+      .select("id")
+      .eq("business_id", ctx.business.id)
+      .eq("call_id", callRowId)
+      .eq("kind", "staff_followup")
+      .limit(1);
+    if (existing && existing.length > 0) return;
+  }
+
+  const customerSaid = lines
+    .filter((l) => /^(user|customer|caller)\s*:/i.test(l))
+    .map((l) => l.replace(/^[^:]+:\s*/, ""))
+    .join(" / ")
+    .slice(0, 600);
+  await ctx.supabase.from("notifications").insert({
+    business_id: ctx.business.id,
+    kind: "staff_followup",
+    detail: "Caller was promised staff help during the call. Caller said: " + (customerSaid || "(no transcript)"),
+    customer_phone: caller,
+    call_id: callRowId,
+  });
+}
