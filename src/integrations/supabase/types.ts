@@ -203,6 +203,7 @@ export type Database = {
       businesses: {
         Row: {
           address: string | null
+          business_description: string | null
           business_type: string | null
           created_at: string
           google_calendar_id: string | null
@@ -219,6 +220,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          business_description?: string | null
           business_type?: string | null
           created_at?: string
           google_calendar_id?: string | null
@@ -235,6 +237,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          business_description?: string | null
           business_type?: string | null
           created_at?: string
           google_calendar_id?: string | null
