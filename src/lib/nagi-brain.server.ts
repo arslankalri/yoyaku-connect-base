@@ -486,6 +486,16 @@ export async function createNagiSessionForBusiness(
   }
 
   const gateway = createLovableAiGatewayProvider(key);
+  const { data: descRow } = await supabase
+    .from("businesses")
+    .select("business_description")
+    .eq("id", business.id)
+    .maybeSingle();
+  const description = (descRow?.business_description ?? "").trim();
+  const baseSystem = systemPrompt(business.name, timezone, config, calendar !== null, channel);
+  const system = description
+    ? `${baseSystem}\n\nWHAT THIS BUSINESS DOES (owner's own words)\n${description}\nUse this to understand what customers are calling about, but only quote prices, hours and details from stored business data.`
+    : baseSystem;
 
   return {
     businessId: business.id,
@@ -495,7 +505,7 @@ export async function createNagiSessionForBusiness(
     calendarConnected: calendar !== null,
     channel,
     model: gateway(NAGI_MODEL),
-    system: systemPrompt(business.name, timezone, config, calendar !== null, channel),
+    system,
     supabase,
     tools: buildTools(supabase, business.id, calendar, timezone, config, channel),
   };
