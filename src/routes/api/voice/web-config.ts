@@ -108,7 +108,14 @@ export const Route = createFileRoute("/api/voice/web-config")({
 
           // When the owner linked their own Vapi assistant, start it by ID and
           // attach NAGI's tools/server as overrides so booking still runs through NAGI.
-          const assistantId = settings?.vapi_assistant_id?.trim();
+          // Every shop shares NAGI's natural multilingual Vapi assistant unless it
+          // linked its own valid one; business data/tools stay per-shop via overrides.
+          const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+          const own = settings?.vapi_assistant_id?.trim() ?? "";
+          const fallback =
+            process.env["VAPI_DEFAULT_ASSISTANT_ID"]?.trim() ||
+            "27160366-a93b-4d01-bbfd-41e0433ef908";
+          const assistantId = UUID.test(own) ? own : fallback;
           if (assistantId) {
             return Response.json({
               publicKey,
