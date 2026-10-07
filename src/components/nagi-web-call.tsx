@@ -28,6 +28,13 @@ export function NagiWebCall({ className }: Props) {
   const [callId, setCallId] = useState<string | null>(null);
   const startedAtRef = useRef<number | null>(null);
   const clientRef = useRef<ReturnType<typeof createNagiWebCallClient> | null>(null);
+  const busyRef = useRef(false);
+  const statusRef = useRef<NagiWebCallStatus>("idle");
+  const updateStatus = (next: NagiWebCallStatus) => {
+    statusRef.current = next;
+    setStatus(next);
+    if (next === "ended" || next === "idle") busyRef.current = false;
+  };
 
   useEffect(() => {
     return () => {
@@ -59,6 +66,9 @@ export function NagiWebCall({ className }: Props) {
   }
 
   async function start() {
+    // One call at a time: ignore repeat clicks while a call is starting or live.
+    if (busyRef.current) return;
+    busyRef.current = true;
     setError(null);
     setLiveTranscript([]);
     setCallId(null);
@@ -67,6 +77,7 @@ export function NagiWebCall({ className }: Props) {
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
     if (!token) {
+      busyRef.current = false;
       setError("You must be logged in.");
       return;
     }
@@ -82,13 +93,17 @@ export function NagiWebCall({ className }: Props) {
         throw new Error(payload.error ?? "Unable to configure NAGI web calling");
       }
 
+      await clientRef.current?.stop().catch(() => undefined);
       clientRef.current = createNagiWebCallClient({
         publicKey: payload.publicKey,
         assistant: assistantTarget,
         ...(payload.assistantOverrides ? { assistantOverrides: payload.assistantOverrides } : {}),
-        onStatus: setStatus,
+        onStatus: updateStatus,
         onError: (value) => {
-          setStatus("idle");
+          // Vapi reports some hiccups while the call keeps running; only reset
+          // the button when the call is not actually live.
+          if (statusRef.current === "active") return;
+          updateStatus("idle");
           setError(describeError(value));
         },
         onEvent: handleEvent,
@@ -96,8 +111,10 @@ export function NagiWebCall({ className }: Props) {
 
       await clientRef.current.start();
     } catch (value) {
-      setStatus("idle");
-      setError(value instanceof Error ? value.message : "Unable to start NAGI web call");
+      if (statusRef.current !== "active") {
+        updateStatus("idle");
+        setError(value instanceof Error ? value.message : "Unable to start NAGI web call");
+      }
     }
   }
 
@@ -105,7 +122,7 @@ export function NagiWebCall({ className }: Props) {
     await clientRef.current?.stop().catch(() => undefined);
   }
 
-  const active = status === "active" || status === "connecting";
+  const active = status === "active" || status === "connecting" || status === "ending";
   const duration =
     startedAtRef.current && active
       ? Math.max(0, Math.floor((Date.now() - startedAtRef.current) / 1000))
@@ -123,14 +140,19 @@ export function NagiWebCall({ className }: Props) {
 
       <div className="mt-4 flex flex-wrap gap-2">
         {!active ? (
-          <Button type="button" onClick={() => void start()}>
+          <Button type="button" onClick={() => void start()} disabled={busyRef.current}>
             <Phone className="size-4" />
             Start web call
           </Button>
         ) : (
-          <Button type="button" variant="destructive" onClick={() => void stop()}>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => void stop()}
+            disabled={status === "ending"}
+          >
             <PhoneOff className="size-4" />
-            End call
+            {status === "connecting" ? "Connecting… (cancel)" : status === "ending" ? "Ending…" : "End call"}
           </Button>
         )}
       </div>
