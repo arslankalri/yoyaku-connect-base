@@ -39,7 +39,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const navigate = useNavigate();
   const { mode: initialMode, next } = Route.useSearch();
   const redirectTo = safeNext(next);
@@ -197,7 +197,7 @@ function AuthPage() {
             </Button>
             {mode === "signup" && (
               <p className="text-xs text-muted-foreground">
-                {t("settings.language") === "言語" ? (
+                {language === "ja" ? (
                   <>
                     登録すると<Link to="/terms" className="text-primary hover:underline">利用規約</Link>と
                     <Link to="/privacy" className="text-primary hover:underline">プライバシーポリシー</Link>に同意したものとみなされます。
