@@ -195,7 +195,28 @@ function AuthPage() {
                   ? t("auth.loginCta")
                   : t("auth.signupCta")}
             </Button>
+            {mode === "signup" && (
+              <p className="text-xs text-muted-foreground">
+                {t("settings.language") === "言語" ? (
+                  <>
+                    登録すると<Link to="/terms" className="text-primary hover:underline">利用規約</Link>と
+                    <Link to="/privacy" className="text-primary hover:underline">プライバシーポリシー</Link>に同意したものとみなされます。
+                  </>
+                ) : (
+                  <>
+                    By creating an account, you agree to our{" "}
+                    <Link to="/terms" className="text-primary hover:underline">Terms</Link> and{" "}
+                    <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+                  </>
+                )}
+              </p>
+            )}
           </form>
+          <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
+            <Link to="/terms" className="hover:text-foreground">Terms</Link>
+            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link to="/contact" className="hover:text-foreground">Contact</Link>
+          </div>
 
           <div className="mt-5 flex flex-col gap-2 text-sm">
             <Link to="/forgot-password" className="text-primary hover:underline">
