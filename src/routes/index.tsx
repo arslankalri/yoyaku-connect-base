@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { CalendarClock, Globe2, Users2 } from "lucide-react";
 
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { PublicFooter } from "@/components/public-page";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 
@@ -95,11 +96,7 @@ function Landing() {
         </section>
       </main>
 
-      <footer className="border-t border-border py-8">
-        <p className="mx-auto max-w-6xl px-4 text-xs text-muted-foreground md:px-6">
-          {t("landing.footer")}
-        </p>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }
