@@ -227,8 +227,8 @@ export function AppShell({
         </header>
 
         <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 lg:py-10">
-          <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
+          <div className="mb-7 flex animate-fade-up flex-col gap-3 border-b border-border/70 pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0 border-l-2 border-vermilion pl-4">
               <h1 className="text-2xl font-semibold tracking-tight md:text-[27px]">{title}</h1>
               {description && <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>}
             </div>
