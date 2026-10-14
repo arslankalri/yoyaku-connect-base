@@ -103,23 +103,11 @@ function activityKeyFor(text: string) {
   return "recept.act.thinking";
 }
 
-/** Animated NAGI identity orb with pulsing rings. */
+/** Voice identity follows existing chat activity. */
 function NagiOrb({ active }: { active: boolean }) {
   return (
-    <span className="relative grid size-12 shrink-0 place-items-center">
-      <span
-        aria-hidden
-        className={cn(
-          "absolute inset-0 rounded-full bg-ai-indigo/25 blur-md",
-          active && "animate-pulse",
-        )}
-      />
-      <span
-        className="glow-border relative grid size-11 place-items-center rounded-full text-base font-semibold text-primary-foreground"
-        style={{ backgroundImage: "var(--gradient-ai)" }}
-      >
-        凪
-      </span>
+    <span className="grid size-12 shrink-0 place-items-center rounded-lg border border-border bg-surface">
+      <Waveform active={active} bars={7} />
     </span>
   );
 }
@@ -266,7 +254,7 @@ function Page() {
 
         <TabsContent value="chat">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-            <section className="glass-panel glow-border flex min-h-[62vh] flex-col overflow-hidden lg:min-h-[72vh]">
+            <section className="glass-panel flex min-h-[62vh] flex-col overflow-hidden lg:min-h-[72vh]">
               <header className="relative flex flex-wrap items-center gap-3 border-b border-border/70 p-4">
                 <div
                   aria-hidden
@@ -305,7 +293,7 @@ function Page() {
               <div className="flex-1 space-y-3 overflow-y-auto p-4" aria-live="polite">
                 {messages.length === 0 && (
                   <div className="flex h-full min-h-40 flex-col items-center justify-center gap-3 text-center">
-                    <span className="grid size-12 place-items-center rounded-2xl border border-ai-indigo/25 bg-ai-indigo/10">
+                    <span className="grid size-12 place-items-center rounded-lg border border-ai-indigo/25 bg-ai-indigo/10">
                       <Sparkles className="size-5 text-ai-indigo" />
                     </span>
                     <p className="max-w-sm text-sm text-muted-foreground">{t("recept.empty")}</p>
@@ -329,17 +317,17 @@ function Page() {
                   return (
                     <div key={message.id} className="space-y-2">
                       {cancelled && (
-                        <div className="mx-auto max-w-md rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-center text-[11px] font-medium text-warning-foreground">
+                        <div className="mx-auto max-w-md rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-center text-[11px] font-medium text-warning-foreground">
                           <p>{t("recept.cancelled")}</p>
                         </div>
                       )}
                       {confirmed && (
-                        <div className="mx-auto max-w-md rounded-xl border border-success/40 bg-success/10 px-3 py-2 text-center text-[11px] font-medium text-success">
+                        <div className="mx-auto max-w-md rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-center text-[11px] font-medium text-success">
                           <p>{t("recept.calendar.booked")}</p>
                         </div>
                       )}
                       {handoff && (
-                        <div className="mx-auto max-w-md rounded-xl border border-ai-indigo/35 bg-ai-indigo/10 px-3 py-2 text-center text-[11px] text-foreground">
+                        <div className="mx-auto max-w-md rounded-lg border border-ai-indigo/35 bg-ai-indigo/10 px-3 py-2 text-center text-[11px] text-foreground">
                           <p>{t("nagi.handoff.title")}</p>
                           <p className="text-muted-foreground">{t("nagi.handoff.note")}</p>
                         </div>
@@ -363,7 +351,7 @@ function Page() {
                           <div className="min-w-0 space-y-1">
                             <div
                               className={cn(
-                                "whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed shadow-sm",
+                                "whitespace-pre-wrap break-words rounded-lg px-3.5 py-2.5 text-sm leading-relaxed shadow-sm",
                                 isUser
                                   ? "rounded-br-sm bg-primary text-primary-foreground"
                                   : "rounded-bl-sm border border-ai-indigo/20 bg-card/80 text-foreground",
@@ -395,7 +383,7 @@ function Page() {
 
                 {busy && (
                   <div className="flex justify-start">
-                    <div className="flex items-center gap-2 rounded-2xl rounded-bl-sm border border-ai-indigo/20 bg-card/80 px-3.5 py-3">
+                    <div className="flex items-center gap-2 rounded-lg rounded-bl-sm border border-ai-indigo/20 bg-card/80 px-3.5 py-3">
                       {[0, 150, 300].map((delay) => (
                         <span
                           key={delay}
@@ -416,15 +404,17 @@ function Page() {
                 <p className="mb-2 text-[11px] text-muted-foreground">{t("recept.suggested")}</p>
                 <div className="flex flex-wrap gap-2">
                   {chips.map((chip) => (
-                    <button
+                    <Button
+                      variant="outline"
+                      size="sm"
                       key={chip.key}
                       type="button"
                       disabled={busy}
                       onClick={() => void send(language === "ja" ? chip.ja : chip.en)}
-                      className="rounded-full border border-ai-indigo/25 bg-ai-indigo/5 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-ai-indigo/50 hover:bg-ai-indigo/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                      className="rounded-md border border-border bg-surface px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-ai-indigo/50 hover:bg-ai-indigo/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                     >
                       {language === "ja" ? chip.ja : chip.en}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>

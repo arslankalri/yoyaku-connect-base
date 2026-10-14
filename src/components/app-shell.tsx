@@ -54,13 +54,13 @@ function BrandMark() {
   return (
     <div className="flex items-center gap-2.5">
       <span
-        className="glow-border grid size-9 place-items-center rounded-xl text-sm font-semibold text-primary-foreground"
+        className="glow-border grid size-9 place-items-center rounded-md text-sm font-semibold text-primary-foreground"
         style={{ backgroundImage: "var(--gradient-ai)" }}
       >
         凪
       </span>
       <span className="flex flex-col leading-tight">
-        <span className="text-sm font-semibold tracking-tight">{t("brand.name")}</span>
+        <span className="text-sm font-semibold tracking-normal">{t("brand.name")}</span>
         <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <OnlineDot />
           AI受付 / AI Reception
@@ -94,9 +94,9 @@ function NavSection({
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "group relative flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "group relative flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               active
-                ? "border border-ai-indigo/25 bg-ai-indigo/10 font-medium text-foreground shadow-[0_0_20px_-8px_var(--ai-indigo)]"
+                ? "border border-primary/20 bg-accent font-medium text-accent-foreground"
                 : "border border-transparent text-muted-foreground hover:border-ai-indigo/15 hover:bg-sidebar-accent/60 hover:text-foreground",
             )}
           >
@@ -164,9 +164,9 @@ export function AppShell({
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="app-workspace relative min-h-screen">
       <AIBackground />
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar/70 backdrop-blur-xl lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
         <div className="flex h-16 items-center border-b border-sidebar-border px-5">
           <BrandMark />
         </div>
@@ -184,7 +184,7 @@ export function AppShell({
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/70 bg-background/70 px-4 backdrop-blur-xl md:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/70 bg-background px-4 md:px-6">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button
@@ -196,7 +196,7 @@ export function AppShell({
                 <Menu className="size-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 bg-sidebar/95 p-0 backdrop-blur-xl">
+            <SheetContent side="left" className="w-72 bg-sidebar p-0">
               <SheetTitle className="flex h-16 items-center border-b border-sidebar-border px-5">
                 <BrandMark />
               </SheetTitle>
@@ -226,10 +226,10 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 lg:py-10">
+        <main className="mx-auto w-full app-content max-w-6xl px-4 py-8 md:px-6 lg:py-10">
           <div className="mb-7 flex animate-fade-up flex-col gap-3 border-b border-border/70 pb-6 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0 border-l-2 border-vermilion pl-4">
-              <h1 className="text-2xl font-semibold tracking-tight md:text-[27px]">{title}</h1>
+            <div className="min-w-0 min-w-0">
+              <h1 className="text-2xl font-semibold tracking-normal md:text-[27px]">{title}</h1>
               {description && <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>}
             </div>
             {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

@@ -1,6 +1,8 @@
 import { Phone, PhoneOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { Waveform } from "@/components/ai-background";
+import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +23,8 @@ type WebCallConfig = {
 };
 
 export function NagiWebCall({ className }: Props) {
+  const { language } = useI18n();
+  const ja = language === "ja";
   const [status, setStatus] = useState<NagiWebCallStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [lastEvent, setLastEvent] = useState<string>("");
@@ -129,20 +133,33 @@ export function NagiWebCall({ className }: Props) {
       : null;
 
   return (
-    <section className={className ?? "glass-panel p-4"}>
+    <section className={className ?? "web-call-tool"}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold">NAGI Web Call</p>
+          <p className="text-lg font-semibold">NAGI Web Call</p>
           <p className="mt-1 text-xs text-muted-foreground">Browser microphone → Vapi → NAGI</p>
         </div>
-        <Badge variant={active ? "default" : "outline"}>{status}</Badge>
+        <div className="flex items-center gap-4">
+          <Waveform active={status === "active"} bars={9} />
+          <Badge variant={active ? "default" : "outline"}>
+            {ja
+              ? {
+                  idle: "待機中",
+                  connecting: "接続中",
+                  active: "通話中",
+                  ending: "終了中",
+                  ended: "終了",
+                }[status]
+              : status}
+          </Badge>
+        </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="call-actions mt-4 flex flex-wrap gap-2">
         {!active ? (
           <Button type="button" onClick={() => void start()} disabled={busyRef.current}>
             <Phone className="size-4" />
-            Start web call
+            {ja ? "通話を開始" : "Start web call"}
           </Button>
         ) : (
           <Button
@@ -152,7 +169,17 @@ export function NagiWebCall({ className }: Props) {
             disabled={status === "ending"}
           >
             <PhoneOff className="size-4" />
-            {status === "connecting" ? "Connecting… (cancel)" : status === "ending" ? "Ending…" : "End call"}
+            {status === "connecting"
+              ? ja
+                ? "接続中…（中止）"
+                : "Connecting… (cancel)"
+              : status === "ending"
+                ? ja
+                  ? "終了中…"
+                  : "Ending…"
+                : ja
+                  ? "通話を終了"
+                  : "End call"}
           </Button>
         )}
       </div>
@@ -172,7 +199,7 @@ export function NagiWebCall({ className }: Props) {
       )}
 
       {liveTranscript.length > 0 && (
-        <div className="mt-3 max-h-40 overflow-y-auto rounded-lg border border-border/70 bg-secondary/30 p-2 text-xs">
+        <div className="call-transcript mt-3 max-h-40 overflow-y-auto rounded-lg border border-border/70 bg-secondary/30 p-2 text-xs">
           {liveTranscript.map((line, index) => (
             <p key={index} className="mb-1 last:mb-0">
               {line}

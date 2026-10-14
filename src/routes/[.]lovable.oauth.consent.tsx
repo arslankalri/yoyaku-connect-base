@@ -26,6 +26,19 @@ function errorMessage(error: unknown) {
 
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Authorize a connection — NAGI AI" },
+      {
+        name: "description",
+        content: "Review an application's request to connect to your NAGI AI business.",
+      },
+      { property: "og:title", content: "Authorize a connection — NAGI AI" },
+      { property: "og:description", content: "Review your NAGI AI application connection." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   validateSearch: (s: Record<string, unknown>) => ({
     authorization_id: typeof s["authorization_id"] === "string" ? s["authorization_id"] : "",
   }),
@@ -45,7 +58,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
   },
   component: Consent,
   errorComponent: ({ error }) => (
-    <main className="mx-auto max-w-md p-8 text-sm">
+    <main className="mx-auto mt-16 max-w-md rounded-lg border border-border bg-surface p-8 text-sm">
       Could not load this authorization request: {errorMessage(error)}
     </main>
   ),
@@ -82,7 +95,7 @@ function Consent() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
       <div className="glass-panel w-full max-w-md space-y-4 p-7">
-        <h1 className="text-lg font-semibold tracking-tight">
+        <h1 className="text-lg font-semibold tracking-normal">
           Connect {clientName} to NAGI AI / {clientName} を接続しますか？
         </h1>
         <p className="text-sm text-muted-foreground">

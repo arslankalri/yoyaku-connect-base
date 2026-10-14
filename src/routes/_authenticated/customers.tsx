@@ -182,7 +182,7 @@ function CustomersPage() {
         ) : rows.length === 0 ? (
           <EmptyState title={t("cust.empty")} icon={<Users className="size-5" />} />
         ) : (
-          <ul className="space-y-3">
+          <ul className="record-list">
             {rows.map((customer) => {
               const stat = stats.get(customer.id);
               return (

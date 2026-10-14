@@ -43,6 +43,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
         property: "og:description",
         content: "Today's business status, hours, services, and staff at a glance.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Dashboard,
@@ -124,16 +126,13 @@ function Dashboard() {
   return (
     <AppShell title={t("dashboard.title")} description={t("dashboard.welcome")}>
       <div className="space-y-6">
-        <section className="glass-panel glow-border relative overflow-hidden p-6">
-          <div
-            aria-hidden
-            className="animate-ai-float pointer-events-none absolute -right-16 -top-24 size-64 rounded-full bg-ai-violet/15 blur-3xl"
-          />
+        <section className="section-layout glow-border relative overflow-hidden p-6">
+          <div aria-hidden className="hidden" />
           <div className="relative flex flex-wrap items-start justify-between gap-5">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span
-                  className="glow-border grid size-10 shrink-0 place-items-center rounded-xl text-base font-semibold text-primary-foreground"
+                  className="glow-border grid size-10 shrink-0 place-items-center rounded-lg text-base font-semibold text-primary-foreground"
                   style={{ backgroundImage: "var(--gradient-ai)" }}
                 >
                   凪
@@ -154,7 +153,7 @@ function Dashboard() {
               <p className="eyebrow mt-4">
                 {t("dashboard.today")} · {dateLabel}
               </p>
-              <h2 className="mt-1.5 truncate text-xl font-semibold tracking-tight md:text-2xl">
+              <h2 className="mt-1.5 truncate text-xl font-semibold tracking-normal md:text-2xl">
                 {business.name}
               </h2>
               <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
@@ -226,7 +225,7 @@ function Dashboard() {
           </div>
         </section>
 
-        <section className="glass-panel p-6">
+        <section className="section-layout p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h3 className="text-base font-semibold">
@@ -264,7 +263,7 @@ function Dashboard() {
         </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="glass-panel p-6">
+          <section className="section-layout p-6">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-base font-semibold">{t("services.title")}</h3>
               <Button asChild variant="ghost" size="sm">
@@ -304,7 +303,7 @@ function Dashboard() {
             )}
           </section>
 
-          <section className="glass-panel p-6">
+          <section className="section-layout p-6">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-base font-semibold">{t("staff.title")}</h3>
               <Button asChild variant="ghost" size="sm">

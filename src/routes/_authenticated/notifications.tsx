@@ -13,12 +13,7 @@ import { AppShell } from "@/components/app-shell";
 import { EmptyState, ErrorPanel, LoadingPanel } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  useBusiness,
-  useMarkNotificationsRead,
-  useNotifications,
-  useRealtime,
-} from "@/lib/api";
+import { useBusiness, useMarkNotificationsRead, useNotifications, useRealtime } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -108,7 +103,7 @@ function NotificationsPage() {
       ) : rows.length === 0 ? (
         <EmptyState title={t("notif.empty")} icon={<Bell className="size-5" />} />
       ) : (
-        <ul className="space-y-3">
+        <ul className="record-list">
           {rows.map((n) => {
             const Icon = ICONS[n.kind] ?? Bell;
             const urgent = n.kind === "staff_followup";
@@ -125,7 +120,7 @@ function NotificationsPage() {
               >
                 <div
                   className={cn(
-                    "grid size-9 shrink-0 place-items-center rounded-xl bg-muted",
+                    "grid size-9 shrink-0 place-items-center rounded-lg bg-muted",
                     urgent && "bg-destructive/15 text-destructive",
                   )}
                 >
@@ -134,7 +129,11 @@ function NotificationsPage() {
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
                     {t("notif.kind." + n.kind)}
-                    {unread && <Badge variant={urgent ? "destructive" : "secondary"}>{t("notif.unread")}</Badge>}
+                    {unread && (
+                      <Badge variant={urgent ? "destructive" : "secondary"}>
+                        {t("notif.unread")}
+                      </Badge>
+                    )}
                     <span className="text-xs font-normal text-muted-foreground">
                       {fmt(n.created_at)}
                     </span>
@@ -143,11 +142,14 @@ function NotificationsPage() {
                   {n.starts_at && (
                     <p className="text-sm text-muted-foreground">{fmt(n.starts_at)}</p>
                   )}
-                  {n.detail && n.kind !== "booking_created" && n.kind !== "booking_cancelled" && n.kind !== "booking_rescheduled" && (
-                    <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-                      {n.detail.replace(/^\[HANDOFF\]\s*/, "")}
-                    </p>
-                  )}
+                  {n.detail &&
+                    n.kind !== "booking_created" &&
+                    n.kind !== "booking_cancelled" &&
+                    n.kind !== "booking_rescheduled" && (
+                      <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                        {n.detail.replace(/^\[HANDOFF\]\s*/, "")}
+                      </p>
+                    )}
                   <div className="flex flex-wrap gap-2 pt-1">
                     {n.call_id && (
                       <Button asChild variant="ghost" size="sm">

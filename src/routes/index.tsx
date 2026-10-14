@@ -19,6 +19,7 @@ import { PublicFooter } from "@/components/public-page";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import voiceCover from "@/assets/nagi-voice-cover.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -94,7 +95,8 @@ function CallSimulator() {
         </div>
         <div className="flex shrink-0 rounded-full border border-border bg-background/70 p-0.5 text-xs">
           {(["ja", "en"] as const).map((l) => (
-            <button
+            <Button
+              variant="ghost"
               key={l}
               type="button"
               onClick={() => setLang(l)}
@@ -104,7 +106,7 @@ function CallSimulator() {
               )}
             >
               {l === "ja" ? "日本語" : "EN"}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -123,7 +125,10 @@ function CallSimulator() {
         {lines.slice(0, Math.min(step, lines.length)).map((l, i) => (
           <div
             key={`${lang}-${i}`}
-            className={cn("flex animate-fade-up", l.who === "nagi" ? "justify-start" : "justify-end")}
+            className={cn(
+              "flex animate-fade-up",
+              l.who === "nagi" ? "justify-start" : "justify-end",
+            )}
           >
             <p
               className={cn(
@@ -147,7 +152,9 @@ function CallSimulator() {
       >
         <CalendarCheck2 className="size-4 shrink-0 text-success" />
         <span className="min-w-0 truncate">
-          {lang === "ja" ? "Googleカレンダーに登録・スタッフに通知" : "Added to Google Calendar · Staff notified"}
+          {lang === "ja"
+            ? "Googleカレンダーに登録・スタッフに通知"
+            : "Added to Google Calendar · Staff notified"}
         </span>
       </div>
     </div>
@@ -180,36 +187,63 @@ function Landing() {
   ];
 
   const stats = ja
-    ? [["24時間", "電話受付"], ["日英", "バイリンガル"], ["即時", "カレンダー連携"], ["0件", "取りこぼし"]]
-    : [["24/7", "Call answering"], ["JP / EN", "Bilingual"], ["Instant", "Calendar sync"], ["Zero", "Missed calls"]];
+    ? [
+        ["24時間", "電話受付"],
+        ["日英", "バイリンガル"],
+        ["即時", "カレンダー連携"],
+        ["0件", "取りこぼし"],
+      ]
+    : [
+        ["24/7", "Call answering"],
+        ["JP / EN", "Bilingual"],
+        ["Instant", "Calendar sync"],
+        ["Zero", "Missed calls"],
+      ];
 
   const industries = [
     {
       icon: Scissors,
       label: ja ? "美容室" : "Salons",
-      greet: ja ? "お電話ありがとうございます。ご希望のメニューはございますか？" : "Thanks for calling! Which service would you like?",
-      detail: ja ? "メニュー・担当スタッフ・所要時間に合わせて予約" : "Books by service, stylist, and duration",
+      greet: ja
+        ? "お電話ありがとうございます。ご希望のメニューはございますか？"
+        : "Thanks for calling! Which service would you like?",
+      detail: ja
+        ? "メニュー・担当スタッフ・所要時間に合わせて予約"
+        : "Books by service, stylist, and duration",
     },
     {
       icon: Stethoscope,
       label: ja ? "クリニック" : "Clinics",
-      greet: ja ? "診療のご予約ですね。初診でいらっしゃいますか？" : "Booking a visit? Is this your first time with us?",
-      detail: ja ? "診療時間と休診日を守って空き枠をご案内" : "Respects clinic hours and closed days",
+      greet: ja
+        ? "診療のご予約ですね。初診でいらっしゃいますか？"
+        : "Booking a visit? Is this your first time with us?",
+      detail: ja
+        ? "診療時間と休診日を守って空き枠をご案内"
+        : "Respects clinic hours and closed days",
     },
     {
       icon: UtensilsCrossed,
       label: ja ? "飲食店" : "Restaurants",
-      greet: ja ? "ご来店人数とご希望のお時間をお伺いします。" : "How many guests, and what time would you like?",
-      detail: ja ? "人数と席数を確認してから予約を確定" : "Checks party size and seating before confirming",
+      greet: ja
+        ? "ご来店人数とご希望のお時間をお伺いします。"
+        : "How many guests, and what time would you like?",
+      detail: ja
+        ? "人数と席数を確認してから予約を確定"
+        : "Checks party size and seating before confirming",
     },
     {
       icon: Car,
       label: ja ? "その他" : "Any business",
-      greet: ja ? "ご用件をお伺いします。試乗のご予約ですか？" : "How can I help — would you like to book a test drive?",
-      detail: ja ? "業種を伝えるだけでAIが受付内容を最適化" : "Describe your business and NAGI adapts",
+      greet: ja
+        ? "ご用件をお伺いします。試乗のご予約ですか？"
+        : "How can I help — would you like to book a test drive?",
+      detail: ja
+        ? "業種を伝えるだけでAIが受付内容を最適化"
+        : "Describe your business and NAGI adapts",
     },
   ];
-  const ind = industries[industry]!;
+  const ind = industries[industry] ?? industries[0];
+  if (!ind) return null;
 
   const steps = ja
     ? [
@@ -225,14 +259,16 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-background washi">
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/75 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-border/70 bg-background">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 md:px-6">
           <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
             凪
           </span>
           <div className="flex min-w-0 flex-col leading-tight">
             <span className="text-sm font-semibold">NAGI AI</span>
-            <span className="text-[11px] text-muted-foreground">AI受付 / Reception</span>
+            <span className="hidden text-[11px] text-muted-foreground sm:block">
+              AI受付 / Reception
+            </span>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <LanguageToggle />
@@ -249,30 +285,32 @@ function Landing() {
       </header>
 
       <main>
-        <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 md:px-6 lg:grid-cols-[1.1fr_1fr] lg:py-24">
-          <div className="animate-fade-up">
-            <p className="inline-flex items-center gap-2 rounded-full border border-ai-indigo/25 bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
-              <span className="size-1.5 rounded-full bg-vermilion" />
-              {t("brand.tagline")}
-            </p>
-            <h1 className="mt-5 max-w-3xl text-3xl font-bold leading-[1.25] tracking-tight whitespace-pre-line md:text-5xl md:leading-[1.2]">
-              {t("landing.heroTitle")}
-            </h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground">
-              {t("landing.heroDesc")}
-            </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <Link to="/auth" search={{ mode: "signup" }}>
-                  {t("landing.ctaPrimary")}
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/auth">{t("landing.ctaSecondary")}</Link>
-              </Button>
+        <section className="voice-cover">
+          <img src={voiceCover} width={1600} height={1008} alt="" fetchPriority="high" />
+          <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+            <div className="voice-cover-copy animate-fade-up">
+              <p className="mb-5 flex items-center gap-2 text-sm font-medium text-primary">
+                <PhoneIncoming className="size-4" /> {t("brand.tagline")}
+              </p>
+              <h1 className="font-bold">NAGI AI</h1>
+              <p className="mt-5 text-xl leading-relaxed text-foreground">
+                {t("landing.heroTitle")}
+              </p>
+              <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+                {t("landing.heroDesc")}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button asChild size="lg">
+                  <Link to="/auth" search={{ mode: "signup" }}>
+                    {t("landing.ctaPrimary")}
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/auth">{t("landing.ctaSecondary")}</Link>
+                </Button>
+              </div>
             </div>
           </div>
-          <CallSimulator />
         </section>
 
         <section className="border-y border-border bg-card/60">
@@ -286,6 +324,15 @@ function Landing() {
           </div>
         </section>
 
+        <section className="voice-illustration">
+          <div className="mx-auto max-w-6xl px-4 md:px-6">
+            <p className="eyebrow mb-5 text-center">
+              {ja ? "会話のイメージ" : "An illustrated conversation"}
+            </p>
+            <CallSimulator />
+          </div>
+        </section>
+
         <section className="mx-auto max-w-6xl px-4 py-20 md:px-6">
           <p className="eyebrow">{ja ? "業種に合わせて" : "Built for your industry"}</p>
           <h2 className="mt-3 text-2xl font-bold md:text-3xl">
@@ -293,7 +340,8 @@ function Landing() {
           </h2>
           <div className="mt-8 flex flex-wrap gap-2">
             {industries.map((it, i) => (
-              <button
+              <Button
+                variant="ghost"
                 key={it.label}
                 type="button"
                 onClick={() => setIndustry(i)}
@@ -306,10 +354,13 @@ function Landing() {
               >
                 <it.icon className="size-4" />
                 {it.label}
-              </button>
+              </Button>
             ))}
           </div>
-          <div key={industry} className="panel mt-6 grid animate-fade-up gap-6 p-6 md:grid-cols-[auto_1fr] md:items-center">
+          <div
+            key={industry}
+            className="section-layout mt-6 grid border-t border-border animate-fade-up gap-6 p-6 md:grid-cols-[auto_1fr] md:items-center"
+          >
             <span className="grid size-14 place-items-center rounded-2xl bg-accent text-accent-foreground">
               <ind.icon className="size-6" />
             </span>
@@ -328,7 +379,7 @@ function Landing() {
             </h2>
             <ol className="mt-10 grid gap-5 md:grid-cols-3">
               {steps.map(([title, desc], i) => (
-                <li key={title} className="panel relative p-6">
+                <li key={title} className="relative border-t border-border p-6">
                   <span className="font-mono text-sm text-vermilion">0{i + 1}</span>
                   <h3 className="mt-3 text-base font-semibold">{title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
@@ -359,7 +410,7 @@ function Landing() {
         </section>
 
         <section className="mx-auto max-w-6xl px-4 pb-20 md:px-6">
-          <div className="relative overflow-hidden rounded-3xl bg-primary px-6 py-14 text-center text-primary-foreground md:px-12">
+          <div className="relative border-y border-border px-6 py-14 text-center text-foreground md:px-12">
             <div className="absolute inset-0 opacity-30 ai-grid" aria-hidden />
             <h2 className="relative text-2xl font-bold md:text-3xl">
               {ja ? "電話の取りこぼしを、今日からゼロに。" : "Stop missing calls, starting today."}
