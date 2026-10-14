@@ -33,6 +33,8 @@ export const Route = createFileRoute("/auth")({
       },
       { property: "og:title", content: "Log in — NAGI AI" },
       { property: "og:description", content: "Access your NAGI AI business dashboard." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,
@@ -120,7 +122,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-secondary/40">
+    <div className="auth-page flex min-h-screen flex-col bg-secondary/40">
       <header className="flex h-16 items-center px-4 md:px-8">
         <Link to="/" className="flex items-center gap-2.5">
           <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
@@ -135,7 +137,7 @@ function AuthPage() {
 
       <main className="flex flex-1 items-start justify-center px-4 pb-16 pt-6 md:items-center md:pt-0">
         <div className="glass-panel w-full max-w-md p-7">
-          <h1 className="text-xl font-semibold tracking-tight">
+          <h1 className="text-xl font-semibold tracking-normal">
             {mode === "login" ? t("auth.loginTitle") : t("auth.signupTitle")}
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground">{t("brand.tagline")}</p>
@@ -199,23 +201,42 @@ function AuthPage() {
               <p className="text-xs text-muted-foreground">
                 {language === "ja" ? (
                   <>
-                    登録すると<Link to="/terms" className="text-primary hover:underline">利用規約</Link>と
-                    <Link to="/privacy" className="text-primary hover:underline">プライバシーポリシー</Link>に同意したものとみなされます。
+                    登録すると
+                    <Link to="/terms" className="text-primary hover:underline">
+                      利用規約
+                    </Link>
+                    と
+                    <Link to="/privacy" className="text-primary hover:underline">
+                      プライバシーポリシー
+                    </Link>
+                    に同意したものとみなされます。
                   </>
                 ) : (
                   <>
                     By creating an account, you agree to our{" "}
-                    <Link to="/terms" className="text-primary hover:underline">Terms</Link> and{" "}
-                    <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+                    <Link to="/terms" className="text-primary hover:underline">
+                      Terms
+                    </Link>{" "}
+                    and{" "}
+                    <Link to="/privacy" className="text-primary hover:underline">
+                      Privacy Policy
+                    </Link>
+                    .
                   </>
                 )}
               </p>
             )}
           </form>
           <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
-            <Link to="/terms" className="hover:text-foreground">Terms</Link>
-            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
-            <Link to="/contact" className="hover:text-foreground">Contact</Link>
+            <Link to="/terms" className="hover:text-foreground">
+              Terms
+            </Link>
+            <Link to="/privacy" className="hover:text-foreground">
+              Privacy
+            </Link>
+            <Link to="/contact" className="hover:text-foreground">
+              Contact
+            </Link>
           </div>
 
           <div className="mt-5 flex flex-col gap-2 text-sm">

@@ -4,21 +4,7 @@
  * tech; all motion stops under prefers-reduced-motion (see styles.css).
  */
 export function AIBackground() {
-  return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <div className="absolute inset-0 bg-background" />
-      <div className="ai-grid absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_at_top,black,transparent_75%)]" />
-      <div className="animate-ai-float absolute -left-32 -top-40 size-[32rem] rounded-full bg-ai-indigo/12 blur-3xl" />
-      <div
-        className="animate-ai-float absolute -right-40 top-24 size-[28rem] rounded-full bg-ai-violet/10 blur-3xl"
-        style={{ animationDelay: "-5s" }}
-      />
-      <div
-        className="animate-ai-float absolute bottom-[-12rem] left-1/3 size-[30rem] rounded-full bg-ai-cyan/10 blur-3xl"
-        style={{ animationDelay: "-9s" }}
-      />
-    </div>
-  );
+  return <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-background" />;
 }
 
 /** Small animated presence dot with a pulsing ring. */

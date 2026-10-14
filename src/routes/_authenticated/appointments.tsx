@@ -265,7 +265,7 @@ function AppointmentsPage() {
             }
           />
         ) : (
-          <ul className="space-y-3">
+          <ul className="record-list">
             {rows.map((appointment) => {
               const start = new Date(appointment.starts_at);
               const minutes = Math.round(

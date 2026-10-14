@@ -73,7 +73,7 @@ function CallsPage() {
       ) : rows.length === 0 ? (
         <EmptyState title={t("conv.empty")} icon={<MessagesSquare className="size-5" />} />
       ) : (
-        <ul className="space-y-3">
+        <ul className="record-list">
           {rows.map((conversation) => {
             const isOpen = expanded === conversation.id;
             const started = conversation.started_at ?? conversation.created_at;
@@ -202,7 +202,7 @@ function CallsPage() {
                         </Button>
                       </div>
 
-                      <pre className="max-h-[28rem] overflow-y-auto whitespace-pre-wrap rounded-xl border border-border/70 bg-secondary/30 p-3 text-xs leading-relaxed">
+                      <pre className="max-h-[28rem] overflow-y-auto whitespace-pre-wrap rounded-lg border border-border/70 bg-secondary/30 p-3 text-xs leading-relaxed">
                         {conversation.transcript ?? "No transcript recorded."}
                       </pre>
                     </div>

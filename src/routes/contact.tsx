@@ -8,9 +8,16 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact / お問い合わせ — NAGI AI" },
-      { name: "description", content: "Contact NAGI AI by email, phone or WhatsApp for support, partnerships or data requests." },
+      {
+        name: "description",
+        content:
+          "Contact NAGI AI by email, phone or WhatsApp for support, partnerships or data requests.",
+      },
       { property: "og:title", content: "Contact NAGI AI" },
-      { property: "og:description", content: "Reach the NAGI AI team by email, phone or WhatsApp." },
+      {
+        property: "og:description",
+        content: "Reach the NAGI AI team by email, phone or WhatsApp.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -22,10 +29,29 @@ function ContactPage() {
   const { language } = useI18n();
   const ja = language === "ja";
   const cards = [
-    { icon: Mail, label: ja ? "メール" : "Email", value: OPERATOR.email, href: `mailto:${OPERATOR.email}` },
-    { icon: Phone, label: ja ? "電話" : "Phone", value: OPERATOR.phone, href: `tel:+${OPERATOR.phoneRaw}` },
-    { icon: MessageCircle, label: "WhatsApp", value: OPERATOR.phone, href: `https://wa.me/${OPERATOR.phoneRaw}` },
-    { icon: MapPin, label: ja ? "所在地" : "Location", value: ja ? OPERATOR.locationJa : OPERATOR.locationEn },
+    {
+      icon: Mail,
+      label: ja ? "メール" : "Email",
+      value: OPERATOR.email,
+      href: `mailto:${OPERATOR.email}`,
+    },
+    {
+      icon: Phone,
+      label: ja ? "電話" : "Phone",
+      value: OPERATOR.phone,
+      href: `tel:+${OPERATOR.phoneRaw}`,
+    },
+    {
+      icon: MessageCircle,
+      label: "WhatsApp",
+      value: OPERATOR.phone,
+      href: `https://wa.me/${OPERATOR.phoneRaw}`,
+    },
+    {
+      icon: MapPin,
+      label: ja ? "所在地" : "Location",
+      value: ja ? OPERATOR.locationJa : OPERATOR.locationEn,
+    },
   ];
   return (
     <PublicPage title={ja ? "お問い合わせ" : "Contact us"}>
@@ -38,19 +64,33 @@ function ContactPage() {
         {cards.map((c) => {
           const body = (
             <>
-              <div className="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground"><c.icon className="size-5" /></div>
+              <div className="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground">
+                <c.icon className="size-5" />
+              </div>
               <p className="mt-3 text-xs text-muted-foreground">{c.label}</p>
               <p className="mt-1 text-sm font-medium break-all">{c.value}</p>
             </>
           );
           return c.href ? (
-            <a key={c.label} href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="glass-panel block p-5 transition-colors hover:border-primary">{body}</a>
+            <a
+              key={c.label}
+              href={c.href}
+              target={c.href.startsWith("http") ? "_blank" : undefined}
+              rel="noreferrer"
+              className="glass-panel block p-5 transition-colors hover:border-primary"
+            >
+              {body}
+            </a>
           ) : (
-            <div key={c.label} className="glass-panel p-5">{body}</div>
+            <div key={c.label} className="glass-panel p-5">
+              {body}
+            </div>
           );
         })}
       </div>
-      <p className="text-xs text-muted-foreground">{ja ? "運営者" : "Operator"}: {OPERATOR.name}</p>
+      <p className="text-xs text-muted-foreground">
+        {ja ? "運営者" : "Operator"}: {OPERATOR.name}
+      </p>
     </PublicPage>
   );
 }

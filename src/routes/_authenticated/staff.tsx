@@ -50,6 +50,8 @@ export const Route = createFileRoute("/_authenticated/staff")({
       },
       { property: "og:title", content: "Staff — NAGI AI" },
       { property: "og:description", content: "Staff, assigned services, and working hours." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: StaffPage,

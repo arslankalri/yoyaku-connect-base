@@ -25,6 +25,8 @@ export const Route = createFileRoute("/_authenticated/settings")({
         property: "og:description",
         content: "Business profile, opening hours, and interface language.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: SettingsPage,
@@ -62,7 +64,7 @@ function SettingsPage() {
         </TabsList>
 
         <TabsContent value="business">
-          <div className="glass-panel max-w-2xl p-6">
+          <div className="section-layout max-w-3xl p-6">
             <BusinessForm business={businessQuery.data} submitLabel={t("common.save")} />
           </div>
         </TabsContent>
@@ -84,7 +86,7 @@ function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="account">
-          <div className="glass-panel max-w-2xl space-y-4 p-6">
+          <div className="section-layout max-w-3xl space-y-4 p-6">
             <div>
               <h2 className="text-base font-semibold">{t("settings.language")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{t("settings.languageDesc")}</p>

@@ -17,6 +17,8 @@ export const Route = createFileRoute("/reset-password")({
       { name: "description", content: "Choose a new password for your NAGI AI account." },
       { property: "og:title", content: "Set a new password — NAGI AI" },
       { property: "og:description", content: "Choose a new NAGI AI account password." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ResetPassword,
@@ -53,7 +55,7 @@ function ResetPassword() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-secondary/40">
+    <div className="auth-page flex min-h-screen flex-col bg-secondary/40">
       <header className="flex h-16 items-center px-4 md:px-8">
         <Link to="/" className="text-sm font-semibold">
           NAGI AI
@@ -64,7 +66,7 @@ function ResetPassword() {
       </header>
       <main className="flex flex-1 items-start justify-center px-4 pb-16 pt-6 md:items-center md:pt-0">
         <div className="glass-panel w-full max-w-md p-7">
-          <h1 className="text-xl font-semibold tracking-tight">{t("auth.newPassword")}</h1>
+          <h1 className="text-xl font-semibold tracking-normal">{t("auth.newPassword")}</h1>
           <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
             <div className="space-y-1.5">
               <Label htmlFor="password">{t("auth.newPassword")}</Label>

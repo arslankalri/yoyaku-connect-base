@@ -60,7 +60,12 @@ function OAuthReturn() {
 
   return (
     <main className="grid min-h-screen place-items-center p-8">
-      <p className="text-sm text-muted-foreground">{message}</p>
+      <div className="w-full max-w-md rounded-lg border border-border bg-surface p-8 text-center">
+        <p className="mb-4 text-lg font-semibold">NAGI AI</p>
+        <p className="text-sm text-muted-foreground" role="status">
+          {message}
+        </p>
+      </div>
     </main>
   );
 }

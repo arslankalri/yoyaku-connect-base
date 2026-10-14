@@ -47,6 +47,8 @@ export const Route = createFileRoute("/_authenticated/services")({
       },
       { property: "og:title", content: "Services — NAGI AI" },
       { property: "og:description", content: "Manage your service menu, pricing, and duration." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ServicesPage,

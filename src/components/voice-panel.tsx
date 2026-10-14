@@ -87,7 +87,7 @@ export function VoicePanel({ businessId }: { businessId: string }) {
     <div className="glass-panel space-y-6 p-6">
       <div className="flex items-start gap-3">
         <span
-          className="glow-border grid size-9 shrink-0 place-items-center rounded-xl text-primary-foreground"
+          className="glow-border grid size-9 shrink-0 place-items-center rounded-lg text-primary-foreground"
           style={{ backgroundImage: "var(--gradient-ai)" }}
         >
           <PhoneCall className="size-4" />
@@ -104,7 +104,7 @@ export function VoicePanel({ businessId }: { businessId: string }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between rounded-xl border border-border/60 p-4">
+      <div className="flex items-center justify-between rounded-lg border border-border/60 p-4">
         <div>
           <p className="text-sm font-medium">
             {ja ? "電話応対を有効にする" : "Answer phone calls"}
@@ -172,7 +172,7 @@ export function VoicePanel({ businessId }: { businessId: string }) {
         {ja ? "保存" : "Save"}
       </Button>
 
-      <div className="space-y-3 rounded-xl border border-border/60 bg-muted/30 p-4 text-sm">
+      <div className="space-y-3 rounded-lg border border-border/60 bg-muted/30 p-4 text-sm">
         <div className="flex items-center gap-2">
           <KeyRound className="size-4 text-muted-foreground" />
           <p className="font-medium">

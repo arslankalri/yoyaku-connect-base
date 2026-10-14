@@ -10,3 +10,5 @@
 <!-- LOVABLE:END -->
 
 - Keep Vapi web-call turn-taking configuration centralized in `vapi-web-conversation.ts` so linked and transient assistants stay behaviorally consistent.
+
+- Keep the premium visual theme in semantic CSS tokens and shared presentation primitives; business, auth, calendar and voice handlers remain independent so visual changes cannot alter their authority.

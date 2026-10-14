@@ -1,4 +1,5 @@
 import { useI18n, type Language } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const options: { value: Language; labelKey: string }[] = [
@@ -14,27 +15,29 @@ export function LanguageToggle({ className }: { className?: string }) {
       role="group"
       aria-label={t("settings.language")}
       className={cn(
-        "inline-flex items-center rounded-full border border-border bg-secondary/60 p-0.5",
+        "inline-flex shrink-0 items-center rounded-md border border-border bg-secondary/60 p-0.5",
         className,
       )}
     >
       {options.map((option) => {
         const active = language === option.value;
         return (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             key={option.value}
             type="button"
             aria-pressed={active}
             onClick={() => setLanguage(option.value)}
             className={cn(
-              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              "h-7 whitespace-nowrap rounded-sm px-2 py-1 text-xs font-medium transition-colors",
               active
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
             {t(option.labelKey)}
-          </button>
+          </Button>
         );
       })}
     </div>

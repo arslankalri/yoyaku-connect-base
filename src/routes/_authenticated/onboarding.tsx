@@ -142,7 +142,7 @@ function OnboardingPage() {
     <div className="min-h-screen bg-background px-4 py-8 sm:py-12">
       <div className="mx-auto max-w-3xl">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("setup.title")}</h1>
+          <h1 className="text-2xl font-bold tracking-normal sm:text-3xl">{t("setup.title")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t("setup.subtitle")}</p>
         </div>
 
@@ -167,7 +167,7 @@ function OnboardingPage() {
           </div>
         </div>
 
-        <div className="glass-panel glow-border p-5 sm:p-8">
+        <div className="section-layout border-t border-border pt-6 sm:pt-8">
           {step === "type" && (
             <TypeStep
               selected={selectedType}
@@ -359,7 +359,9 @@ function TypeStep({
             !selected ||
             updateType.isPending ||
             (selected === "other" && description.trim().length < 2)
-          } className="ml-auto">
+          }
+          className="ml-auto"
+        >
           {updateType.isPending ? t("common.saving") : t("setup.next")}
         </Button>
       </div>
