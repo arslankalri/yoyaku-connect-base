@@ -5,13 +5,8 @@ Create a premium AI voice-agent SaaS theme across every existing screen: graphit
 
 **Plan only.** No source or live-site changes have been made. Implementation preserves all routes, features, validation and behavior. No backend/API/database/schema/secrets/provider changes, feature removal, new demo data or publishing. NAGI AI is the authorized project.
 
-## Verified starting point
-- `src/styles.css` contains semantic OKLCH tokens, warm light defaults, `.dark` tokens and glass/gradient/washi utilities. A theme-switching mechanism was not established by inspection.
-- `app-shell.tsx` provides desktop sidebar, mobile Sheet, two navigation groups, sign-out, language toggle and realtime notification bell. Public screens and onboarding use separate layouts.
-- Business pages use React Query hooks and realtime subscriptions: preserve these rather than replacing data loading.
-- `/ai-receptionist` is the owner text-chat sandbox; `/web-call` is the separate Vapi browser call screen.
-- Landing contains an existing scripted illustration. History displays channel/status/duration/summary/session ID/transcript with copy/delete; its JSX does not expose recording playback.
-- Two Bun test files cover Vapi parsing and centralized turn-taking, not full application behavior. This review is source-based; live auth/calendar/booking/voice verification remains an implementation check.
+## Source review
+Confirmed all existing routes, separate public/onboarding layouts, sidebar/mobile drawer, language provider, realtime bell/data hooks, light/dark OKLCH tokens, separate chat/Web Call and existing scripted landing illustration. History renders transcript/copy/delete but not recording playback. This is source review, not live-flow verification.
 
 ## Visual system
 - **Palette:** neutral graphite canvas, lifted surfaces, deeper ink sidebar and hairline borders. Teal primary commands, cyan voice activity/focus; distinct accessible success/warning/destructive colors. Avoid an all-blue theme, gradient blobs, decorative orbs and pervasive glass/glow.
@@ -52,18 +47,13 @@ Authenticated files are under `src/routes/_authenticated/`; others under `src/ro
 | `/oauth/google-calendar/return` · `oauth/google-calendar/return.tsx` | Minimal branded popup finishing/error screen. | Completion/failure messages, origin checks, exchange-code handling and close timing. |
 
 ## Shared files and technical boundaries
-**Likely visual changes:**
-- `src/styles.css`: consolidate semantic surface/action/status/chart/shadow tokens and simplify decoration.
-- `src/components/app-shell.tsx`: navigation/header/page actions/drawer; preserve all 13 destinations, sign-out cache clearing and bell subscriptions.
-- `src/routes/__root.tsx`: fonts, document styling and 404/error/retry presentation only; preserve providers, Outlet, Scripts, auth invalidation, toast and error reporting.
-- `public-page.tsx`, `LanguageToggle.tsx`, `ai-background.tsx`, `states.tsx`: public shell/footer, language control, waveform/background and loading/empty/error presentation.
-- `business-form.tsx`, `business-hours-form.tsx`, `smart-import.tsx`, `faq-manager.tsx`, `nagi-settings.tsx`, `google-calendar-panel.tsx`, `voice-panel.tsx`, `nagi-web-call.tsx`: presentation only; preserve hooks, effects, handlers and payloads.
-- Used `src/components/ui/` primitives: Button/Card/Badge/Input/Textarea/Label/Select/Tabs/Table/Dialog/AlertDialog/Sheet/Switch/Checkbox/Progress/Skeleton/Tooltip/Sonner. Preserve props/semantics; avoid unnecessary unused-component edits.
-- Every screen file above; `src/lib/i18n.tsx` only for currently hardcoded interface labels, never business content/persistence. Check every content `head()` for unique NAGI title/description and social metadata. Isolate any new visual helper/asset; record structural choices in `AGENTS.md` during implementation.
+**Visual files:** `src/styles.css`; `src/components/app-shell.tsx`, `public-page.tsx`, `LanguageToggle.tsx`, `ai-background.tsx`, `states.tsx`, `business-form.tsx`, `business-hours-form.tsx`, `smart-import.tsx`, `faq-manager.tsx`, `nagi-settings.tsx`, `google-calendar-panel.tsx`, `voice-panel.tsx`, `nagi-web-call.tsx`; every screen above. Preserve handlers/effects/payloads, all 13 navigation destinations, sign-out cache clearing and bell subscriptions.
 
-**Untouched:** `_authenticated/route.tsx` auth guard, SSR setting and Outlet; generated route tree/router/bootstrap and `src/start.ts`; all integration clients, server functions, data hooks (`src/lib/api.ts`), NAGI brain/booking, Vapi SDK/protocol/session and centralized `vapi-web-conversation.ts`.
+Update used `src/components/ui/` controls without changing props/semantics. `src/routes/__root.tsx`: fonts/document/404/error/retry presentation only; preserve providers, Outlet, Scripts, auth invalidation, toast and reporting. `src/lib/i18n.tsx`: interface labels only, never business content/persistence. Check every leaf `head()` for unique NAGI/social metadata. Isolate visual helpers/assets; document structural choices in `AGENTS.md` during implementation.
 
-**Nonvisual routes unchanged:** `/api/chat`, `/api/voice/web-config`, `/api/public/agent/vapi`, `/api/public/agent/$tool`, `/api/public/voice/incoming`, `/api/public/voice/turn`, `/api/public/voice/status`, `/mcp`, `/.well-known/oauth-protected-resource`. No RLS/auth settings, phone mappings, secrets, dependencies, calendar permissions or tool-schema changes.
+**Untouched:** `_authenticated/route.tsx` auth guard/SSR/Outlet; generated routing/bootstrap, `src/start.ts`, integration clients, server functions, `src/lib/api.ts`, NAGI brain/booking and all Vapi SDK/protocol/session/centralized `vapi-web-conversation.ts` logic.
+
+**Nonvisual routes unchanged:** `/api/chat`, `/api/voice/web-config`, `/api/public/agent/vapi`, `/api/public/agent/$tool`, `/api/public/voice/incoming`, `/api/public/voice/turn`, `/api/public/voice/status`, `/mcp`, `/.well-known/oauth-protected-resource`. No RLS/auth settings, mappings, secrets, dependencies, calendar permissions or tool-schema changes.
 
 ## Sequence and risks
 1. Baseline every route/action; establish tokens and shared controls.
@@ -75,15 +65,13 @@ Authenticated files are under `src/routes/_authenticated/`; others under `src/ro
 Risks: global tokens affect portals/native inputs; long Japanese/business text; denser layouts hide actions; remounts duplicate voice effects; popup changes break completion timing; attractive status treatments imply readiness incorrectly. Preserve component identity/event handlers and compare action inventories. Report unrelated logic defects separately rather than silently redesigning them.
 
 ## Exact implementation acceptance checks
-- Harness build/typecheck passes; check newest `/tmp/observability/build-errors.log` and runtime/console logs. No manual project builds/typechecks.
-- Run `bun test tests/vapi-protocol.test.ts tests/vapi-web-conversation.test.ts` and `bun run lint`; distinguish existing failures from regressions.
-- Diff against the visual allowlist and route inventory; confirm all API/server/data/secret files and endpoint URLs unchanged.
-- Playwright screenshots/interactions on every content screen at 1440×900, 1280×1800, 768×1024 and 390×844 in JA/EN: drawer/tabs/dialogs, long names/transcripts, loading/empty/errors, keyboard, 200% zoom, reduced motion, 4.5:1 normal-text contrast, focus and overflow.
-- Public links/CTAs/contact destinations; login/signup validation, confirmation notice, safe redirect and recovery. Do not claim hosted auth settings without a hosted read.
-- Authenticated checks with two businesses: identical design, isolated menus/bookings/calls/notifications and clean sign-out. Test onboarding/resume/Other in an approved test business, not production profiles.
-- Approved test business: real temporary service/staff/FAQ/customer/manual-booking CRUD and reload/readback; verify hours, party size, filters/calendar and exact analytics. Remove only created test records; no demo fixtures.
-- Real Google connect/select/disconnect and popup completion only on an approved test connection; preserve production connection. Missing credentials means explicitly unverified.
-- Chat with real business input: stream/reset, missing info, confirmed booking, unavailable slot, identity refusal and staff-help notification. Read results in bookings/history/bell; no false success.
-- One real browser call: start/rapid repeat/connect/cancel/end, microphone refusal, error/transcript and saved history/bell. Vapi voice + NAGI brain unchanged. Fake microphone cannot prove spoken quality; real audio requires owner testing and may incur provider usage.
-- Phone: existing protocol tests and unchanged-code review; real inbound validation requires a connected line and authorization. Otherwise report unverified—do not change forwarding or publish for testing.
-- Completion includes route coverage and named blocked checks, never a blanket claim. Implementation approval is not publishing approval.
+- Harness build/typecheck passes; inspect latest build/runtime/console logs. No manual builds/typechecks.
+- Run `bun test tests/vapi-protocol.test.ts tests/vapi-web-conversation.test.ts` and `bun run lint`; distinguish existing failures. Diff visual allowlist, routes and unchanged API/server/data/secret files/URLs.
+- Playwright every screen at 1440×900, 1280×1800, 768×1024 and 390×844, JA/EN: screenshots, drawer/tabs/dialogs, long text/transcripts, loading/empty/errors, keyboard, 200% zoom, reduced motion, focus, overflow and 4.5:1 text contrast.
+- Verify public/contact links, account validation/confirmation/safe redirects/recovery. Hosted auth settings require a hosted read.
+- Two authenticated businesses: identical theme, isolated data and clean sign-out. Approved test business only: onboarding/resume/Other and real temporary service/staff/FAQ/customer/booking CRUD with reload/readback; hours/party size/filters/calendar/exact analytics. Clean up only these records; no demo fixtures.
+- Real Google connect/select/disconnect/popup only on approved test connection; preserve production. Missing access means unverified.
+- Real chat: stream/reset, missing info, confirmation, unavailable slot, identity refusal/staff-help; read back bookings/history/notifications/bell, no false success.
+- Real browser call: start/rapid repeats/connect/cancel/end, mic refusal, errors/transcript/history/bell. Preserve Vapi voice + NAGI brain. Fake mic cannot prove speech; owner audio test may incur provider usage.
+- Phone: protocol tests/unchanged-code review; real inbound check needs connected line/authorization. Otherwise mark unverified; never change forwarding or publish for testing.
+- Deliver route coverage and named blocked checks, not blanket success. Publishing requires separate authorization.
