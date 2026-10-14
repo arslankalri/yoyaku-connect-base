@@ -228,11 +228,11 @@ export function AppShell({
 
         <main className="mx-auto w-full app-content max-w-6xl px-4 py-8 md:px-6 lg:py-10">
           <div className="mb-7 flex animate-fade-up flex-col gap-3 border-b border-border/70 pb-6 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0 min-w-0">
+            <div className="min-w-0">
               <h1 className="text-2xl font-semibold tracking-normal md:text-[27px]">{title}</h1>
               {description && <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>}
             </div>
-            {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+            {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
           </div>
           {children}
         </main>

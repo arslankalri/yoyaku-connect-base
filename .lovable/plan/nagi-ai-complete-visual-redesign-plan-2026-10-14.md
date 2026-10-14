@@ -3,10 +3,10 @@
 ## Scope
 Create a premium AI voice-agent SaaS theme across every existing screen: graphite/ink surfaces, restrained teal/electric-cyan accents, clean bilingual typography and polished operational layouts.
 
-**Plan only.** No source or live-site changes have been made. Implementation preserves all routes, features, validation and behavior. No backend/API/database/schema/secrets/provider changes, feature removal, new demo data or publishing. NAGI AI is the authorized project.
+**Plan only from this review onward.** The current checkout already contains graphite/teal presentation changes from the preceding work; this plan reviews that baseline rather than claiming it is untouched. No further implementation is authorized by this plan. Any later implementation must preserve all routes, features, validation and behavior. No backend/API/database/schema/secrets/provider changes, feature removal, new demo data or publishing. NAGI AI is the authorized project.
 
 ## Source review
-Confirmed all existing routes, separate public/onboarding layouts, sidebar/mobile drawer, language provider, realtime bell/data hooks, light/dark OKLCH tokens, separate chat/Web Call and existing scripted landing illustration. History renders transcript/copy/delete but not recording playback. This is source review, not live-flow verification.
+Confirmed all existing routes, separate public/onboarding layouts, sidebar/mobile drawer, language provider, realtime bell/data hooks, dark-default OKLCH tokens, separate chat/Web Call and existing scripted landing illustration. History renders transcript/copy/delete but not recording playback. Public and authenticated pages were rendered in the existing checkout without observed page errors or document overflow; that is not proof of booking, authentication settings, calendar, tenant isolation or real voice-call correctness.
 
 ## Visual system
 - **Palette:** neutral graphite canvas, lifted surfaces, deeper ink sidebar and hairline borders. Teal primary commands, cyan voice activity/focus; distinct accessible success/warning/destructive colors. Avoid an all-blue theme, gradient blobs, decorative orbs and pervasive glass/glow.
@@ -15,7 +15,7 @@ Confirmed all existing routes, separate public/onboarding layouts, sidebar/mobil
 - **Controls:** existing shadcn Button/Radix primitives and Lucide icons; tooltips, keyboard focus, labelled status and clear pending/disabled/error treatment.
 - **Voice identity:** compact NAGI wordmark/waveform. Real-call animation follows existing reported state; never invent microphone levels, latency, connection or booking success.
 - **Mobile:** retain drawer; wrap actions, scroll tab strips locally, stack fields/records, keep dialog actions reachable, preserve every field/action and prevent page overflow. Respect reduced motion and usable touch targets.
-- **Theme:** consistent dark premium default via semantic tokens, including portals and native inputs; retain compatible alternate tokens without adding a theme-setting feature.
+- **Theme:** consistent dark premium default via semantic tokens, including portals and native inputs; avoid adding a theme-setting feature; current :root and .dark share the same dark palette.
 
 ## Every screen: route-by-route
 Authenticated files are under `src/routes/_authenticated/`; others under `src/routes/`. All URLs stay unchanged.
@@ -56,6 +56,7 @@ Update used `src/components/ui/` controls without changing props/semantics. `src
 **Nonvisual routes unchanged:** `/api/chat`, `/api/voice/web-config`, `/api/public/agent/vapi`, `/api/public/agent/$tool`, `/api/public/voice/incoming`, `/api/public/voice/turn`, `/api/public/voice/status`, `/mcp`, `/.well-known/oauth-protected-resource`. No RLS/auth settings, mappings, secrets, dependencies, calendar permissions or tool-schema changes.
 
 ## Sequence and risks
+Review the existing presentation edits against this plan before further styling. Changes outside the visual allowlist require separate authorization. Do not treat this plan as approval to run mutating production tests.
 1. Baseline every route/action; establish tokens and shared controls.
 2. Shared/public/account layouts and utility states.
 3. Onboarding and reusable business editors.
@@ -69,9 +70,17 @@ Risks: global tokens affect portals/native inputs; long Japanese/business text; 
 - Run `bun test tests/vapi-protocol.test.ts tests/vapi-web-conversation.test.ts` and `bun run lint`; distinguish existing failures. Diff visual allowlist, routes and unchanged API/server/data/secret files/URLs.
 - Playwright every screen at 1440×900, 1280×1800, 768×1024 and 390×844, JA/EN: screenshots, drawer/tabs/dialogs, long text/transcripts, loading/empty/errors, keyboard, 200% zoom, reduced motion, focus, overflow and 4.5:1 text contrast.
 - Verify public/contact links, account validation/confirmation/safe redirects/recovery. Hosted auth settings require a hosted read.
-- Two authenticated businesses: identical theme, isolated data and clean sign-out. Approved test business only: onboarding/resume/Other and real temporary service/staff/FAQ/customer/booking CRUD with reload/readback; hours/party size/filters/calendar/exact analytics. Clean up only these records; no demo fixtures.
+- With separate explicit test authorization, two authenticated businesses: identical theme, isolated data and clean sign-out. Approved test business only: onboarding/resume/Other and real temporary service/staff/FAQ/customer/booking CRUD with reload/readback; hours/party size/filters/calendar/exact analytics. Clean up only these records; no demo fixtures.
 - Real Google connect/select/disconnect/popup only on approved test connection; preserve production. Missing access means unverified.
-- Real chat: stream/reset, missing info, confirmation, unavailable slot, identity refusal/staff-help; read back bookings/history/notifications/bell, no false success.
-- Real browser call: start/rapid repeats/connect/cancel/end, mic refusal, errors/transcript/history/bell. Preserve Vapi voice + NAGI brain. Fake mic cannot prove speech; owner audio test may incur provider usage.
+- With separate explicit test authorization, real chat: stream/reset, missing info, confirmation, unavailable slot, identity refusal/staff-help; read back bookings/history/notifications/bell, no false success.
+- With separate explicit test authorization, real browser call: start/rapid repeats/connect/cancel/end, mic refusal, errors/transcript/history/bell. Preserve Vapi voice + NAGI brain. Fake mic cannot prove speech; owner audio test may incur provider usage.
 - Phone: protocol tests/unchanged-code review; real inbound check needs connected line/authorization. Otherwise mark unverified; never change forwarding or publish for testing.
 - Deliver route coverage and named blocked checks, not blanket success. Publishing requires separate authorization.
+
+## Current review limitations
+- Ten existing Vapi protocol/conversation tests passed; the latest harness build reported success.
+- Repository lint is not clean: 13 formatting errors and nine warnings remain; do not claim lint passed or expand this visual scope to fix server/config code.
+- Read-only route rendering covered Japanese and English mobile layouts; editor open/dismiss and transcript expansion were observed. Microphone denial returned an actionable error, but no real audio call was verified in these checks.
+- Prior chat checks produced stored conversations and reported an unusual Saturday opening interval; investigate that separately with owner-approved data review, not as a visual change.
+- Full signup/onboarding mutation, two-tenant isolation, calendar OAuth, live bookings, rapid-repeat real calls, phone calls, keyboard/zoom and contrast checks remain acceptance work rather than verified successes.
+- No publishing is included.

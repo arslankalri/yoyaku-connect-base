@@ -134,7 +134,7 @@ export function NagiWebCall({ className }: Props) {
 
   return (
     <section className={className ?? "web-call-tool"}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3" aria-live="polite">
         <div>
           <p className="text-lg font-semibold">NAGI Web Call</p>
           <p className="mt-1 text-xs text-muted-foreground">Browser microphone → Vapi → NAGI</p>
@@ -185,7 +185,9 @@ export function NagiWebCall({ className }: Props) {
       </div>
 
       {active && duration !== null && (
-        <p className="mt-3 text-xs text-muted-foreground">Live duration: {duration}s</p>
+        <p className="mt-3 text-xs text-muted-foreground">
+          {ja ? "通話時間" : "Live duration"}: {duration}s
+        </p>
       )}
 
       {callId && (
@@ -195,7 +197,9 @@ export function NagiWebCall({ className }: Props) {
       )}
 
       {lastEvent && (
-        <p className="mt-2 text-[11px] text-muted-foreground">Last event: {lastEvent}</p>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          {ja ? "最新イベント" : "Last event"}: {lastEvent}
+        </p>
       )}
 
       {liveTranscript.length > 0 && (
@@ -209,7 +213,10 @@ export function NagiWebCall({ className }: Props) {
       )}
 
       {error && (
-        <p className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
+        <p
+          role="alert"
+          className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive"
+        >
           {error}
         </p>
       )}
