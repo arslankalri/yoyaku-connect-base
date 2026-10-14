@@ -121,11 +121,22 @@ function CallsPage() {
                         <span>{formatDuration(conversation.duration_seconds)}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-foreground">{language === "ja" ? "発信元:" : "From:"}</span>{" "}
-                        {conversation.from_number ?? (isWeb ? (language === "ja" ? "ブラウザ" : "Browser") : (language === "ja" ? "不明" : "Unknown"))}
+                        <span className="font-medium text-foreground">
+                          {language === "ja" ? "発信元:" : "From:"}
+                        </span>{" "}
+                        {conversation.from_number ??
+                          (isWeb
+                            ? language === "ja"
+                              ? "ブラウザ"
+                              : "Browser"
+                            : language === "ja"
+                              ? "不明"
+                              : "Unknown")}
                       </div>
                       <div>
-                        <span className="font-medium text-foreground">{language === "ja" ? "宛先:" : "To:"}</span>{" "}
+                        <span className="font-medium text-foreground">
+                          {language === "ja" ? "宛先:" : "To:"}
+                        </span>{" "}
                         {conversation.to_number ?? (isWeb ? "NAGI Web" : "Unknown")}
                       </div>
                     </div>
@@ -149,7 +160,13 @@ function CallsPage() {
                       size="sm"
                       onClick={() => setExpanded(isOpen ? null : conversation.id)}
                     >
-                      {language === "ja" ? (isOpen ? "詳細を閉じる" : "通話の詳細") : (isOpen ? "Hide details" : "Call details")}
+                      {language === "ja"
+                        ? isOpen
+                          ? "詳細を閉じる"
+                          : "通話の詳細"
+                        : isOpen
+                          ? "Hide details"
+                          : "Call details"}
                     </Button>
                     <Button
                       variant="ghost"
@@ -173,11 +190,15 @@ function CallsPage() {
                   <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
                     <div className="grid gap-2 text-xs sm:grid-cols-2">
                       <div className="rounded-lg border border-border/70 bg-secondary/30 p-3">
-                        <p className="text-muted-foreground">{language === "ja" ? "通話方向" : "Direction"}</p>
+                        <p className="text-muted-foreground">
+                          {language === "ja" ? "通話方向" : "Direction"}
+                        </p>
                         <p className="mt-1 font-medium">{conversation.direction}</p>
                       </div>
                       <div className="rounded-lg border border-border/70 bg-secondary/30 p-3">
-                        <p className="text-muted-foreground">{language === "ja" ? "通話時間" : "Duration"}</p>
+                        <p className="text-muted-foreground">
+                          {language === "ja" ? "通話時間" : "Duration"}
+                        </p>
                         <p className="mt-1 font-medium">
                           {formatDuration(conversation.duration_seconds)}
                         </p>
@@ -186,7 +207,9 @@ function CallsPage() {
 
                     <div>
                       <div className="mb-2 flex items-center justify-between gap-2">
-                        <p className="text-xs font-semibold">{language === "ja" ? "会話記録" : "Transcript"}</p>
+                        <p className="text-xs font-semibold">
+                          {language === "ja" ? "会話記録" : "Transcript"}
+                        </p>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -194,7 +217,9 @@ function CallsPage() {
                           onClick={async () => {
                             if (!conversation.transcript) return;
                             await navigator.clipboard.writeText(conversation.transcript);
-                            toast.success(language === "ja" ? "会話記録をコピーしました" : "Transcript copied");
+                            toast.success(
+                              language === "ja" ? "会話記録をコピーしました" : "Transcript copied",
+                            );
                           }}
                         >
                           <Copy className="size-3.5" />
@@ -203,7 +228,10 @@ function CallsPage() {
                       </div>
 
                       <pre className="max-h-[28rem] overflow-y-auto whitespace-pre-wrap rounded-lg border border-border/70 bg-secondary/30 p-3 text-xs leading-relaxed">
-                        {conversation.transcript ?? (language === "ja" ? "会話記録はありません。" : "No transcript recorded.")}
+                        {conversation.transcript ??
+                          (language === "ja"
+                            ? "会話記録はありません。"
+                            : "No transcript recorded.")}
                       </pre>
                     </div>
                   </div>
