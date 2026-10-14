@@ -1,6 +1,7 @@
 # Visual redesign
-- [ ] Apply premium tokens and shared navigation, controls, account/public layouts.
-- [ ] Restyle every business page, onboarding and reusable editors.
-- [ ] Restyle chat and Web Call without changing their logic.
-- [ ] Verify routes, mobile/bilingual rendering, tests and visual-only boundaries.
-- [ ] Report live checks blocked by test-account, calendar or phone access.
+- [x] Apply premium tokens and shared navigation, controls, account/public layouts.
+- [x] Restyle every business page, onboarding and reusable editors.
+- [x] Restyle chat and Web Call without changing their logic.
+- [x] Verify public/business rendering, mobile menu and account tabs, Japanese call details, English Web Call, reduced-motion rendering, keyboard focus and existing Vapi tests.
+- [x] Record limits: real booking/onboarding mutations, two-tenant isolation, Google connection and audio/phone calls require separate test authorization; no publishing performed.
+- [x] Record repository checks: latest harness build succeeds; ten Vapi tests pass; lint retains 13 formatting errors and nine warnings outside this final visual polish.
