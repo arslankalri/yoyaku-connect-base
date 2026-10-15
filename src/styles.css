@@ -412,6 +412,21 @@
     padding-block: 1rem;
   }
 }
+@media (max-width: 320px) {
+  .auth-page > header,
+  .app-workspace header.sticky {
+    height: auto;
+    min-height: 4rem;
+    flex-wrap: wrap;
+    padding-block: 0.75rem;
+  }
+  .voice-cover-copy {
+    padding-block: 2rem;
+  }
+  .voice-cover h1 {
+    font-size: 2.5rem;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

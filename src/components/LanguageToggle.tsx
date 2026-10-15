@@ -30,7 +30,7 @@ export function LanguageToggle({ className }: { className?: string }) {
             aria-pressed={active}
             onClick={() => setLanguage(option.value)}
             className={cn(
-              "h-7 whitespace-nowrap rounded-sm px-2 py-1 text-xs font-medium transition-colors",
+              "min-h-8 whitespace-nowrap rounded-sm px-2 py-1 text-xs font-medium transition-colors",
               active
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",

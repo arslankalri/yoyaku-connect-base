@@ -37,7 +37,7 @@ export function PublicPage({
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 md:px-6">
+        <div className="public-header mx-auto flex min-h-16 max-w-6xl flex-wrap items-center gap-3 px-4 py-3 md:px-6">
           <Link to="/" className="flex items-center gap-2.5">
             <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
               凪
