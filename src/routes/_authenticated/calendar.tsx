@@ -99,7 +99,7 @@ function CalendarPage() {
       ) : appointmentsQuery.isError ? (
         <ErrorPanel onRetry={() => appointmentsQuery.refetch()} />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-x-6 gap-y-8 md:grid-cols-2 xl:grid-cols-4">
           {days.map((day) => {
             const hours = hoursQuery.data?.find((h) => h.day_of_week === day.getDay());
             const dayItems = appointments
@@ -109,12 +109,17 @@ function CalendarPage() {
               <section
                 key={day.toISOString()}
                 className={cn(
-                  "glass-panel space-y-3 p-4",
-                  day.toDateString() === todayKey && "border-ai-indigo/40",
+                  "min-w-0 space-y-4 border-t border-border py-4",
+                  day.toDateString() === todayKey && "border-primary border-t-2",
                 )}
               >
                 <header className="space-y-1">
-                  <p className="text-sm font-semibold">
+                  <p
+                    className={cn(
+                      "text-sm font-semibold",
+                      day.toDateString() === todayKey && "text-primary",
+                    )}
+                  >
                     {new Intl.DateTimeFormat(locale, {
                       weekday: "short",
                       month: "short",
@@ -134,7 +139,7 @@ function CalendarPage() {
                     {dayItems.map((appointment) => (
                       <li
                         key={appointment.id}
-                        className="rounded-lg border border-ai-indigo/20 bg-ai-indigo/5 px-2.5 py-2 text-xs"
+                        className="min-w-0 rounded-md border-l-2 border-primary/40 bg-surface px-3 py-3 text-xs leading-relaxed"
                       >
                         <p className="font-medium">
                           {new Intl.DateTimeFormat(locale, {

@@ -94,14 +94,14 @@ function NavSection({
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "group relative flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "group relative flex min-h-11 items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               active
-                ? "border border-primary/20 bg-accent font-medium text-accent-foreground"
+                ? "border border-primary/25 bg-accent font-medium text-accent-foreground shadow-[inset_2px_0_0_var(--primary)]"
                 : "border border-transparent text-muted-foreground hover:border-ai-indigo/15 hover:bg-sidebar-accent/60 hover:text-foreground",
             )}
           >
             <item.icon className="size-4 shrink-0" />
-            <span className="truncate">{t(item.labelKey)}</span>
+            <span className="min-w-0 break-words">{t(item.labelKey)}</span>
           </Link>
         );
       })}
@@ -226,7 +226,7 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="mx-auto w-full app-content max-w-6xl px-4 py-8 md:px-6 lg:py-10">
+        <main className="app-content mx-auto w-full max-w-6xl px-4 py-6 md:px-8 lg:py-9">
           <div className="mb-7 flex animate-fade-up flex-col gap-3 border-b border-border/70 pb-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold tracking-normal md:text-[27px]">{title}</h1>

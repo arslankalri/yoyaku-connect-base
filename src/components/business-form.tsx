@@ -150,9 +150,11 @@ export function BusinessForm({
         </p>
       )}
 
-      <Button type="submit" disabled={save.isPending}>
-        {save.isPending ? t("common.saving") : submitLabel}
-      </Button>
+      <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
+        <Button type="submit" disabled={save.isPending}>
+          {save.isPending ? t("common.saving") : submitLabel}
+        </Button>
+      </div>
     </form>
   );
 }

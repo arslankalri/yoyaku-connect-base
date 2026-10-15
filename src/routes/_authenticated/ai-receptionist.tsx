@@ -254,7 +254,7 @@ function Page() {
 
         <TabsContent value="chat">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-            <section className="glass-panel flex min-h-[62vh] flex-col overflow-hidden lg:min-h-[72vh]">
+            <section className="chat-workspace glass-panel flex min-h-[62vh] min-w-0 flex-col overflow-hidden lg:min-h-[72vh]">
               <header className="relative flex flex-wrap items-center gap-3 border-b border-border/70 p-4">
                 <div
                   aria-hidden
@@ -420,7 +420,7 @@ function Page() {
               </div>
 
               <form
-                className="flex items-center gap-2 p-3"
+                className="flex items-center gap-2 bg-surface p-3"
                 onSubmit={(e) => {
                   e.preventDefault();
                   void send(input);

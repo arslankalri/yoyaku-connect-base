@@ -174,8 +174,8 @@ function ServicesPage() {
           }
         />
       ) : (
-        <div className="glass-panel overflow-hidden">
-          <ul className="divide-y divide-border">
+        <div className="min-w-0">
+          <ul className="record-list">
             {services.map((service) => (
               <li key={service.id} className="flex flex-wrap items-start gap-4 p-5">
                 <div className="min-w-0 flex-1">

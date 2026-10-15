@@ -12,3 +12,4 @@
 - Keep Vapi web-call turn-taking configuration centralized in `vapi-web-conversation.ts` so linked and transient assistants stay behaviorally consistent.
 
 - Keep the premium visual theme in semantic CSS tokens and shared presentation primitives; business, auth, calendar and voice handlers remain independent so visual changes cannot alter their authority.
+- Keep shared controls and portal dialogs responsive through their presentation primitives, not per-page handler changes, so every business screen retains the same interaction semantics.
