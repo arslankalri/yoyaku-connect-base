@@ -213,8 +213,8 @@ function StaffPage() {
           }
         />
       ) : (
-        <div className="glass-panel overflow-hidden">
-          <ul className="divide-y divide-border">
+        <div className="min-w-0">
+          <ul className="record-list">
             {staff.map((member) => {
               const workingDays = member.staff_working_hours
                 .filter((h) => h.is_working)

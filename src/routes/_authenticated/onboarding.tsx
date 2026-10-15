@@ -7,7 +7,6 @@ import { BusinessHoursForm } from "@/components/business-hours-form";
 import { SmartImport } from "@/components/smart-import";
 import { ErrorPanel } from "@/components/states";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -148,21 +147,24 @@ function OnboardingPage() {
 
         <div className="mb-8">
           <Progress value={(completed / stepCount) * 100} className="h-2" />
-          <div className="mt-3 flex justify-between">
+          <div className="mt-3 flex gap-1 overflow-x-auto pb-2">
             {STEPS.slice(0, -1).map((key, idx) => (
-              <button
+              <Button
                 key={key}
                 type="button"
+                variant="ghost"
+                size="sm"
+                aria-current={idx === stepIndex ? "step" : undefined}
                 onClick={() => goTo(idx)}
                 disabled={idx > completed + 1}
                 className={cn(
-                  "text-[11px] font-medium transition-colors",
-                  idx <= completed ? "text-ai-indigo" : "text-muted-foreground",
+                  "min-w-24 flex-1 whitespace-nowrap border text-xs font-medium transition-colors",
+                  idx === stepIndex ? "border-primary/25 bg-accent text-accent-foreground" : "border-transparent text-muted-foreground",
                   idx > completed + 1 && "cursor-not-allowed opacity-50",
                 )}
               >
                 {t(`setup.step.${key}`)}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -316,13 +318,14 @@ function TypeStep({
       <StepHeader title={t("setup.type.title")} desc={t("setup.type.desc")} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {BUSINESS_TYPES.map((option) => (
-          <Card
+          <Button
             key={option.key}
-            role="button"
+            type="button"
+            variant="outline"
             aria-pressed={selected === option.key}
             onClick={() => onSelect(option.key)}
             className={cn(
-              "cursor-pointer p-4 transition-colors hover:bg-accent",
+              "h-auto min-h-20 justify-start p-4 text-left transition-colors hover:bg-accent",
               selected === option.key && "border-ai-indigo bg-ai-indigo/10 ring-1 ring-ai-indigo",
             )}
           >
@@ -335,7 +338,7 @@ function TypeStep({
                 </p>
               </div>
             </div>
-          </Card>
+          </Button>
         ))}
       </div>
       {selected === "other" && (

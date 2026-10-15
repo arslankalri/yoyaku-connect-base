@@ -26,6 +26,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--foreground);
+  --color-secondary-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
@@ -265,6 +266,23 @@
 .record-list > li:hover {
   background: color-mix(in oklab, var(--surface) 50%, transparent);
 }
+.record-list > li.notification-urgent {
+  box-shadow: inset 3px 0 var(--destructive);
+  padding-left: 1rem;
+  background: color-mix(in oklab, var(--destructive) 5%, transparent);
+}
+.record-list > li p {
+  line-height: 1.65;
+}
+.record-list button {
+  align-self: flex-start;
+}
+.app-content :is([role="tablist"], input[type="time"], input[type="number"]) {
+  font-variant-numeric: tabular-nums;
+}
+.chat-workspace {
+  isolation: isolate;
+}
 .section-layout {
   border: 0;
   border-radius: 0;
@@ -282,6 +300,14 @@
   border-color: var(--border-strong);
   padding: 2rem;
 }
+.auth-page main > div > h1 {
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+.auth-page form > [role="alert"] {
+  border: 1px solid color-mix(in oklab, var(--destructive) 30%, transparent);
+  line-height: 1.6;
+}
 .public-content {
   max-width: 58rem;
 }
@@ -295,9 +321,15 @@
 .public-content section p {
   line-height: 1.9;
 }
+.public-content h2 {
+  line-height: 1.5;
+}
+.public-content a {
+  text-underline-offset: 4px;
+}
 .voice-cover {
   position: relative;
-  min-height: 36rem;
+  min-height: min(36rem, calc(100svh - 9rem));
   display: flex;
   align-items: center;
   isolation: isolate;
@@ -325,7 +357,7 @@
 }
 .voice-cover-copy {
   max-width: 36rem;
-  padding: 4rem 0;
+  padding: 3rem 0;
 }
 .voice-cover-copy > p {
   max-width: 31rem;
@@ -354,7 +386,7 @@
 }
 @media (max-width: 640px) {
   .voice-cover {
-    min-height: 31rem;
+    min-height: min(31rem, calc(100svh - 9rem));
     align-items: flex-end;
   }
   .voice-cover > img {

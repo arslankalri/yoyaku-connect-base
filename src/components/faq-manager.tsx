@@ -163,13 +163,13 @@ export function FaqManager({ businessId }: { businessId: string }) {
       {faqs.length === 0 ? (
         <EmptyState title={t("faq.empty")} icon={<HelpCircle className="size-5" />} />
       ) : (
-        <ul className="space-y-3">
+        <ul className="record-list">
           {faqs.map((faq) => (
-            <li key={faq.id} className="glass-panel p-4">
+            <li key={faq.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold">{faq.question}</p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
                     {faq.answer}
                   </p>
                 </div>

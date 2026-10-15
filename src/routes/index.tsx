@@ -132,7 +132,7 @@ function CallSimulator() {
           >
             <p
               className={cn(
-                "max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
+                "max-w-[85%] rounded-lg px-3.5 py-2 text-sm leading-relaxed",
                 l.who === "nagi"
                   ? "rounded-bl-sm bg-accent text-accent-foreground"
                   : "rounded-br-sm bg-primary text-primary-foreground",
@@ -346,7 +346,7 @@ function Landing() {
                 type="button"
                 onClick={() => setIndustry(i)}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all",
+                  "inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm transition-colors",
                   industry === i
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border bg-card text-muted-foreground hover:text-foreground",
@@ -361,7 +361,7 @@ function Landing() {
             key={industry}
             className="section-layout mt-6 grid border-t border-border animate-fade-up gap-6 p-6 md:grid-cols-[auto_1fr] md:items-center"
           >
-            <span className="grid size-14 place-items-center rounded-2xl bg-accent text-accent-foreground">
+            <span className="grid size-14 place-items-center rounded-lg bg-accent text-accent-foreground">
               <ind.icon className="size-6" />
             </span>
             <div className="min-w-0">

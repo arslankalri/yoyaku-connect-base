@@ -37,7 +37,7 @@ export function PublicPage({
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="mx-auto flex h-16 max-w-4xl items-center gap-3 px-4 md:px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 md:px-6">
           <Link to="/" className="flex items-center gap-2.5">
             <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
               凪
@@ -49,10 +49,10 @@ export function PublicPage({
           </div>
         </div>
       </header>
-      <main className="public-content mx-auto max-w-4xl px-4 py-12 md:px-6">
+      <main className="public-content mx-auto max-w-4xl px-4 py-12 md:px-6 md:py-16">
         <h1 className="text-3xl font-bold tracking-normal">{title}</h1>
         {updated && <p className="mt-2 text-sm text-muted-foreground">{updated}</p>}
-        <div className="mt-8 space-y-8">{children}</div>
+        <div className="mt-10 space-y-10">{children}</div>
       </main>
       <PublicFooter />
     </div>

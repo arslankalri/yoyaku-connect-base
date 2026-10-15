@@ -134,9 +134,9 @@ export function NagiWebCall({ className }: Props) {
 
   return (
     <section className={className ?? "web-call-tool"}>
-      <div className="flex flex-wrap items-center justify-between gap-3" aria-live="polite">
+      <div className="flex flex-wrap items-center justify-between gap-4" aria-live="polite">
         <div>
-          <p className="text-lg font-semibold">NAGI Web Call</p>
+          <p className="text-2xl font-semibold">NAGI Web Call</p>
           <p className="mt-1 text-xs text-muted-foreground">Browser microphone → Vapi → NAGI</p>
         </div>
         <div className="flex items-center gap-4">
@@ -155,9 +155,9 @@ export function NagiWebCall({ className }: Props) {
         </div>
       </div>
 
-      <div className="call-actions mt-4 flex flex-wrap gap-2">
+      <div className="call-actions mt-4 flex flex-wrap gap-3">
         {!active ? (
-          <Button type="button" onClick={() => void start()} disabled={busyRef.current}>
+          <Button type="button" size="lg" onClick={() => void start()} disabled={busyRef.current}>
             <Phone className="size-4" />
             {ja ? "通話を開始" : "Start web call"}
           </Button>
@@ -165,6 +165,7 @@ export function NagiWebCall({ className }: Props) {
           <Button
             type="button"
             variant="destructive"
+            size="lg"
             onClick={() => void stop()}
             disabled={status === "ending"}
           >
@@ -191,7 +192,7 @@ export function NagiWebCall({ className }: Props) {
       )}
 
       {callId && (
-        <p className="mt-2 truncate font-mono text-[10px] text-muted-foreground">
+        <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
           Call ID: {callId}
         </p>
       )}
@@ -203,7 +204,7 @@ export function NagiWebCall({ className }: Props) {
       )}
 
       {liveTranscript.length > 0 && (
-        <div className="call-transcript mt-3 max-h-40 overflow-y-auto rounded-lg border border-border/70 bg-secondary/30 p-2 text-xs">
+        <div className="call-transcript mt-5 max-h-40 overflow-y-auto rounded-lg border border-border bg-surface p-4 text-sm leading-relaxed">
           {liveTranscript.map((line, index) => (
             <p key={index} className="mb-1 last:mb-0">
               {line}
@@ -215,7 +216,7 @@ export function NagiWebCall({ className }: Props) {
       {error && (
         <p
           role="alert"
-          className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive"
+          className="mt-4 rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm leading-relaxed text-destructive"
         >
           {error}
         </p>

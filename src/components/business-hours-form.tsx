@@ -77,7 +77,7 @@ export function BusinessHoursForm({
   }
 
   return (
-    <div className={cn("space-y-5", !submitLabel && "glass-panel p-6")}>
+    <div className={cn("space-y-5", !submitLabel && "section-layout py-2")}>
       {!submitLabel && (
         <div>
           <h2 className="text-base font-semibold">{t("hours.title")}</h2>
@@ -85,7 +85,7 @@ export function BusinessHoursForm({
         </div>
       )}
 
-      <ul className="divide-y divide-border rounded-lg border border-border">
+      <ul className="divide-y divide-border border-y border-border">
         {rows.map((row) => (
           <li
             key={row.day_of_week}
@@ -102,14 +102,14 @@ export function BusinessHoursForm({
                 {row.is_open ? t("hours.open") : t("hours.closed")}
               </Label>
             </div>
-            <div className="flex flex-1 items-center gap-2">
+            <div className="flex min-w-0 flex-1 basis-full items-center gap-2 sm:basis-auto">
               <Input
                 type="time"
                 aria-label={t("hours.openTime")}
                 value={row.open_time}
                 disabled={!row.is_open}
                 onChange={(e) => update(row.day_of_week, { open_time: e.target.value })}
-                className="w-32"
+                className="min-w-0 flex-1 sm:w-32"
               />
               <span className="text-muted-foreground">–</span>
               <Input
@@ -118,16 +118,18 @@ export function BusinessHoursForm({
                 value={row.close_time}
                 disabled={!row.is_open}
                 onChange={(e) => update(row.day_of_week, { close_time: e.target.value })}
-                className="w-32"
+                className="min-w-0 flex-1 sm:w-32"
               />
             </div>
           </li>
         ))}
       </ul>
 
-      <Button onClick={onSave} disabled={saveHours.isPending}>
-        {saveHours.isPending ? t("common.saving") : (submitLabel ?? t("common.save"))}
-      </Button>
+      <div className="flex flex-wrap justify-end gap-3 pt-2">
+        <Button onClick={onSave} disabled={saveHours.isPending}>
+          {saveHours.isPending ? t("common.saving") : (submitLabel ?? t("common.save"))}
+        </Button>
+      </div>
     </div>
   );
 }

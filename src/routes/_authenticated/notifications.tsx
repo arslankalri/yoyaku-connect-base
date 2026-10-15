@@ -113,9 +113,9 @@ function NotificationsPage() {
               <li
                 key={n.id}
                 className={cn(
-                  "glass-panel flex gap-4 p-4",
-                  urgent && unread && "border-destructive/60",
-                  !unread && "opacity-70",
+                  "flex gap-3 sm:gap-4",
+                  urgent && unread && "notification-urgent",
+                  !unread && "text-muted-foreground",
                 )}
               >
                 <div
@@ -146,7 +146,7 @@ function NotificationsPage() {
                     n.kind !== "booking_created" &&
                     n.kind !== "booking_cancelled" &&
                     n.kind !== "booking_rescheduled" && (
-                      <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                      <p className={cn("whitespace-pre-wrap text-sm leading-relaxed", urgent ? "text-foreground" : "text-muted-foreground")}>
                         {n.detail.replace(/^\[HANDOFF\]\s*/, "")}
                       </p>
                     )}
