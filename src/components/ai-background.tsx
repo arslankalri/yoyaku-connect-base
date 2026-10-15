@@ -1,7 +1,6 @@
 /**
- * Decorative layered background: soft radial gradients, a fine grid and slow
- * floating gradient blobs. Purely presentational and hidden from assistive
- * tech; all motion stops under prefers-reduced-motion (see styles.css).
+ * Neutral semantic workspace canvas. Purely presentational and hidden
+ * from assistive technology.
  */
 export function AIBackground() {
   return <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-background" />;
@@ -20,7 +19,7 @@ export function OnlineDot({ className = "" }: { className?: string }) {
 /** Compact neural/waveform motif used next to the NAGI identity. */
 export function Waveform({ active = false, bars = 5 }: { active?: boolean; bars?: number }) {
   return (
-    <span aria-hidden className="flex items-end gap-[3px]">
+    <span aria-hidden className="flex h-6 shrink-0 items-center gap-[3px]">
       {Array.from({ length: bars }).map((_, i) => (
         <span
           key={i}
