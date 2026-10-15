@@ -114,7 +114,12 @@ function CalendarPage() {
                 )}
               >
                 <header className="space-y-1">
-                  <p className={cn("text-sm font-semibold", day.toDateString() === todayKey && "text-primary")}>
+                  <p
+                    className={cn(
+                      "text-sm font-semibold",
+                      day.toDateString() === todayKey && "text-primary",
+                    )}
+                  >
                     {new Intl.DateTimeFormat(locale, {
                       weekday: "short",
                       month: "short",

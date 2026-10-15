@@ -21,7 +21,10 @@ export function LoadingPanel({ rows = 3 }: { rows?: number }) {
 export function ErrorPanel({ onRetry }: { onRetry?: () => void }) {
   const { t } = useI18n();
   return (
-    <div role="alert" className="section-layout flex flex-col items-center gap-4 border-y border-border px-4 py-12 text-center">
+    <div
+      role="alert"
+      className="section-layout flex flex-col items-center gap-4 border-y border-border px-4 py-12 text-center"
+    >
       <AlertCircle className="size-6 text-destructive" />
       <p className="text-sm font-medium">{t("common.error")}</p>
       {onRetry && (

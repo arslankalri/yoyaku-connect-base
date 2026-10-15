@@ -159,7 +159,9 @@ function OnboardingPage() {
                 disabled={idx > completed + 1}
                 className={cn(
                   "min-w-24 flex-1 whitespace-nowrap border text-xs font-medium transition-colors",
-                  idx === stepIndex ? "border-primary/25 bg-accent text-accent-foreground" : "border-transparent text-muted-foreground",
+                  idx === stepIndex
+                    ? "border-primary/25 bg-accent text-accent-foreground"
+                    : "border-transparent text-muted-foreground",
                   idx > completed + 1 && "cursor-not-allowed opacity-50",
                 )}
               >

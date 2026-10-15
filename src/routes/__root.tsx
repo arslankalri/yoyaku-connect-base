@@ -29,7 +29,9 @@ function NotFoundComponent() {
           The page you're looking for doesn't exist or has been moved.
         </p>
         <div className="mt-6">
-          <Button asChild><Link to="/">Go home / ホームへ</Link></Button>
+          <Button asChild>
+            <Link to="/">Go home / ホームへ</Link>
+          </Button>
         </div>
       </div>
     </div>
@@ -62,7 +64,9 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
           >
             Try again
           </Button>
-          <Button asChild variant="outline"><a href="/">Go home / ホームへ</a></Button>
+          <Button asChild variant="outline">
+            <a href="/">Go home / ホームへ</a>
+          </Button>
         </div>
       </div>
     </div>

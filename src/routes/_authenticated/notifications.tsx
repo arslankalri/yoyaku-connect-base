@@ -146,7 +146,12 @@ function NotificationsPage() {
                     n.kind !== "booking_created" &&
                     n.kind !== "booking_cancelled" &&
                     n.kind !== "booking_rescheduled" && (
-                      <p className={cn("whitespace-pre-wrap text-sm leading-relaxed", urgent ? "text-foreground" : "text-muted-foreground")}>
+                      <p
+                        className={cn(
+                          "whitespace-pre-wrap text-sm leading-relaxed",
+                          urgent ? "text-foreground" : "text-muted-foreground",
+                        )}
+                      >
                         {n.detail.replace(/^\[HANDOFF\]\s*/, "")}
                       </p>
                     )}
