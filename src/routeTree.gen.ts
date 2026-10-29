@@ -42,6 +42,8 @@ import { Route as ApiPublicAgentVapiRouteImport } from './routes/api/public/agen
 import { Route as ApiPublicVoiceIncomingRouteImport } from './routes/api/public/voice/incoming'
 import { Route as ApiPublicVoiceStatusRouteImport } from './routes/api/public/voice/status'
 import { Route as ApiPublicVoiceTurnRouteImport } from './routes/api/public/voice/turn'
+import { Route as ApiPublicAgentTelnyxIndexRouteImport } from './routes/api/public/agent/telnyx/index'
+import { Route as ApiPublicAgentTelnyxToolRouteImport } from './routes/api/public/agent/telnyx/$tool'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -212,6 +214,18 @@ const ApiPublicVoiceTurnRoute = ApiPublicVoiceTurnRouteImport.update({
   path: '/api/public/voice/turn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAgentTelnyxIndexRoute =
+  ApiPublicAgentTelnyxIndexRouteImport.update({
+    id: '/api/public/agent/telnyx/',
+    path: '/api/public/agent/telnyx/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicAgentTelnyxToolRoute =
+  ApiPublicAgentTelnyxToolRouteImport.update({
+    id: '/api/public/agent/telnyx/$tool',
+    path: '/api/public/agent/telnyx/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -246,6 +260,8 @@ export interface FileRoutesByFullPath {
   '/api/public/voice/incoming': typeof ApiPublicVoiceIncomingRoute
   '/api/public/voice/status': typeof ApiPublicVoiceStatusRoute
   '/api/public/voice/turn': typeof ApiPublicVoiceTurnRoute
+  '/api/public/agent/telnyx/$tool': typeof ApiPublicAgentTelnyxToolRoute
+  '/api/public/agent/telnyx/': typeof ApiPublicAgentTelnyxIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -280,6 +296,8 @@ export interface FileRoutesByTo {
   '/api/public/voice/incoming': typeof ApiPublicVoiceIncomingRoute
   '/api/public/voice/status': typeof ApiPublicVoiceStatusRoute
   '/api/public/voice/turn': typeof ApiPublicVoiceTurnRoute
+  '/api/public/agent/telnyx/$tool': typeof ApiPublicAgentTelnyxToolRoute
+  '/api/public/agent/telnyx': typeof ApiPublicAgentTelnyxIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -316,6 +334,8 @@ export interface FileRoutesById {
   '/api/public/voice/incoming': typeof ApiPublicVoiceIncomingRoute
   '/api/public/voice/status': typeof ApiPublicVoiceStatusRoute
   '/api/public/voice/turn': typeof ApiPublicVoiceTurnRoute
+  '/api/public/agent/telnyx/$tool': typeof ApiPublicAgentTelnyxToolRoute
+  '/api/public/agent/telnyx/': typeof ApiPublicAgentTelnyxIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -352,6 +372,8 @@ export interface FileRouteTypes {
     | '/api/public/voice/incoming'
     | '/api/public/voice/status'
     | '/api/public/voice/turn'
+    | '/api/public/agent/telnyx/$tool'
+    | '/api/public/agent/telnyx/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -386,6 +408,8 @@ export interface FileRouteTypes {
     | '/api/public/voice/incoming'
     | '/api/public/voice/status'
     | '/api/public/voice/turn'
+    | '/api/public/agent/telnyx/$tool'
+    | '/api/public/agent/telnyx'
   id:
     | '__root__'
     | '/'
@@ -421,6 +445,8 @@ export interface FileRouteTypes {
     | '/api/public/voice/incoming'
     | '/api/public/voice/status'
     | '/api/public/voice/turn'
+    | '/api/public/agent/telnyx/$tool'
+    | '/api/public/agent/telnyx/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -443,6 +469,8 @@ export interface RootRouteChildren {
   ApiPublicVoiceIncomingRoute: typeof ApiPublicVoiceIncomingRoute
   ApiPublicVoiceStatusRoute: typeof ApiPublicVoiceStatusRoute
   ApiPublicVoiceTurnRoute: typeof ApiPublicVoiceTurnRoute
+  ApiPublicAgentTelnyxToolRoute: typeof ApiPublicAgentTelnyxToolRoute
+  ApiPublicAgentTelnyxIndexRoute: typeof ApiPublicAgentTelnyxIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -678,6 +706,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVoiceTurnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/agent/telnyx/': {
+      id: '/api/public/agent/telnyx/'
+      path: '/api/public/agent/telnyx'
+      fullPath: '/api/public/agent/telnyx/'
+      preLoaderRoute: typeof ApiPublicAgentTelnyxIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/agent/telnyx/$tool': {
+      id: '/api/public/agent/telnyx/$tool'
+      path: '/api/public/agent/telnyx/$tool'
+      fullPath: '/api/public/agent/telnyx/$tool'
+      preLoaderRoute: typeof ApiPublicAgentTelnyxToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -739,6 +781,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicVoiceIncomingRoute: ApiPublicVoiceIncomingRoute,
   ApiPublicVoiceStatusRoute: ApiPublicVoiceStatusRoute,
   ApiPublicVoiceTurnRoute: ApiPublicVoiceTurnRoute,
+  ApiPublicAgentTelnyxToolRoute: ApiPublicAgentTelnyxToolRoute,
+  ApiPublicAgentTelnyxIndexRoute: ApiPublicAgentTelnyxIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
