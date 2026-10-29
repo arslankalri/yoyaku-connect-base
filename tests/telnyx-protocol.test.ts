@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseTelnyxEvent, telnyxKeyFrom, telnyxToolArgs } from "./telnyx-protocol";
+import { parseTelnyxEvent, telnyxKeyFrom, telnyxToolArgs } from "../src/lib/telnyx-protocol";
 
 describe("telnyx protocol", () => {
   test("reads bearer key", () => {
