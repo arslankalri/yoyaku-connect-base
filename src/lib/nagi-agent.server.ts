@@ -139,7 +139,7 @@ export async function contextForApiKey(apiKey: string): Promise<AgentContext> {
 
 /** Fallback tenant resolution: which business owns the dialled number. */
 export async function contextForPhoneNumber(number: string): Promise<AgentContext | null> {
-  const digits = (number ?? "").replace(/D/g, "");
+  const digits = (number ?? "").replace(/\D/g, "");
   if (!digits) return null;
   const supabase = await adminClient();
   const { data, error } = await supabase
@@ -149,7 +149,7 @@ export async function contextForPhoneNumber(number: string): Promise<AgentContex
     .not("voice_phone_number", "is", null);
   if (error) throw error;
   const match = (data ?? []).find(
-    (row) => (row.voice_phone_number ?? "").replace(/D/g, "") === digits,
+    (row) => (row.voice_phone_number ?? "").replace(/\D/g, "") === digits,
   );
   if (!match) return null;
   return contextForBusinessId(supabase, match.business_id);
